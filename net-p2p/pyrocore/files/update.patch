@@ -1,0 +1,35 @@
+diff -Nur pyrocore_orig/src/pyrocore/torrent/rtorrent.py pyrocore/src/pyrocore/torrent/rtorrent.py
+--- pyrocore_orig/src/pyrocore/torrent/rtorrent.py	2015-10-06 12:05:14.649282770 +1300
++++ pyrocore/src/pyrocore/torrent/rtorrent.py	2015-10-06 14:10:52.869260322 +1300
+@@ -133,7 +133,7 @@
+ 
+             # Set custom cache field with value formatted like "80%_flac 20%_jpg" (sorted by percentage)
+             histo_str = ' '.join(("%d%%_%s" % i).replace(' ', '_') for i in histo)
+-            self._make_it_so("setting kind cache %r on" % (histo_str,), ["set_custom"], "kind", histo_str)
++            self._make_it_so("setting kind cache %r on" % (histo_str,), ["custom.set"], "kind", histo_str)
+             self._fields["custom_kind"] = histo_str
+ 
+         # Return all non-empty extensions that make up at least <limit>% of total size
+@@ -245,7 +245,7 @@
+         tagset.discard('')
+         if tagset != previous:
+             tagset = ' '.join(sorted(tagset))
+-            self._make_it_so("setting tags %r on" % (tagset,), ["set_custom"], "tags", tagset)
++            self._make_it_so("setting tags %r on" % (tagset,), ["custom.set"], "tags", tagset)
+             self._fields["custom_tags"] = tagset
+ 
+ 
+@@ -288,11 +288,11 @@
+         if not key:
+             raise error.UserError("Custom field name cannot be empty!")
+         elif len(key) == 1 and key in "12345":
+-            method, args = "set_custom"+key, (value,)
++            method, args = "custom%s.set" % (key,), (value,)
+         elif not (key[0].isalpha() and key.replace("_", "").isalnum()):
+             raise error.UserError("Bad custom field name %r (must only contain a-z, A-Z, 0-9 and _)" % (key,))
+         else:
+-            method, args = "set_custom", (key, value)
++            method, args = "custom.set", (key, value)
+ 
+         # Make the assignment
+         self._make_it_so("setting custom_%s = %r on" % (key, value), [method], *args)

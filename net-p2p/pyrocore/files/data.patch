@@ -1,0 +1,23 @@
+diff -Nur pyrocore_orig/MANIFEST.in pyrocore/MANIFEST.in
+--- pyrocore_orig/MANIFEST.in	2015-10-02 15:31:44.343343939 +1300
++++ pyrocore/MANIFEST.in	2015-10-02 15:33:52.653342016 +1300
+@@ -10,6 +10,6 @@
+ recursive-include debian changelog
+ recursive-include src/scripts *.sh
+-recursive-include src/pyrocore/data/config rtorrent-*.rc
++recursive-include src/pyrocore/data/config *
+ 
+ #recursive-include examples *.txt *.py
+ #prune directory/pattern
+diff -Nur pyrocore_orig/pavement.py pyrocore/pavement.py
+--- pyrocore_orig/pavement.py	2015-10-02 15:31:44.343343939 +1300
++++ pyrocore/pavement.py	2015-10-02 15:32:26.493343307 +1300
+@@ -79,7 +79,7 @@
+     include_package_data = True,
+     zip_safe = False,
+     data_files = [
+-        ("EGG-INFO", [
++        ("share/doc/pyrocore-9999", [
+             "README.md", "LICENSE", "debian/changelog",
+         ]),
+     ],

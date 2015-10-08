@@ -1,0 +1,12 @@
+diff -Nur auvyon_orig/pavement.py auvyon/pavement.py
+--- auvyon_orig/pavement.py	2015-09-11 16:39:27.981137120 +1200
++++ auvyon/pavement.py	2015-09-11 16:40:44.261135977 +1200
+@@ -55,7 +55,7 @@
+     include_package_data = True,
+     zip_safe = True,
+     data_files = [
+-        ("EGG-INFO", [
++        ("share/doc/auvyon-9999", [
+             "README", "LICENSE", "debian/changelog",
+         ]),
+     ],

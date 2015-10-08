@@ -1,0 +1,89 @@
+diff -Nur rtorrent_orig/src/command_helpers.cc rtorrent/src/command_helpers.cc
+--- rtorrent_orig/src/command_helpers.cc	2015-09-09 17:17:48.753691769 +1200
++++ rtorrent/src/command_helpers.cc	2015-09-09 18:08:16.003646410 +1200
+@@ -56,6 +56,7 @@
+ void initialize_command_tracker();
+ void initialize_command_scheduler();
+ void initialize_command_ui();
++void initialize_command_ui_pyroscope();
+ 
+ void
+ initialize_commands() {
+@@ -73,4 +74,5 @@
+   initialize_command_throttle();
+   initialize_command_tracker();
+   initialize_command_scheduler();
++  initialize_command_ui_pyroscope();
+ }
+diff -Nur rtorrent_orig/src/display/canvas.cc rtorrent/src/display/canvas.cc
+--- rtorrent_orig/src/display/canvas.cc	2015-09-09 17:17:48.753691769 +1200
++++ rtorrent/src/display/canvas.cc	2015-09-09 18:08:16.003646410 +1200
+@@ -99,6 +99,8 @@
+   m_isInitialized = true;
+ 
+   initscr();
++  extern void ui_pyroscope_canvas_init();
++  ui_pyroscope_canvas_init();
+   raw();
+   noecho();
+   nodelay(stdscr, TRUE);
+diff -Nur rtorrent_orig/src/display/canvas.h rtorrent/src/display/canvas.h
+--- rtorrent_orig/src/display/canvas.h	2015-09-09 17:17:48.753691769 +1200
++++ rtorrent/src/display/canvas.h	2015-09-09 18:08:16.003646410 +1200
+@@ -131,8 +131,10 @@
+   va_list arglist;
+ 
+   va_start(arglist, str);
+-  wmove(m_window, y, x);
+-  vw_printw(m_window, const_cast<char*>(str), arglist);
++  if (y < height()) {
++    wmove(m_window, y, x);
++    vw_printw(m_window, const_cast<char*>(str), arglist);
++  }
+   va_end(arglist);
+ }
+ 
+diff -Nur rtorrent_orig/src/display/window_download_list.cc rtorrent/src/display/window_download_list.cc
+--- rtorrent_orig/src/display/window_download_list.cc	2015-09-09 17:17:48.753691769 +1200
++++ rtorrent/src/display/window_download_list.cc	2015-09-09 18:08:16.003646410 +1200
+@@ -82,6 +82,8 @@
+ 
+   m_canvas->print(0, 0, "%s", ("[View: " + m_view->name() + "]").c_str());
+ 
++  bool ui_pyroscope_download_list_redraw(Window* window, display::Canvas* canvas, core::View* view);
++  if (ui_pyroscope_download_list_redraw(this, m_canvas, m_view)) return;
+   if (m_view->empty_visible() || m_canvas->width() < 5 || m_canvas->height() < 2)
+     return;
+ 
+@@ -113,6 +115,8 @@
+     print_download_status(buffer, last, *range.first);
+     m_canvas->print(0, pos++, "%c %s", range.first == m_view->focus() ? '*' : ' ', buffer);
+ 
++    void ui_pyroscope_download_list_redraw_item(Window* window, display::Canvas* canvas, core::View* view, int pos, Range& range);
++    ui_pyroscope_download_list_redraw_item(this, m_canvas, m_view, pos, range);
+     ++range.first;
+   }    
+ }
+diff -Nur rtorrent_orig/src/display/window_statusbar.cc rtorrent/src/display/window_statusbar.cc
+--- rtorrent_orig/src/display/window_statusbar.cc	2015-09-09 17:17:48.753691769 +1200
++++ rtorrent/src/display/window_statusbar.cc	2015-09-09 18:08:16.003646410 +1200
+@@ -67,6 +67,8 @@
+     m_canvas->print(m_canvas->width() - (position - buffer), 0, "%s", buffer);
+   }
+ 
++  void ui_pyroscope_statusbar_redraw(Window* window, display::Canvas* canvas);
++  ui_pyroscope_statusbar_redraw(this, m_canvas);
+   m_lastTick = control->tick();
+ }
+ 
+diff -Nur rtorrent_orig/src/Makefile.am rtorrent/src/Makefile.am
+--- rtorrent_orig/src/Makefile.am	2015-09-09 17:17:48.753691769 +1200
++++ rtorrent/src/Makefile.am	2015-09-09 18:09:10.563645593 +1200
+@@ -29,6 +29,7 @@
+ 	control.h \
+ 	globals.cc \
+ 	globals.h \
++	ui_pyroscope.cc \
+ 	option_parser.cc \
+ 	option_parser.h \
+ 	signal_handler.cc \

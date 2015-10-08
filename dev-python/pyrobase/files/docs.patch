@@ -1,0 +1,12 @@
+diff -Nur pyrobase_orig/pavement.py pyrobase/pavement.py
+--- pyrobase_orig/pavement.py	2015-09-11 16:51:46.031126062 +1200
++++ pyrobase/pavement.py	2015-09-11 16:52:47.071125147 +1200
+@@ -53,7 +53,7 @@
+     include_package_data = True,
+     zip_safe = True,
+     data_files = [
+-        ("EGG-INFO", [
++        ("share/doc/pyrobase-9999", [
+             "README", "LICENSE", "debian/changelog", 
+         ]),
+     ],
