@@ -17,7 +17,7 @@ KEYWORDS=""
 HOMEPAGE="http://znc.in"
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="daemon debug ipv6 libressl perl python ssl sasl tcl"
+IUSE="daemon debug ipv6 libressl perl push python ssl sasl tcl"
 
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
@@ -41,6 +41,9 @@ DEPEND="${RDEPEND}
 	python? (
 		>=dev-lang/swig-2.0.12
 	)
+"
+PDEPEND="
+	push? ( net-irc/znc-push )
 "
 
 S=${WORKDIR}/${PN}-${MY_PV}
