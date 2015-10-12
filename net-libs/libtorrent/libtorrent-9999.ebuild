@@ -49,7 +49,6 @@ src_configure() {
 		--disable-dependency-tracking \
 		--enable-aligned \
 		$(use_enable debug) \
-		$(use_enable ipv6) \
 		$(use_enable ssl openssl) \
 		${myconf}
 }

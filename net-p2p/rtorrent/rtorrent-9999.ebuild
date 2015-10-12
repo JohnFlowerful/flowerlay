@@ -68,7 +68,6 @@ src_configure() {
 	CONFIG_SHELL=${BASH} econf \
 		--disable-dependency-tracking \
 		$(use_enable debug) \
-		$(use_enable ipv6) \
 		$(use_with xmlrpc xmlrpc-c)
 }
 
