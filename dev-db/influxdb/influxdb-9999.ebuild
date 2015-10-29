@@ -63,6 +63,6 @@ src_install() {
 	insinto /etc
 	doins etc/${PN}.conf
 	insinto /usr/share/${PN}
-	dodir /var/lib/influxdb/{data,raft,wal}
+	dodir /var/lib/influxdb/{data,hh,meta,wal}
 	dodir /var/log/influxdb
 }
