@@ -6,7 +6,7 @@ User=influxdb
 Group=influxdb
 Type=simple
 LimitNOFILE=4096
-ExecStart=/usr/bin/influxdb -config=/etc/influxdb.conf
+ExecStart=/usr/bin/influxd -config=/etc/influxdb.conf
 RuntimeDirectory=influxdb
 RuntimeDirectoryMode=0755
 
