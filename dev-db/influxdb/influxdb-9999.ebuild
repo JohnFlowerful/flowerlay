@@ -7,7 +7,7 @@ EAPI=5
 inherit user golang-build golang-vcs
 
 DESCRIPTION="Scalable datastore for metrics, events, and real-time analytics"
-HOMEPAGE="http://influxdb.org/"
+HOMEPAGE="https://influxdata.com/"
 EGO_PN=github.com/influxdata/influxdb
 
 MY_P=${PN}-${PV}
