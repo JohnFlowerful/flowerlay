@@ -2,6 +2,6 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
   <upstream>
-    <remote-id type="github">influxdb/influxdb</remote-id>
+    <remote-id type="github">influxdata/influxdb</remote-id>
   </upstream>
 </pkgmetadata>

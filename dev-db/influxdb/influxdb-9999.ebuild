@@ -8,7 +8,7 @@ inherit user golang-build golang-vcs
 
 DESCRIPTION="Scalable datastore for metrics, events, and real-time analytics"
 HOMEPAGE="http://influxdb.org/"
-EGO_PN=github.com/influxdb/influxdb
+EGO_PN=github.com/influxdata/influxdb
 
 MY_P=${PN}-${PV}
 
@@ -25,7 +25,7 @@ DEPEND="
 "
 RDEPEND="${DEPEND}"
 
-S="${WORKDIR}/${MY_P}/src/github.com/${PN}/${PN}"
+S="${WORKDIR}/${MY_P}/src/github.com/influxdata/${PN}"
 
 src_compile() {
 	export GOPATH=${WORKDIR}/${MY_P}
