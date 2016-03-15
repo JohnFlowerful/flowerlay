@@ -1601,14 +1601,6 @@ diff -Nur libtorrent/src/tracker/tracker_udp.cc libtorrent_ipv6/src/tracker/trac
    m_writeBuffer->write_32(m_parent->key());
    m_writeBuffer->write_32(m_parent->numwant());
    m_writeBuffer->write_16(manager->connection_manager()->listen_port());
-diff -Nur libtorrent/test/main.cc libtorrent_ipv6/test/main.cc
---- libtorrent/test/main.cc	2015-10-12 13:49:57.452653855 +1300
-+++ libtorrent_ipv6/test/main.cc	2015-10-12 13:35:11.212557613 +1300
-@@ -1,3 +1,4 @@
-+#include <stdexcept>
- #include <cppunit/BriefTestProgressListener.h>
- #include <cppunit/CompilerOutputter.h>
- #include <cppunit/TestResult.h>
 diff -Nur libtorrent/test/Makefile.am libtorrent_ipv6/test/Makefile.am
 --- libtorrent/test/Makefile.am	2015-10-12 13:49:57.452653855 +1300
 +++ libtorrent_ipv6/test/Makefile.am	2015-10-12 13:35:11.212557613 +1300
