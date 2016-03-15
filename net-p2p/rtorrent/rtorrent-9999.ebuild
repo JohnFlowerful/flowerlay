@@ -36,10 +36,9 @@ src_prepare() {
 	fi
 
 	# bug #358271
-	# bug #462788
+	# bug #462788 (fixed upstream)
 	epatch \
-		"${FILESDIR}"/${PN}-0.9.1-ncurses.patch \
-		"${FILESDIR}"/${PN}-0.9.4-tinfo.patch
+		"${FILESDIR}"/${PN}-0.9.1-ncurses.patch
 	
 	if use pyroscope; then
 		epatch \

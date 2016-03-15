@@ -26,6 +26,9 @@
 #include <rak/path.h>
 #include <rak/functional.h>
 #include <rak/functional_fun.h>
+#if RT_HEX_VERSION < 0x000904
+    #include <sigc++/adaptors/bind.h>
+#endif
 
 #include "core/download.h"
 #include "core/manager.h"
@@ -57,50 +60,50 @@ int log_messages_fd = -1;
 
 // return the "main" tracker for this download item
 torrent::Tracker* get_active_tracker(torrent::Download* item) {
-	torrent::TrackerList* tl = item->tracker_list();
-	torrent::Tracker* tracker = 0;
+    torrent::TrackerList* tl = item->tracker_list();
+    torrent::Tracker* tracker = 0;
 
-	for (int trkidx = 0; trkidx < tl->size(); trkidx++) {
-		tracker = tl->at(trkidx);
-		if (tracker->is_usable() && tracker->type() == torrent::Tracker::TRACKER_HTTP
-				&& tracker->scrape_complete() + tracker->scrape_incomplete() > 0) {
-			break;
-		}
-		tracker = 0;
-	}
-	if (!tracker && tl->size()) tracker = tl->at(0);
+    for (int trkidx = 0; trkidx < tl->size(); trkidx++) {
+        tracker = tl->at(trkidx);
+        if (tracker->is_usable() && tracker->type() == torrent::Tracker::TRACKER_HTTP
+                && tracker->scrape_complete() + tracker->scrape_incomplete() > 0) {
+            break;
+        }
+        tracker = 0;
+    }
+    if (!tracker && tl->size()) tracker = tl->at(0);
 
-	return tracker;
+    return tracker;
 }
 
 
 // return the domain name of the "main" tracker of the given download item
 std::string get_active_tracker_domain(torrent::Download* item) {
     std::string url;
-	torrent::Tracker* tracker = get_active_tracker(item);
+    torrent::Tracker* tracker = get_active_tracker(item);
 
-	if (tracker && !tracker->url().empty()) {
-		url = tracker->url();
+    if (tracker && !tracker->url().empty()) {
+        url = tracker->url();
 
-		// snip url to domain name
-		if (url.compare(0, 7, "http://")  == 0) url = url.substr(7);
-		if (url.compare(0, 8, "https://") == 0) url = url.substr(8);
-		if (url.find('/') > 0) url = url.substr(0, url.find('/'));
-		if (url.find(':') > 0) url = url.substr(0, url.find(':'));
+        // snip url to domain name
+        if (url.compare(0, 7, "http://")  == 0) url = url.substr(7);
+        if (url.compare(0, 8, "https://") == 0) url = url.substr(8);
+        if (url.find('/') > 0) url = url.substr(0, url.find('/'));
+        if (url.find(':') > 0) url = url.substr(0, url.find(':'));
 
-		// remove some common cruft
-		const char* domain_cruft[] = {
-			"tracker", "1.", "2.", "001.", ".",
-			"www.",
-			0
-		};
-		for (const char** cruft = domain_cruft; *cruft; cruft++) {
-			int cruft_len = strlen(*cruft);
-			if (url.compare(0, cruft_len, *cruft) == 0) url = url.substr(cruft_len);
-		}
-	}
+        // remove some common cruft
+        const char* domain_cruft[] = {
+            "tracker", "1.", "2.", "001.", ".",
+            "www.",
+            0
+        };
+        for (const char** cruft = domain_cruft; *cruft; cruft++) {
+            int cruft_len = strlen(*cruft);
+            if (url.compare(0, cruft_len, *cruft) == 0) url = url.substr(cruft_len);
+        }
+    }
 
-	return url;
+    return url;
 }
 
 
@@ -122,8 +125,8 @@ std::string get_active_tracker_domain(torrent::Download* item) {
             # VIEW: Show active and incomplete torrents (in view #9) and update every 20 seconds
             #       Items are grouped into complete, incomplete, and queued, in that order.
             #       Within each group, they're sorted by upload and then download speed.
-            view_sort_current = active,"compare=----,d.is_open=,d.get_complete=,d.get_up_rate=,d.get_down_rate="
-            schedule = filter_active,12,20,"view_filter = active,\"or={d.get_up_rate=,d.get_down_rate=,not=$d.get_complete=}\" ;view_sort=active"
+            view_sort_current = active,"compare=----,d.is_open=,d.complete=,d.up.rate=,d.down.rate="
+            schedule = filter_active,12,20,"view.filter = active,\"or={d.up.rate=,d.down.rate=,not=$d.complete=}\" ;view.sort=active"
 */
 torrent::Object apply_compare(rpc::target_type target, const torrent::Object::list_type& args) {
     if (!rpc::is_target_pair(target))
@@ -183,7 +186,8 @@ static std::map<int, std::string> bound_commands[ui::DownloadList::DISPLAY_MAX_S
         Binds the given key on a specified display to execute the commands when pressed.
 
         "display" must be one of "download_list", ...
-        "key" can be either a single character for normal keys, or ^ plus a character for control keys.
+        "key" can be either a single character for normal keys,
+            ^ plus a character for control keys, or a 4 digit octal key code.
 
         Configuration example:
             # VIEW: Bind view #7 to the "rtcontrol" result
@@ -232,7 +236,11 @@ torrent::Object apply_ui_bind_key(rpc::target_type target, const torrent::Object
     switch (displayType) {
         case ui::DownloadList::DISPLAY_DOWNLOAD_LIST:
             display->bindings()[key] =
+#if RT_HEX_VERSION < 0x000904
+                sigc::bind(sigc::mem_fun(*(ui::ElementDownloadList*)display, &ui::ElementDownloadList::receive_command),
+#else
                 _cxxstd_::bind(&ui::ElementDownloadList::receive_command, (ui::ElementDownloadList*)display,
+#endif
                 bound_commands[displayType][key].c_str());
             break;
         default:
@@ -276,11 +284,17 @@ torrent::Object cmd_ui_focus_end() {
 }
 
 
+static int ui_page_size() {
+    // TODO: map 0 to the current view size, for adaptive scrolling
+    return std::max(1, (int) rpc::call_command_value("ui.focus.page_size"));
+}
+
+
 torrent::Object cmd_ui_focus_pgup() {
     ui::DownloadList* dl_list = control->ui()->download_list();
     core::View* dl_view = dl_list->current_view();
 
-    int skip = rpc::call_command_value("ui.focus.page_size");
+    int skip = ui_page_size();
     if (!dl_view->empty_visible()) {
         if (dl_view->focus() == dl_view->end_visible())
             dl_view->set_focus(dl_view->end_visible() - 1);
@@ -299,7 +313,7 @@ torrent::Object cmd_ui_focus_pgdn() {
     ui::DownloadList* dl_list = control->ui()->download_list();
     core::View* dl_view = dl_list->current_view();
 
-    int skip = rpc::call_command_value("ui.focus.page_size");
+    int skip = ui_page_size();
     if (!dl_view->empty_visible()) {
         if (dl_view->focus() == dl_view->end_visible())
             dl_view->set_focus(dl_view->begin_visible());
@@ -311,16 +325,6 @@ torrent::Object cmd_ui_focus_pgdn() {
     }
 
     return torrent::Object();
-}
-
-
-torrent::Object cmd_d_tracker_domain(core::Download* download) {
-    return get_active_tracker_domain(download->download());
-}
-
-
-torrent::Object cmd_ui_current_view() {
-    return control->ui()->download_list()->current_view()->name();
 }
 
 
@@ -348,6 +352,7 @@ torrent::Object cmd_log_messages(const torrent::Object::string_type& arg) {
 }
 
 
+// Backports from 0.9.2
 #if (API_VERSION < 3)
 template <typename InputIterator, typename OutputIterator> OutputIterator
 pyro_transform_hex(InputIterator first, InputIterator last, OutputIterator dest) {
@@ -379,7 +384,31 @@ torrent::Object d_chunks_seen(core::Download* download) {
 #endif
 
 
+torrent::Object cmd_d_tracker_domain(core::Download* download) {
+    return get_active_tracker_domain(download->download());
+}
+
+
+#if RT_HEX_VERSION <= 0x000906
+// https://github.com/rakshasa/rtorrent/commit/1f5e4d37d5229b63963bb66e76c07ec3e359ecba
+torrent::Object cmd_system_env(const torrent::Object::string_type& arg) {
+    if (arg.empty()) {
+        throw torrent::input_error("system.env: Missing variable name.");
+    }
+
+    char* val = getenv(arg.c_str());
+    return std::string(val ? val : "");
+}
+
+// https://github.com/rakshasa/rtorrent/commit/30d8379391ad4cb3097d57aa56a488d061e68662
+torrent::Object cmd_ui_current_view() {
+    return control->ui()->download_list()->current_view()->name();
+}
+#endif
+
+
 void initialize_command_pyroscope() {
+// Backports from 0.9.2
 #if (API_VERSION < 3)
     // https://github.com/rakshasa/rtorrent/commit/b28f2ea8070
     // https://github.com/rakshasa/rtorrent/commit/020de10f38210a07a567aeebbe385a4faaf4b517
@@ -388,19 +417,18 @@ void initialize_command_pyroscope() {
     // https://github.com/rakshasa/rtorrent/commit/5bed4f01ad
     CMD2_TRACKER("t.is_usable",          _cxxstd_::bind(&torrent::Tracker::is_usable, _cxxstd_::placeholders::_1));
     CMD2_TRACKER("t.is_busy",            _cxxstd_::bind(&torrent::Tracker::is_busy, _cxxstd_::placeholders::_1));
-    //CMD2_TRACKER("t.is_extra_tracker",   _cxxstd_::bind(&torrent::Tracker::is_extra_tracker, _cxxstd_::placeholders::_1));
-    //CMD2_TRACKER("t.can_scrape",         _cxxstd_::bind(&torrent::Tracker::can_scrape, _cxxstd_::placeholders::_1));
-    //CMD2_TRACKER("t.activity_time_next", _cxxstd_::bind(&torrent::Tracker::activity_time_next, _cxxstd_::placeholders::_1));
-    //CMD2_TRACKER("t.activity_time_last", _cxxstd_::bind(&torrent::Tracker::activity_time_last, _cxxstd_::placeholders::_1));
-    //CMD2_TRACKER("t.success_time_next",  _cxxstd_::bind(&torrent::Tracker::success_time_next, _cxxstd_::placeholders::_1));
-    //CMD2_TRACKER("t.failed_time_next",   _cxxstd_::bind(&torrent::Tracker::failed_time_next, _cxxstd_::placeholders::_1));
+#endif
+
+#if RT_HEX_VERSION <= 0x000906
+    // these are merged into 0.9.7+ mainline!
+    CMD2_ANY_STRING("system.env", _cxxstd_::bind(&cmd_system_env, _cxxstd_::placeholders::_2));
+    CMD2_ANY("ui.current_view", _cxxstd_::bind(&cmd_ui_current_view));
 #endif
 
     CMD2_ANY_LIST("compare", &apply_compare);
     CMD2_ANY("ui.bind_key", &apply_ui_bind_key);
     CMD2_DL("d.tracker_domain", _cxxstd_::bind(&cmd_d_tracker_domain, _cxxstd_::placeholders::_1));
     CMD2_ANY_STRING("log.messages", _cxxstd_::bind(&cmd_log_messages, _cxxstd_::placeholders::_2));
-    CMD2_ANY("ui.current_view", _cxxstd_::bind(&cmd_ui_current_view));
     CMD2_ANY("ui.focus.home", _cxxstd_::bind(&cmd_ui_focus_home));
     CMD2_ANY("ui.focus.end", _cxxstd_::bind(&cmd_ui_focus_end));
     CMD2_ANY("ui.focus.pgup", _cxxstd_::bind(&cmd_ui_focus_pgup));
