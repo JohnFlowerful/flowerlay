@@ -26,9 +26,6 @@
 #include <rak/path.h>
 #include <rak/functional.h>
 #include <rak/functional_fun.h>
-#if RT_HEX_VERSION < 0x000904
-    #include <sigc++/adaptors/bind.h>
-#endif
 
 #include "core/download.h"
 #include "core/manager.h"
@@ -44,12 +41,6 @@
 #include "globals.h"
 #include "control.h"
 #include "command_helpers.h"
-
-#if (RT_HEX_VERSION >= 0x000901)
-    #define _cxxstd_ tr1
-#else
-    #define _cxxstd_ std
-#endif
 
 
 // handle for message log file
@@ -236,12 +227,7 @@ torrent::Object apply_ui_bind_key(rpc::target_type target, const torrent::Object
     switch (displayType) {
         case ui::DownloadList::DISPLAY_DOWNLOAD_LIST:
             display->bindings()[key] =
-#if RT_HEX_VERSION < 0x000904
-                sigc::bind(sigc::mem_fun(*(ui::ElementDownloadList*)display, &ui::ElementDownloadList::receive_command),
-#else
-                _cxxstd_::bind(&ui::ElementDownloadList::receive_command, (ui::ElementDownloadList*)display,
-#endif
-                bound_commands[displayType][key].c_str());
+                std::bind(&ui::ElementDownloadList::receive_command, (ui::ElementDownloadList*)display, bound_commands[displayType][key].c_str());
             break;
         default:
             return torrent::Object();
@@ -389,49 +375,26 @@ torrent::Object cmd_d_tracker_domain(core::Download* download) {
 }
 
 
-#if RT_HEX_VERSION <= 0x000906
-// https://github.com/rakshasa/rtorrent/commit/1f5e4d37d5229b63963bb66e76c07ec3e359ecba
-torrent::Object cmd_system_env(const torrent::Object::string_type& arg) {
-    if (arg.empty()) {
-        throw torrent::input_error("system.env: Missing variable name.");
-    }
-
-    char* val = getenv(arg.c_str());
-    return std::string(val ? val : "");
-}
-
-// https://github.com/rakshasa/rtorrent/commit/30d8379391ad4cb3097d57aa56a488d061e68662
-torrent::Object cmd_ui_current_view() {
-    return control->ui()->download_list()->current_view()->name();
-}
-#endif
-
-
 void initialize_command_pyroscope() {
 // Backports from 0.9.2
 #if (API_VERSION < 3)
     // https://github.com/rakshasa/rtorrent/commit/b28f2ea8070
     // https://github.com/rakshasa/rtorrent/commit/020de10f38210a07a567aeebbe385a4faaf4b517
-    CMD2_DL("d.chunks_seen", _cxxstd_::bind(&d_chunks_seen, _cxxstd_::placeholders::_1));
+    CMD2_DL("d.chunks_seen", std::bind(&d_chunks_seen, std::placeholders::_1));
 
     // https://github.com/rakshasa/rtorrent/commit/5bed4f01ad
-    CMD2_TRACKER("t.is_usable",          _cxxstd_::bind(&torrent::Tracker::is_usable, _cxxstd_::placeholders::_1));
-    CMD2_TRACKER("t.is_busy",            _cxxstd_::bind(&torrent::Tracker::is_busy, _cxxstd_::placeholders::_1));
+    CMD2_TRACKER("t.is_usable",          std::bind(&torrent::Tracker::is_usable, std::placeholders::_1));
+    CMD2_TRACKER("t.is_busy",            std::bind(&torrent::Tracker::is_busy, std::placeholders::_1));
 #endif
 
-#if RT_HEX_VERSION <= 0x000906
-    // these are merged into 0.9.7+ mainline!
-    CMD2_ANY_STRING("system.env", _cxxstd_::bind(&cmd_system_env, _cxxstd_::placeholders::_2));
-    CMD2_ANY("ui.current_view", _cxxstd_::bind(&cmd_ui_current_view));
-#endif
 
     CMD2_ANY_LIST("compare", &apply_compare);
     CMD2_ANY("ui.bind_key", &apply_ui_bind_key);
-    CMD2_DL("d.tracker_domain", _cxxstd_::bind(&cmd_d_tracker_domain, _cxxstd_::placeholders::_1));
-    CMD2_ANY_STRING("log.messages", _cxxstd_::bind(&cmd_log_messages, _cxxstd_::placeholders::_2));
-    CMD2_ANY("ui.focus.home", _cxxstd_::bind(&cmd_ui_focus_home));
-    CMD2_ANY("ui.focus.end", _cxxstd_::bind(&cmd_ui_focus_end));
-    CMD2_ANY("ui.focus.pgup", _cxxstd_::bind(&cmd_ui_focus_pgup));
-    CMD2_ANY("ui.focus.pgdn", _cxxstd_::bind(&cmd_ui_focus_pgdn));
+    CMD2_DL("d.tracker_domain", std::bind(&cmd_d_tracker_domain, std::placeholders::_1));
+    CMD2_ANY_STRING("log.messages", std::bind(&cmd_log_messages, std::placeholders::_2));
+    CMD2_ANY("ui.focus.home", std::bind(&cmd_ui_focus_home));
+    CMD2_ANY("ui.focus.end", std::bind(&cmd_ui_focus_end));
+    CMD2_ANY("ui.focus.pgup", std::bind(&cmd_ui_focus_pgup));
+    CMD2_ANY("ui.focus.pgdn", std::bind(&cmd_ui_focus_pgdn));
     CMD2_VAR_VALUE("ui.focus.page_size", 50);
 }
