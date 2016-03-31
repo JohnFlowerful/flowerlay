@@ -7,11 +7,11 @@ diff --git a/configure.ac b/configure.ac
 index 430c15d..50ce687 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -31,15 +31,21 @@ TORRENT_WITHOUT_STATVFS()
- TORRENT_WITHOUT_STATFS()
+@@ -30,15 +30,21 @@ TORRENT_WITHOUT_STATVFS()
+ TORRENT_WITHOUT_STATFS
  
  AX_PTHREAD([], AC_MSG_ERROR([requires pthread]))
--AX_WITH_CURSES()
+-AX_WITH_CURSES
 -
 -if test "x$ax_cv_ncursesw" != xyes && test "x$ax_cv_ncurses" != xyes; then
 -   AC_MSG_ERROR([requires either NcursesW or Ncurses library])
