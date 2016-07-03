@@ -19,30 +19,30 @@ diff -Nur rtorrent_orig/src/display/canvas.cc rtorrent/src/display/canvas.cc
 --- rtorrent_orig/src/display/canvas.cc	2015-09-09 17:17:48.753691769 +1200
 +++ rtorrent/src/display/canvas.cc	2015-09-09 18:08:16.003646410 +1200
 @@ -99,6 +99,8 @@
-   m_isInitialized = true;
  
-   initscr();
-+  extern void ui_pyroscope_canvas_init();
-+  ui_pyroscope_canvas_init();
-   raw();
-   noecho();
-   nodelay(stdscr, TRUE);
+   if (!m_isDaemon) {
+     initscr();
++    extern void ui_pyroscope_canvas_init();
++    ui_pyroscope_canvas_init();
+     raw();
+     noecho();
+     nodelay(stdscr, TRUE);
 diff -Nur rtorrent_orig/src/display/canvas.h rtorrent/src/display/canvas.h
 --- rtorrent_orig/src/display/canvas.h	2015-09-09 17:17:48.753691769 +1200
 +++ rtorrent/src/display/canvas.h	2015-09-09 18:08:16.003646410 +1200
 @@ -131,8 +131,10 @@
-   va_list arglist;
  
-   va_start(arglist, str);
--  wmove(m_window, y, x);
--  vw_printw(m_window, const_cast<char*>(str), arglist);
+   if (!m_isDaemon) {
+     va_start(arglist, str);
+-    wmove(m_window, y, x);
+-    vw_printw(m_window, const_cast<char*>(str), arglist);
 +  if (y < height()) {
 +    wmove(m_window, y, x);
 +    vw_printw(m_window, const_cast<char*>(str), arglist);
 +  }
-   va_end(arglist);
+     va_end(arglist);
+   }
  }
- 
 diff -Nur rtorrent_orig/src/display/window_download_list.cc rtorrent/src/display/window_download_list.cc
 --- rtorrent_orig/src/display/window_download_list.cc	2015-09-09 17:17:48.753691769 +1200
 +++ rtorrent/src/display/window_download_list.cc	2015-09-09 18:08:16.003646410 +1200
