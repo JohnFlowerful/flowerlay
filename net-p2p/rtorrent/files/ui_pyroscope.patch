@@ -55,15 +55,15 @@ diff -Nur rtorrent_orig/src/display/window_download_list.cc rtorrent/src/display
    if (m_view->empty_visible() || m_canvas->width() < 5 || m_canvas->height() < 2)
      return;
  
-@@ -113,6 +115,8 @@
-     print_download_status(buffer, last, *range.first);
-     m_canvas->print(0, pos++, "%c %s", range.first == m_view->focus() ? '*' : ' ', buffer);
+@@ -132,6 +134,8 @@
+       print_download_status(buffer, last, *range.first);
+       m_canvas->print(0, pos++, "%c %s", range.first == m_view->focus() ? '*' : ' ', buffer);
  
-+    void ui_pyroscope_download_list_redraw_item(Window* window, display::Canvas* canvas, core::View* view, int pos, Range& range);
-+    ui_pyroscope_download_list_redraw_item(this, m_canvas, m_view, pos, range);
-     ++range.first;
-   }    
- }
++      void ui_pyroscope_download_list_redraw_item(Window* window, display::Canvas* canvas, core::View* view, int pos, Range& range);
++      ui_pyroscope_download_list_redraw_item(this, m_canvas, m_view, pos, range);
+       range.first++;
+     }
+ 
 diff -Nur rtorrent_orig/src/display/window_statusbar.cc rtorrent/src/display/window_statusbar.cc
 --- rtorrent_orig/src/display/window_statusbar.cc	2015-09-09 17:17:48.753691769 +1200
 +++ rtorrent/src/display/window_statusbar.cc	2015-09-09 18:08:16.003646410 +1200

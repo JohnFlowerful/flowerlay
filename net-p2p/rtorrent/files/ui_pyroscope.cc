@@ -636,7 +636,7 @@ bool ui_pyroscope_download_list_redraw(Window* window, display::Canvas* canvas, 
 		char* last = buffer + canvas->width() + 1;
 
 		pos = canvas->height() - 2 - network_history_lines;
-		print_download_info(buffer, last, *view->focus());
+		print_download_info_full(buffer, last, *view->focus());
 		canvas->print(3, pos, "%s", buffer);
 		canvas->set_attr(0, pos, -1, attr_map[ps::COL_LABEL], ps::COL_LABEL);
 		print_download_status(buffer, last, *view->focus());
