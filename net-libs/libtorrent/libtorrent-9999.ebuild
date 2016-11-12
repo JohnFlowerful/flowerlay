@@ -16,7 +16,6 @@ SLOT="0"
 IUSE="debug ssl"
 
 RDEPEND="
-	>=dev-libs/libsigc++-2.2.2:2
 	ssl? ( dev-libs/openssl )"
 DEPEND="${RDEPEND}
 	virtual/pkgconfig"
