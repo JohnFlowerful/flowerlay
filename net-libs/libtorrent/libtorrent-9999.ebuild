@@ -13,7 +13,7 @@ EGIT_REPO_URI="https://github.com/rakshasa/libtorrent.git"
 LICENSE="GPL-2"
 SLOT="0"
 #KEYWORDS="~x86 ~amd64"
-IUSE="debug ipv6 ssl"
+IUSE="debug ssl"
 
 RDEPEND="
 	>=dev-libs/libsigc++-2.2.2:2
@@ -26,10 +26,6 @@ src_prepare() {
 	elibtoolize
 	if [[ ${PV} == *9999* ]]; then
 		./autogen.sh
-	fi
-
-	if use ipv6; then
-		epatch "${FILESDIR}"/${P}-ipv6.patch
 	fi
 }
 

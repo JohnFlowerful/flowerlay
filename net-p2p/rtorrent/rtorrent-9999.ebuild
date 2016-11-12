@@ -13,12 +13,11 @@ EGIT_REPO_URI="https://github.com/rakshasa/rtorrent.git"
 LICENSE="GPL-2"
 SLOT="0"
 #KEYWORDS="~x86 ~amd64"
-IUSE="daemon debug ipv6 pyroscope selinux test xmlrpc"
+IUSE="daemon debug pyroscope selinux test xmlrpc"
 
 COMMON_DEPEND="~net-libs/libtorrent-9999
 	>=net-misc/curl-7.19.1
 	sys-libs/ncurses:0=
-	ipv6? ( ~net-libs/libtorrent-9999[ipv6] )
 	xmlrpc? ( dev-libs/xmlrpc-c )"
 RDEPEND="${COMMON_DEPEND}
 	daemon? ( app-misc/screen )
@@ -51,10 +50,6 @@ src_prepare() {
 			"${FILESDIR}"/ui_pyroscope.patch
 
 		cp ${FILESDIR}/{ui_pyroscope.{cc,h},command_pyroscope.cc} src
-	fi
-	
-	if use ipv6; then
-		epatch "${FILESDIR}"/${P}-ipv6.patch
 	fi
 
 	# upstream forgot to include
