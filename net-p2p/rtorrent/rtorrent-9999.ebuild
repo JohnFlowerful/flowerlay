@@ -9,6 +9,7 @@ inherit eutils systemd git-r3
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
 EGIT_REPO_URI="https://github.com/rakshasa/rtorrent.git"
+EGIT_BRANCH="feature-bind"
 
 LICENSE="GPL-2"
 SLOT="0"
