@@ -42,6 +42,7 @@ pkg_setup() {
 
 src_prepare() {
 	epatch "${FILESDIR}/${PN}-Werror.patch"
+	epatch "${FILESDIR}"/apostrophes.patch
 	epatch_user
 	l10n_find_plocales_changes "" 'help-admin-' '.txt'
 }

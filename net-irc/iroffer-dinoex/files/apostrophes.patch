@@ -1,0 +1,22 @@
+diff --git a/src/dinoex_utilities.c b/src/dinoex_utilities.c
+index 4961448..60a0956 100644
+--- a/src/dinoex_utilities.c
++++ b/src/dinoex_utilities.c
+@@ -540,8 +540,6 @@ void removenonprintablefile(char *str)
+     case '/':
+     case '\\':
+     case '"':
+-    case '\'':
+-    case '`':
+     case 0x7FU:
+       *copy = '_';
+       break;
+@@ -601,8 +599,6 @@ char *getsendname(const char * const full)
+     case '/':
+     case '\\':
+     case '"':
+-    case '\'':
+-    case '`':
+     case 0x7FU:
+       copy[i] = '_';
+       break;
