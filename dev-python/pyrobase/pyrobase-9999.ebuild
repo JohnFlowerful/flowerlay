@@ -18,7 +18,6 @@ SLOT="0"
 IUSE="test"
 
 RDEPEND=">=dev-python/epydoc-3.0.1
-	>=dev-python/pylint-1.5.6
 	>=dev-python/tempita-0.5.2"
 DEPEND="${RDEPEND}
 	dev-python/setuptools[${PYTHON_USEDEP}]
