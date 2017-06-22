@@ -1,49 +1,6 @@
-diff -Nur rtorrent_orig/src/command_helpers.cc rtorrent/src/command_helpers.cc
---- rtorrent_orig/src/command_helpers.cc	2015-09-10 10:55:03.982741297 +1200
-+++ rtorrent/src/command_helpers.cc	2015-09-14 14:44:54.517356425 +1200
-@@ -49,6 +49,7 @@
- void initialize_command_ip();
- void initialize_command_peer();
- void initialize_command_local();
-+void initialize_command_pyroscope();
- void initialize_command_logging();
- void initialize_command_network();
- void initialize_command_groups();
-@@ -64,6 +65,7 @@
-   initialize_command_network();
-   initialize_command_groups();
-   initialize_command_local();
-+  initialize_command_pyroscope();
-   initialize_command_logging();
-   initialize_command_ui();
-   initialize_command_download();
-diff -Nur rtorrent_orig/src/Makefile.am rtorrent/src/Makefile.am
---- rtorrent_orig/src/Makefile.am	2015-09-10 10:55:03.982741297 +1200
-+++ rtorrent/src/Makefile.am	2015-09-14 14:44:54.517356425 +1200
-@@ -25,6 +25,7 @@
- 	command_tracker.cc \
- 	command_scheduler.cc \
- 	command_ui.cc \
-+	command_pyroscope.cc \
- 	control.cc \
- 	control.h \
- 	globals.cc \
-diff -Nur rtorrent_orig/src/ui/download_list.cc rtorrent/src/ui/download_list.cc
---- rtorrent_orig/src/ui/download_list.cc	2015-09-10 10:55:03.992741297 +1200
-+++ rtorrent/src/ui/download_list.cc	2015-09-14 14:44:54.517356425 +1200
-@@ -219,7 +219,7 @@
-   // Set title.
-   switch (displayType) {
-   case DISPLAY_DOWNLOAD_LIST:
--    control->ui()->window_title()->set_title("rTorrent " VERSION "/" +
-+    control->ui()->window_title()->set_title("rTorrent-PS " VERSION "/" +
-                                              std::string(torrent::version()) + " - " +
-                                              rpc::call_command_string("session.name"));
-     break;
-diff -Nur rtorrent_orig/src/ui/download_list.h rtorrent/src/ui/download_list.h
---- rtorrent_orig/src/ui/download_list.h	2015-09-10 10:55:03.992741297 +1200
-+++ rtorrent/src/ui/download_list.h	2015-09-14 14:44:54.517356425 +1200
-@@ -96,6 +96,7 @@
+--- rtorrent-0.8.6/src/ui/download_list.h	2011-05-03 04:05:34.000000000 +0200
++++ rtorrent-0.8.6/src/ui/download_list.h,pyro	2011-05-03 04:11:23.000000000 +0200
+@@ -99,6 +99,7 @@
    void                disable();
  
    void                activate_display(Display d);
@@ -51,3 +8,19 @@ diff -Nur rtorrent_orig/src/ui/download_list.h rtorrent/src/ui/download_list.h
  
    core::View*         current_view();
    void                set_current_view(const std::string& name);
+--- rtorrent-0.8.7/src/command_helpers.cc.orig	2010-06-26 14:05:08.000000000 +0200
++++ rtorrent-0.8.7/src/command_helpers.cc	2011-05-06 19:42:58.000000000 +0200
+@@ -50,2 +50,3 @@
+ void initialize_command_local();
++void initialize_command_pyroscope();
+ void initialize_command_logging();
+@@ -61,2 +62,3 @@
+   initialize_command_local();
++  initialize_command_pyroscope();
+   initialize_command_logging();
+--- rtorrent-0.8.7/src/Makefile.am.orig	2010-06-26 14:05:08.000000000 +0200
++++ rtorrent-0.8.7/src/Makefile.am	2011-05-06 19:40:03.000000000 +0200
+@@ -23,2 +23,3 @@
+ 	command_ui.cc \
++	command_pyroscope.cc \
+ 	control.cc \

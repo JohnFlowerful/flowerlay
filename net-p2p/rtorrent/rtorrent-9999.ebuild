@@ -38,14 +38,25 @@ src_prepare() {
 	# bug #462788 (reverted upstream)
 	epatch \
 		"${FILESDIR}"/${PN}-0.9.1-ncurses.patch \
-		"${FILESDIR}"/tinfo.patch
+		"${FILESDIR}"/tinfo.patch \
+		"${FILESDIR}"/backport_0.9.7_add_temp_filter-CH.patch
 	
 	if use pyroscope; then
+		# fixed upstream: 
+		#"${FILESDIR}"/ps-ssl_verify_hosts_all.patch \
+		#"${FILESDIR}"/rt-base-cppunit-pkgconfig.patch \
 		epatch \
+			"${FILESDIR}"/ps-event-view_all.patch \
+			"${FILESDIR}"/ps-fix-double-slash-319_all.patch \
+			"${FILESDIR}"/ps-fix-sort-started-stopped-views_all.patch \
+			"${FILESDIR}"/ps-fix-throttle-args_all.patch \
+			"${FILESDIR}"/ps-handle-sighup-578_all.patch \
 			"${FILESDIR}"/ps-info-pane-xb-sizes_all.patch \
+			"${FILESDIR}"/ps-issue-515_all.patch \
 			"${FILESDIR}"/ps-item-stats-human-sizes_all.patch \
 			"${FILESDIR}"/ps-throttle-steps_all.patch \
 			"${FILESDIR}"/ps-ui_pyroscope_all.patch \
+			"${FIELSDIR}"/ps-view-filter-by_all.patch \
 			"${FILESDIR}"/pyroscope.patch \
 			"${FILESDIR}"/ui_pyroscope.patch
 
@@ -55,7 +66,7 @@ src_prepare() {
 	# upstream forgot to include
 	cp "${FILESDIR}"/rtorrent.1 "${S}"/doc/ || die
 
-	autoreconf
+	eautoreconf
 }
 
 src_configure() {
