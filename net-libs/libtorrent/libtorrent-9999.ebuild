@@ -37,7 +37,6 @@ src_prepare() {
 	fi
 
 	epatch \
-		"${FILESDIR}"/lt-ps-fix_horrible_interval_setters_0.13.2.patch \
 		"${FILESDIR}"/lt-ps-honor_system_file_allocate_all.patch \
 		"${FILESDIR}"/lt-ps-log_open_file-reopen_all.patch
 }
