@@ -45,10 +45,10 @@ src_prepare() {
 		# fixed upstream: 
 		#"${FILESDIR}"/ps-ssl_verify_hosts_all.patch \
 		#"${FILESDIR}"/rt-base-cppunit-pkgconfig.patch \
+		#"${FILESDIR}"/ps-fix-sort-started-stopped-views_all.patch \
 		epatch \
 			"${FILESDIR}"/ps-event-view_all.patch \
 			"${FILESDIR}"/ps-fix-double-slash-319_all.patch \
-			"${FILESDIR}"/ps-fix-sort-started-stopped-views_all.patch \
 			"${FILESDIR}"/ps-fix-throttle-args_all.patch \
 			"${FILESDIR}"/ps-handle-sighup-578_all.patch \
 			"${FILESDIR}"/ps-info-pane-xb-sizes_all.patch \
