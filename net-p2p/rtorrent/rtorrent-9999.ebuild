@@ -56,7 +56,7 @@ src_prepare() {
 			"${FILESDIR}"/ps-item-stats-human-sizes_all.patch \
 			"${FILESDIR}"/ps-throttle-steps_all.patch \
 			"${FILESDIR}"/ps-ui_pyroscope_all.patch \
-			"${FIELSDIR}"/ps-view-filter-by_all.patch \
+			"${FILESDIR}"/ps-view-filter-by_all.patch \
 			"${FILESDIR}"/pyroscope.patch \
 			"${FILESDIR}"/ui_pyroscope.patch
 
