@@ -1,27 +1,36 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=4
+EAPI=5
 
 inherit eutils libtool toolchain-funcs git-r3
 
 DESCRIPTION="BitTorrent library written in C++ for *nix"
-HOMEPAGE="http://libtorrent.rakshasa.no/"
+HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 EGIT_REPO_URI="https://github.com/rakshasa/libtorrent.git"
 EGIT_BRANCH="feature-bind"
 
 LICENSE="GPL-2"
+
+# The README says that the library ABI is not yet stable and dependencies on
+# the library should be an explicit, syncronized version until the library
+# has had more time to mature. Until it matures we should not include a soname
+# subslot.
 SLOT="0"
-#KEYWORDS="~x86 ~amd64"
-IUSE="debug ssl"
+
+IUSE="debug libressl ssl test"
 
 RDEPEND="
-	ssl? ( dev-libs/openssl )"
+	sys-libs/zlib
+	ssl? (
+		!libressl? ( dev-libs/openssl:0= )
+		libressl? ( dev-libs/libressl:= )
+	)"
 DEPEND="${RDEPEND}
-	virtual/pkgconfig"
+	virtual/pkgconfig
+	test? ( dev-util/cppunit )"
 
 src_prepare() {
-#	epatch "${FILESDIR}"/download_constructor.diff
 	elibtoolize
 	if [[ ${PV} == *9999* ]]; then
 		./autogen.sh
@@ -29,21 +38,16 @@ src_prepare() {
 }
 
 src_configure() {
-	# the configure check for posix_fallocate is wrong.
-	# reported upstream as Ticket 2416.
-	local myconf
-	echo "int main(){return posix_fallocate();}" > "${T}"/posix_fallocate.c
-	if $(tc-getCC) ${CFLAGS} ${LDFLAGS} "${T}"/posix_fallocate.c -o /dev/null 2>/dev/null ; then
-		myconf="--with-posix-fallocate"
-	else
-		myconf="--without-posix-fallocate"
-	fi
-
 	# configure needs bash or script bombs out on some null shift, bug #291229
 	CONFIG_SHELL=${BASH} econf \
-		--disable-dependency-tracking \
 		--enable-aligned \
 		$(use_enable debug) \
 		$(use_enable ssl openssl) \
-		${myconf}
+		--with-posix-fallocate
+}
+
+src_install() {
+	default
+
+	prune_libtool_files --all
 }
