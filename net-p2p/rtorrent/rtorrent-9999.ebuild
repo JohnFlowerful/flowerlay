@@ -37,7 +37,7 @@ src_prepare() {
 	# bug #358271
 	# bug #462788 (reverted upstream)
 	epatch \
-		"${FILESDIR}"/${PN}-0.9.1-ncurses.patch \
+		"${FILESDIR}"/${PN}-0.9.6-ncurses.patch \
 		"${FILESDIR}"/tinfo.patch \
 		"${FILESDIR}"/backport_0.9.7_add_temp_filter-CH.patch
 	

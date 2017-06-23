@@ -1,6 +1,8 @@
---- src/display/canvas.h
-+++ src/display/canvas.h
-@@ -48,5 +48,5 @@ class Canvas {
+diff --git a/src/display/canvas.h b/src/display/canvas.h
+index b324d81..51377bd 100644
+--- a/src/display/canvas.h
++++ b/src/display/canvas.h
+@@ -48,7 +48,7 @@ class Canvas {
  public:
    typedef std::vector<Attributes> attributes_list;
  
