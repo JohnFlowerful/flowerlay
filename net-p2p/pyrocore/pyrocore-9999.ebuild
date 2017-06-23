@@ -17,7 +17,7 @@ SLOT="0"
 #KEYWORDS="x86 amd64"
 IUSE=""
 
-PATCHES=( "${FILESDIR}"/data.patch "${FILESDIR}"/update.patch )
+PATCHES=( "${FILESDIR}"/data.patch )
 
 COMMON_DEPEND=">=dev-python/APScheduler-2.0.2
 	>=dev-python/pyinotify-0.9.3
