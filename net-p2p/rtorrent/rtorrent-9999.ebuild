@@ -54,6 +54,7 @@ src_prepare() {
 			"${FILESDIR}"/ps-info-pane-xb-sizes_all.patch \
 			"${FILESDIR}"/ps-issue-515_all.patch \
 			"${FILESDIR}"/ps-item-stats-human-sizes_all.patch \
+			"${FILESDIR}"/ps-log_messages_all.patch \
 			"${FILESDIR}"/ps-throttle-steps_all.patch \
 			"${FILESDIR}"/ps-ui_pyroscope_all.patch \
 			"${FILESDIR}"/ps-view-filter-by_all.patch \
