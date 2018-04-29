@@ -42,11 +42,20 @@ src_prepare() {
 }
 
 src_configure() {
+	# bug 518582
+	local disable_instrumentation
+	echo -e "#include <inttypes.h>\nint main(){ int64_t var = 7; __sync_add_and_fetch(&var, 1); return 0;}" > "${T}/sync_add_and_fetch.c" || die
+	$(tc-getCC) ${CFLAGS} -o /dev/null -x c "${T}/sync_add_and_fetch.c" >/dev/null 2>&1
+	if [[ $? -ne 0 ]]; then
+		disable_instrumentation="--disable-instrumentation"
+	fi
+
 	# configure needs bash or script bombs out on some null shift, bug #291229
 	CONFIG_SHELL=${BASH} econf \
 		--enable-aligned \
 		$(use_enable debug) \
 		$(use_enable ssl openssl) \
+		${disable_instrumentation} \
 		--with-posix-fallocate
 }
 
