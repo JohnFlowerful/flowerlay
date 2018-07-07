@@ -1,9 +1,9 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
-inherit eutils systemd git-r3
+inherit eutils linux-info systemd git-r3
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
@@ -12,7 +12,6 @@ EGIT_BRANCH="feature-bind"
 
 LICENSE="GPL-2"
 SLOT="0"
-#KEYWORDS="~x86 ~amd64"
 IUSE="daemon debug pyroscope selinux test xmlrpc"
 
 COMMON_DEPEND="~net-libs/libtorrent-9999
@@ -29,6 +28,15 @@ DEPEND="${COMMON_DEPEND}
 
 DOCS=( doc/rtorrent.rc )
 
+pkg_setup() {
+	if ! linux_config_exists || ! linux_chkconfig_present IPV6; then
+		ewarn "rtorrent will not start without IPv6 support in your kernel"
+		ewarn "without further configuration. Please set bind=0.0.0.0 or"
+		ewarn "similar in your rtorrent.rc"
+		ewarn "Upstream bug: https://github.com/rakshasa/rtorrent/issues/732"
+	fi
+}
+
 src_prepare() {
 	if [[ ${PV} == *9999* ]]; then
 		./autogen.sh
@@ -37,34 +45,40 @@ src_prepare() {
 	# bug #358271
 	# bug #462788 (reverted upstream)
 	epatch \
-		"${FILESDIR}"/${PN}-0.9.6-ncurses.patch \
-		"${FILESDIR}"/tinfo.patch \
-		"${FILESDIR}"/backport_0.9.7_add_temp_filter-CH.patch
+		"${FILESDIR}/${PN}-0.9.6-ncurses.patch" \
+		"${FILESDIR}/${PN}-0.9.7-tinfo.patch" \
+		"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch" \
+		"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
 	
 	if use pyroscope; then
 		# fixed upstream: 
-		#"${FILESDIR}"/ps-ssl_verify_hosts_all.patch \
-		#"${FILESDIR}"/rt-base-cppunit-pkgconfig.patch \
-		#"${FILESDIR}"/ps-fix-sort-started-stopped-views_all.patch \
+		#"${FILESDIR}/ps-event-view_all.patch" \
+		#"${FILESDIR}/ps-fix-double-slash-319_all.patch" \
+		#"${FILESDIR}/ps-fix-log-xmlrpc-close_all.patch" \
+		#"${FILESDIR}/ps-fix-sort-started-stopped-views_all.patch" \
+		#"${FILESDIR}/ps-fix-throttle-args_all.patch" \
+		#"${FILESDIR}/ps-handle-sighup-578_all.patch" \
+		#"${FILESDIR}/ps-ssl_verify_hosts_all.patch" \
+		#"${FILESDIR}/ps-throttle-steps_all.patch" \
+		#"${FILESDIR}/rt-base-cppunit-pkgconfig.patch" \
 		epatch \
-			"${FILESDIR}"/ps-event-view_all.patch \
-			"${FILESDIR}"/ps-fix-double-slash-319_all.patch \
-			"${FILESDIR}"/ps-fix-throttle-args_all.patch \
-			"${FILESDIR}"/ps-handle-sighup-578_all.patch \
-			"${FILESDIR}"/ps-info-pane-xb-sizes_all.patch \
-			"${FILESDIR}"/ps-issue-515_all.patch \
-			"${FILESDIR}"/ps-item-stats-human-sizes_all.patch \
-			"${FILESDIR}"/ps-log_messages_all.patch \
-			"${FILESDIR}"/ps-throttle-steps_all.patch \
-			"${FILESDIR}"/ps-ui_pyroscope_all.patch \
-			"${FILESDIR}"/ps-view-filter-by_all.patch \
-			"${FILESDIR}"/pyroscope.patch \
-			"${FILESDIR}"/ui_pyroscope.patch
+			"${FILESDIR}/ps-import.return_all.patch" \
+			"${FILESDIR}/ps-info-pane-is-default_all.patch" \
+			"${FILESDIR}/ps-info-pane-xb-sizes_all.patch" \
+			"${FILESDIR}/ps-issue-515_all.patch" \
+			"${FILESDIR}/ps-item-stats-human-sizes_all.patch" \
+			"${FILESDIR}/ps-log_messages_all.patch" \
+			"${FILESDIR}/ps-object_std-map-serialization_all.patch" \
+			"${FILESDIR}/ps-silent-catch_all.patch" \
+			"${FILESDIR}/ps-ui_pyroscope_all.patch" \
+			"${FILESDIR}/ps-view-filter-by_all.patch" \
+			"${FILESDIR}/pyroscope.patch" \
+			"${FILESDIR}/ui_pyroscope.patch"
 
 		cp ${FILESDIR}/{ui_pyroscope.{cc,h},command_pyroscope.cc} src
 	fi
 
-	# upstream forgot to include
+	# https://github.com/rakshasa/rtorrent/issues/332
 	cp "${FILESDIR}"/rtorrent.1 "${S}"/doc/ || die
 
 	eautoreconf
