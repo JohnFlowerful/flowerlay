@@ -45,7 +45,7 @@ python -c 'print u"\u22c5 \u22c5\u22c5 \u201d \u2019 \u266f \u2622 \u260d \u2318
 
 // In 0.9.x this changed to 'tr1', see https://stackoverflow.com/a/4682954/2748717
 // "C++ Technical Report 1" was later added to "C++11", using tr1 makes stuff compile on older GCC
-#define _cxxstd_ tr1
+#define _cxxstd_ std
 
 #define D_INFO(item) (item->info())
 #include "rpc/object_storage.h"
