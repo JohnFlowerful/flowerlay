@@ -1154,8 +1154,6 @@ void initialize_command_pyroscope() {
     CMD2_ANY_STRING("log.messages", _cxxstd_::bind(&cmd_log_messages, _cxxstd_::placeholders::_2));
     CMD2_ANY_P("import.return", &cmd_import_return);
     CMD2_ANY("do", _cxxstd_::bind(&cmd_do, _cxxstd_::placeholders::_1, _cxxstd_::placeholders::_2));
-    CMD2_DL("d.is_meta", _cxxstd_::bind(&torrent::DownloadInfo::is_meta_download,
-                                        _cxxstd_::bind(&core::Download::info, _cxxstd_::placeholders::_1)));
 
     // List capabilities of this build
     add_capability("system.has");         // self
