@@ -6,9 +6,9 @@
  #include <ctime>
 +#include <regex>
 +
+ #include <rak/algorithm.h>
  #include <rak/functional.h>
  #include <rak/functional_fun.h>
- 
 @@ -282,6 +284,53 @@ torrent::Object apply_equal(rpc::target_
    return result.is_value() ? result.as_value() == 0 : (int64_t)false;
  }
@@ -77,9 +77,9 @@
  
 +  CMD2_VAR_BOOL  ("ui.console.log.tempfilter", 0);
 +
-   // TODO: Add 'option_string' for rtorrent-specific options.
-   CMD2_VAR_STRING("ui.torrent_list.layout", "full");
- 
+   CMD2_VAR_VALUE ("ui.throttle.global.step.small",  5);
+   CMD2_VAR_VALUE ("ui.throttle.global.step.medium", 50);
+   CMD2_VAR_VALUE ("ui.throttle.global.step.large",  500);
 @@ -574,6 +626,7 @@ initialize_command_ui() {
    CMD2_ANY_LIST("less",    &apply_less);
    CMD2_ANY_LIST("greater", &apply_greater);
