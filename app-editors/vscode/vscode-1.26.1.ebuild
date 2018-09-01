@@ -52,7 +52,7 @@ src_compile() {
 		x86_64) archs=x64 ;;
 	esac
 	yarn install --arch=$archs
-	mem_limit="--max_old_space_size=2048"
+	mem_limit="--max_old_space_size=4096"
 	/usr/bin/node $mem_limit ./node_modules/.bin/gulp vscode-linux-${archs}-min || die
 }
 
