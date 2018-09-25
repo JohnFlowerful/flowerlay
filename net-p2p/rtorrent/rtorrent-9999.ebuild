@@ -62,6 +62,7 @@ src_prepare() {
 		#"${FILESDIR}/ps-throttle-steps_all.patch" \
 		#"${FILESDIR}/rt-base-cppunit-pkgconfig.patch" \
 		epatch \
+			"${FILESDIR}/ps-dl-ui-find_all.patch" \
 			"${FILESDIR}/ps-import.return_all.patch" \
 			"${FILESDIR}/ps-info-pane-is-default_all.patch" \
 			"${FILESDIR}/ps-info-pane-xb-sizes_all.patch" \
