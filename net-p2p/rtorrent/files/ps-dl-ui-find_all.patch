@@ -1,18 +1,18 @@
 --- a/src/ui/download_list.cc
 +++ b/src/ui/download_list.cc
 @@ -259,6 +259,10 @@ DownloadList::receive_view_input(Input type) {
-     title = "command";
+ 
      break;
  
 +  case INPUT_FIND:
 +    title = "find";
 +    break;
 +
-   default:
-     throw torrent::internal_error("DownloadList::receive_view_input(...) Invalid input type.");
-   }
+   case INPUT_COMMAND:
+     title = "command";
+     break;
 @@ -322,6 +326,11 @@ DownloadList::receive_exit_input(Input type) {
-                                 input->str());
+       control->core()->push_log_std("New root directory \"" + rpc::call_command_string("d.directory", rpc::make_target(*current_view()->focus())) + "\" for torrent.");
        break;
  
 +    case INPUT_FIND:
@@ -20,9 +20,9 @@
 +      rpc::call_command("ui.find.next", torrent::Object(), rpc::make_target());
 +      break;
 +
-     default:
-       throw torrent::internal_error("DownloadList::receive_exit_input(...) Invalid input type.");
-     }
+     case INPUT_COMMAND:
+       rpc::parse_command_single(current_view()->focus() != current_view()->end_visible() ?
+                                 rpc::make_target(*current_view()->focus()) : rpc::make_target(),
 @@ -353,2 +362,5 @@ DownloadList::setup_keys() {
    m_uiArray[DISPLAY_DOWNLOAD_LIST]->bindings()['l'] = std::bind(&DownloadList::activate_display, this, DISPLAY_LOG);
 + 
@@ -35,9 +35,7 @@
      INPUT_LOAD_DEFAULT,
      INPUT_LOAD_MODIFIED,
      INPUT_CHANGE_DIRECTORY,
--    INPUT_COMMAND
-+    INPUT_COMMAND,
-+    INPUT_FIND
++    INPUT_FIND,
+     INPUT_COMMAND,
+     INPUT_FILTER
    } Input;
- 
-   DownloadList();
