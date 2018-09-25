@@ -10,7 +10,6 @@
 		application
 	</flag>
 	<flag name='pyroscope'>Applies pyroscope patches</flag>
-	<flag name='color'>Add custom color support for torrent list</flag>
 </use>
 
 </pkgmetadata>
