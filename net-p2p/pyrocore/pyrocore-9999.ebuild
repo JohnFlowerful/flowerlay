@@ -19,14 +19,16 @@ IUSE=""
 
 PATCHES=( "${FILESDIR}"/data.patch )
 
-COMMON_DEPEND=">=dev-python/APScheduler-2.0.2
-	>=dev-python/pyinotify-0.9.3
-	>=dev-python/waitress-0.8.2
-	>=dev-python/webob-1.2.3
-	>=dev-python/psutil-0.6.1
-	>=dev-python/requests-2.3.0
+COMMON_DEPEND=">=dev-python/APScheduler-2.1.0
+	>=dev-python/pyinotify-0.9.6
+	>=dev-python/waitress-0.9.0
+	>=dev-python/webob-1.6.1
+	>=dev-python/psutil-4.3.0
+	>=dev-python/requests-2.10.0
 	>=dev-python/tempita-0.5.1
-	>=dev-python/proxytypes-0.5.1
+	=dev-python/proxytypes-0.9
+	>=dev-python/prompt_toolkit-1.0.14
+	>=dev-python/six-1.9.0
 	dev-python/pyrobase
 	dev-python/auvyon"
 RDEPEND="${COMMON_DEPEND}
