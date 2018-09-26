@@ -23,9 +23,7 @@ DEPEND="${RDEPEND}
 ZNC_DATADIR="${ZNC_DATADIR:-"/var/lib/znc"}"
 
 src_prepare() {
-	epatch \
-		"${FILESDIR}"/destdir.patch \
-		"${FILESDIR}"/pushversion.patch
+	epatch "${FILESDIR}"/destdir.patch
 }
 
 src_compile() {
