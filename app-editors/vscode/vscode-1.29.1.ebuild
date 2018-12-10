@@ -18,7 +18,7 @@ RDEPEND="
 	<net-libs/nodejs-9.0
 	dev-lang/python:2.7
 	dev-vcs/git
-	sys-apps/yarn
+	>=sys-apps/yarn-1.10.1
 "
 
 DEPEND="
