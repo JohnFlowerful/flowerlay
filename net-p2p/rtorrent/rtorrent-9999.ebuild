@@ -43,13 +43,13 @@ src_prepare() {
 	fi
 
 	# bug #358271
-	# bug #462788 (reverted upstream)
+	# fixed upstream:
+	#"${FILESDIR}/${PN}-0.9.7-tinfo.patch" (bug #462788)
 	epatch \
 		"${FILESDIR}/${PN}-0.9.6-ncurses.patch" \
-		"${FILESDIR}/${PN}-0.9.7-tinfo.patch" \
 		"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch" \
 		"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
-	
+
 	if use pyroscope; then
 		# fixed upstream: 
 		#"${FILESDIR}/ps-event-view_all.patch" \
