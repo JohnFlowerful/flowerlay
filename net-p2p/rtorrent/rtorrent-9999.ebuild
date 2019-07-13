@@ -46,9 +46,9 @@ src_prepare() {
 	# fixed upstream:
 	#"${FILESDIR}/${PN}-0.9.7-tinfo.patch" (bug #462788)
 	#"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch"
+	#"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
 	epatch \
-		"${FILESDIR}/${PN}-0.9.6-ncurses.patch" \
-		"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
+		"${FILESDIR}/${PN}-0.9.6-ncurses.patch"
 
 	if use pyroscope; then
 		# fixed upstream: 
