@@ -47,8 +47,7 @@ src_prepare() {
 	#"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch"
 	#"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
 	epatch \
-		# bug #358271
-		"${FILESDIR}/${PN}-0.9.6-ncurses.patch"
+		"${FILESDIR}/${PN}-0.9.6-ncurses.patch" # bug #358271
 
 	if use pyroscope; then
 		# fixed upstream:
@@ -64,7 +63,6 @@ src_prepare() {
 		#"${FILESDIR}/ps-view-filter-by_all.patch"
 		#"${FILESDIR}/rt-base-cppunit-pkgconfig.patch"
 		epatch \
-			"${FILESDIR}/ps-dl-ui-find_all.patch" \
 			"${FILESDIR}/ps-import.return_all.patch" \
 			"${FILESDIR}/ps-info-pane-is-default_all.patch" \
 			"${FILESDIR}/ps-info-pane-xb-sizes_all.patch" \
