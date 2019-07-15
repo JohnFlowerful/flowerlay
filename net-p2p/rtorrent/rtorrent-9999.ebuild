@@ -71,6 +71,7 @@ src_prepare() {
 			"${FILESDIR}/ps-log_messages_all.patch" \
 			"${FILESDIR}/ps-object_std-map-serialization_all.patch" \
 			"${FILESDIR}/ps-silent-catch_all.patch" \
+			"${FILESDIR}/ps-ui_pyroscope_all.patch" \
 			"${FILESDIR}/pyroscope.patch" \
 			"${FILESDIR}/ui_pyroscope.patch"
 
