@@ -42,25 +42,27 @@ src_prepare() {
 		./autogen.sh
 	fi
 
-	# bug #358271
 	# fixed upstream:
 	#"${FILESDIR}/${PN}-0.9.7-tinfo.patch" (bug #462788)
 	#"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch"
 	#"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
 	epatch \
+		# bug #358271
 		"${FILESDIR}/${PN}-0.9.6-ncurses.patch"
 
 	if use pyroscope; then
-		# fixed upstream: 
-		#"${FILESDIR}/ps-event-view_all.patch" \
-		#"${FILESDIR}/ps-fix-double-slash-319_all.patch" \
-		#"${FILESDIR}/ps-fix-log-xmlrpc-close_all.patch" \
-		#"${FILESDIR}/ps-fix-sort-started-stopped-views_all.patch" \
-		#"${FILESDIR}/ps-fix-throttle-args_all.patch" \
-		#"${FILESDIR}/ps-handle-sighup-578_all.patch" \
-		#"${FILESDIR}/ps-ssl_verify_hosts_all.patch" \
-		#"${FILESDIR}/ps-throttle-steps_all.patch" \
-		#"${FILESDIR}/rt-base-cppunit-pkgconfig.patch" \
+		# fixed upstream:
+		#"${FILESDIR}/ps-dl-ui-find_all.patch"
+		#"${FILESDIR}/ps-event-view_all.patch"
+		#"${FILESDIR}/ps-fix-double-slash-319_all.patch"
+		#"${FILESDIR}/ps-fix-log-xmlrpc-close_all.patch"
+		#"${FILESDIR}/ps-fix-sort-started-stopped-views_all.patch"
+		#"${FILESDIR}/ps-fix-throttle-args_all.patch"
+		#"${FILESDIR}/ps-handle-sighup-578_all.patch"
+		#"${FILESDIR}/ps-ssl_verify_hosts_all.patch"
+		#"${FILESDIR}/ps-throttle-steps_all.patch"
+		#"${FILESDIR}/ps-view-filter-by_all.patch"
+		#"${FILESDIR}/rt-base-cppunit-pkgconfig.patch"
 		epatch \
 			"${FILESDIR}/ps-dl-ui-find_all.patch" \
 			"${FILESDIR}/ps-import.return_all.patch" \
@@ -71,8 +73,6 @@ src_prepare() {
 			"${FILESDIR}/ps-log_messages_all.patch" \
 			"${FILESDIR}/ps-object_std-map-serialization_all.patch" \
 			"${FILESDIR}/ps-silent-catch_all.patch" \
-			"${FILESDIR}/ps-ui_pyroscope_all.patch" \
-			"${FILESDIR}/ps-view-filter-by_all.patch" \
 			"${FILESDIR}/pyroscope.patch" \
 			"${FILESDIR}/ui_pyroscope.patch"
 
