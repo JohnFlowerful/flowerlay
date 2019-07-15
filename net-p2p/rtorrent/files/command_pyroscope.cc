@@ -248,7 +248,8 @@ int64_t get_active_tracker_scrape_info(const int operation, torrent::Download* i
 }
 
 
-/*  @DOC
+/* included upstream
+  @DOC
     `compare = <order>, <sort_key>=[, ...]`
 
     Compares two items like `less=` or `greater=`, but allows to compare
@@ -269,7 +270,7 @@ int64_t get_active_tracker_scrape_info(const int operation, torrent::Download* i
         #       Within each group, they're sorted by upload and then download speed.
         view.sort_current = active,"compare=----,d.is_open=,d.complete=,d.up.rate=,d.down.rate="
         schedule = filter_active,12,20,"view.filter = active,\"or={d.up.rate=,d.down.rate=,not=$d.complete=}\" ;view.sort=active"
-*/
+
 torrent::Object apply_compare(rpc::target_type target, const torrent::Object::list_type& args) {
     if (!rpc::is_target_pair(target))
         throw torrent::input_error("Can only compare a target pair.");
@@ -318,7 +319,7 @@ torrent::Object apply_compare(rpc::target_type target, const torrent::Object::li
     // if all else is equal, ensure stable sort order based on memory location
     return (int64_t) (target.second < target.third);
 }
-
+*/
 
 static std::map<int, std::string> bound_commands[ui::DownloadList::DISPLAY_MAX_SIZE];
 
@@ -618,6 +619,7 @@ torrent::Object retrieve_d_custom_as_value(core::Download* download, const std::
 }
 
 
+/* included upstream
 torrent::Object
 d_multicall_filtered(const torrent::Object::list_type& args) {
   if (args.size() < 2)
@@ -653,6 +655,7 @@ d_multicall_filtered(const torrent::Object::list_type& args) {
 
   return resultRaw;
 }
+*/
 
 
 /*  throttle.names=
@@ -1326,7 +1329,7 @@ void initialize_command_pyroscope() {
 
     // these are merged into 0.9.8+ mainline! (well, maybe, PRs are mostly ignored)
     CMD2_ANY_LIST("system.random", &apply_random);
-    CMD2_ANY_LIST("d.multicall.filtered", _cxxstd_::bind(&d_multicall_filtered, _cxxstd_::placeholders::_2));
+    // included upstream CMD2_ANY_LIST("d.multicall.filtered", _cxxstd_::bind(&d_multicall_filtered, _cxxstd_::placeholders::_2));
 
     // string.* group
     CMD2_ANY_LIST("string.len", &cmd_string_len);
@@ -1389,7 +1392,7 @@ void initialize_command_pyroscope() {
                                                         _cxxstd_::placeholders::_1, _cxxstd_::placeholders::_2));
 
     // Misc commands
-    CMD2_ANY_LIST("compare", &apply_compare);
+    // included upstream CMD2_ANY_LIST("compare", &apply_compare);
     CMD2_ANY("ui.bind_key", &apply_ui_bind_key);
     CMD2_VAR_VALUE("ui.bind_key.verbose", 1);
     CMD2_ANY("throttle.names", _cxxstd_::bind(&cmd_throttle_names));
