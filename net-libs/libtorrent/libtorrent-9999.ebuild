@@ -36,9 +36,10 @@ src_prepare() {
 		./autogen.sh
 	fi
 
+	# fixed upstream:
+	# "${FILESDIR}"/lt-ps-log_open_file-reopen_all.patch
 	epatch \
 		"${FILESDIR}"/lt-ps-honor_system_file_allocate_all.patch \
-		"${FILESDIR}"/lt-ps-log_open_file-reopen_all.patch \
 		"${FILESDIR}"/lt-ps-better-bencode-errors_all.patch
 }
 
