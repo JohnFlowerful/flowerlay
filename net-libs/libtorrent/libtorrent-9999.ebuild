@@ -8,7 +8,7 @@ inherit eutils libtool toolchain-funcs git-r3
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 EGIT_REPO_URI="https://github.com/rakshasa/libtorrent.git"
-EGIT_BRANCH="feature-bind"
+EGIT_BRANCH="feature/bind-merge"
 
 LICENSE="GPL-2"
 
