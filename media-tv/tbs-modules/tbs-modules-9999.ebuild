@@ -46,7 +46,7 @@ src_prepare() {
 	sed -i -r "/SRCDIR \?= / s|/.+| /lib/modules/${KV_FULL}/source|" "${WORKDIR}/media_build/v4l/Makefile" || die
 	sed -i -r "s/KERNELRELEASE \:=/KERNELRELEASE = ${KV_FULL}/" "${WORKDIR}/media_build/v4l/Makefile" || die
 	lsmod=$(command -v lsmod)
-	sed -i -r "s/\/sbin\/lsmod/${lsmod}/" "${WORKDIR}/media_build/v4l/Makefile" || die
+	sed -i -r "s|/sbin/lsmod|${lsmod}|" "${WORKDIR}/media_build/v4l/Makefile" || die
 
 	eapply_user
 }
