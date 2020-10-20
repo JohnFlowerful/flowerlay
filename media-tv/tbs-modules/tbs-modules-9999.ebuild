@@ -5,7 +5,7 @@
 
 EAPI=6
 
-inherit eutils linux-info git-r3
+inherit eutils linux-mod git-r3
 
 DESCRIPTION="Kernel Modules for TBS DTV devices"
 HOMEPAGE="https://www.tbsdtv.com/"
@@ -46,6 +46,8 @@ src_prepare() {
 	sed -i -r "/^OUTDIR \?= / s|/.+|${KERNEL_DIR}|" "${WORKDIR}/media_build/v4l/Makefile" || die
 	lsmod=$(command -v lsmod)
 	sed -i -r "s|/sbin/lsmod|${lsmod}|" "${WORKDIR}/media_build/v4l/Makefile" || die
+
+	sed -i -r '/^print OUT "\\t\/sbin\/depmod -a/d' "${WORKDIR}/media_build/v4l/scripts/make_makefile.pl" || die
 
 	eapply_user
 }
