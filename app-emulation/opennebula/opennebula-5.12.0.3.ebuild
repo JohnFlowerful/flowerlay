@@ -224,8 +224,8 @@ src_install() {
 	rm -rf usr/bin usr/$(get_libdir)/one usr/share/one var/lib/one
 
 	# add documentation
-	dodoc usr/share/docs/one/*
-	rm -rf usr/share/docs
+	dodoc usr/share/doc/one/*
+	rm -rf usr/share/doc
 
 	# install remaining files
 	insinto /usr/share/man
