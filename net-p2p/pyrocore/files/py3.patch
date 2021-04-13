@@ -1,0 +1,3063 @@
+From 4add7e1e5556abb3febf77c06c5efbc8adfea8db Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Mon, 22 Jan 2018 05:30:44 +0000
+Subject: [PATCH 01/32] Python 3 support
+
+---
+ .travis.yml                        |   1 +
+ README.md                          |   1 +
+ bootstrap.sh                       |   2 +-
+ docs/installation.rst              |  29 +----
+ pavement.py                        |  34 +++---
+ requirements.txt                   |   2 -
+ src/pyrocore/config.py             |   6 +-
+ src/pyrocore/daemon/webapp.py      |   6 +-
+ src/pyrocore/scripts/base.py       |  18 +--
+ src/pyrocore/scripts/chtor.py      |   9 +-
+ src/pyrocore/scripts/lstor.py      |  12 +-
+ src/pyrocore/scripts/pyroadmin.py  |  20 ++--
+ src/pyrocore/scripts/pyrotorque.py |   3 +-
+ src/pyrocore/scripts/rtcontrol.py  |  31 ++---
+ src/pyrocore/scripts/rtxmlrpc.py   |  10 +-
+ src/pyrocore/torrent/rtorrent.py   |   6 +-
+ src/pyrocore/util/load_config.py   |  20 ++--
+ src/pyrocore/util/matching.py      |  36 +++---
+ src/pyrocore/util/metafile.py      |  37 +++---
+ src/pyrocore/util/proxies.py       | 174 +++++++++++++++++++++++++++++
+ src/pyrocore/util/pymagic.py       |   2 +-
+ src/pyrocore/util/traits.py        |   1 +
+ src/pyrocore/util/xmlrpc.py        |   6 +-
+ src/tests/test_matching.py         |  18 +--
+ src/tests/test_metafile.py         |  27 +++--
+ src/tests/test_pymagic.py          |   4 +-
+ update-to-head.sh                  |   5 +-
+ 27 files changed, 350 insertions(+), 170 deletions(-)
+ create mode 100644 src/pyrocore/util/proxies.py
+
+diff --git a/.travis.yml b/.travis.yml
+index 306cce06..68957416 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -3,6 +3,7 @@
+ language: python
+ python:
+   - "2.7"
++  - "3.5"
+ #before_install:
+ # - sudo apt-get update -qq
+ # - sudo apt-get install -qq python-apt python-pycurl
+diff --git a/README.md b/README.md
+index 5d33c44b..679f1b2c 100644
+--- a/README.md
++++ b/README.md
+@@ -3,6 +3,7 @@
+ [![Travis CI](https://travis-ci.org/pyroscope/pyrocore.svg?branch=master)](https://travis-ci.org/pyroscope/pyrocore)
+ [![Issues](https://img.shields.io/github/issues/pyroscope/pyrocore.svg)](https://github.com/pyroscope/pyrocore/issues)
+ [![PyPI](https://img.shields.io/pypi/v/pyrocore.svg)](https://pypi.python.org/pypi/pyrocore/)
++[![Versions](https://img.shields.io/pypi/pyversions/pyrocore.svg)](https://pypi.python.org/pypi/pyrocore/)]
+ 
+ This project provides a collection of tools for the BitTorrent protocol and especially the
+ [rTorrent client](https://github.com/rakshasa/rtorrent).
+diff --git a/bootstrap.sh b/bootstrap.sh
+index 348bdaed..742ac87d 100644
+--- a/bootstrap.sh
++++ b/bootstrap.sh
+@@ -29,7 +29,7 @@ test -z "$PYTHON" -a -x "/usr/bin/python2" && PYTHON="/usr/bin/python2"
+ test -z "$PYTHON" -a -x "/usr/bin/python" && PYTHON="/usr/bin/python"
+ test -z "$PYTHON" && PYTHON="python"
+ 
+-git_projects="pyrobase auvyon"
++git_projects="pyrobase"
+ . ./util.sh || return 1 # load funcs
+ 
+ # generic bootstrap
+diff --git a/docs/installation.rst b/docs/installation.rst
+index e178079a..389f8038 100644
+--- a/docs/installation.rst
++++ b/docs/installation.rst
+@@ -46,7 +46,7 @@ Installing Dependency Packages
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 
+ Before installing *pyrocore*, some software packages need to be available
+-on your machine, Python 2 among them.
++on your machine.
+ 
+ On Debian-type systems (Debian, Ubuntu, Raspbian, …), the following ensures you have
+ everything you need, including packages necessary for installing from source:
+@@ -74,33 +74,6 @@ this software does anything malicious — if it did, it'd be contained in that
+ account. It also makes deinstallation or start-from-zero way less of a hassle.
+ 
+ 
+-.. _install-python:
+-
+-Installing Python2
+-^^^^^^^^^^^^^^^^^^
+-
+-For *Debian* and derivatives, the ``apt-get`` command in the previous section
+-already took care of everything.
+-
+-Other Linux distributions usually come equipped with a Python 2.7 interpreter,
+-but on very new releases, Python 3 may be the default and Python 2.7 just an option.
+-In case you need to install Python 2, refer to `Installing Python on Linux`_ and
+-consider using `pyenv`_.
+-
+-The following shows how you can check what version you have as the default (the
+-sample output is from *Ubuntu 15.04*):
+-
+-.. code-block:: shell
+-
+-    $ /usr/bin/python --version
+-    Python 2.7.9
+-
+-Try calling ``/usr/bin/python2`` in case the above shows a ``3.*`` version.
+-
+-.. _`Installing Python on Linux`: http://docs.python-guide.org/en/latest/starting/install/linux/
+-.. _`pyenv`: https://github.com/yyuu/pyenv#simple-python-version-management-pyenv
+-
+-
+ .. _install-pyrocore:
+ 
+ Installing the `pyrocore` Package
+diff --git a/pavement.py b/pavement.py
+index 62323325..ff366bbe 100644
+--- a/pavement.py
++++ b/pavement.py
+@@ -116,7 +116,6 @@
+     ],
+     install_requires = [
+         "pyrobase>=0.2",
+-        "ProxyTypes>=0.9",
+     ],
+     extras_require = {
+         "templating": ["Tempita>=0.5.1"],
+@@ -150,6 +149,7 @@
+         "Natural Language :: English",
+         "Operating System :: POSIX",
+         "Programming Language :: Python :: 2.7",
++        "Programming Language :: Python :: 3.5",
+         "Topic :: Communications :: File Sharing",
+         "Topic :: Software Development :: Libraries :: Python Modules",
+         "Topic :: Utilities",
+@@ -254,9 +254,9 @@ def dist_docs():
+     sh(r'cd %s && find . -type f \! \( -path "*/.svn*" -o -name "*~" \) | sort'
+        ' | zip -qr -@ %s' % (html_dir, docs_package,))
+ 
+-    print
+-    print "Upload @ http://pypi.python.org/pypi?:action=pkg_edit&name=%s" % ( options.setup.name,)
+-    print docs_package
++    print()
++    print("Upload @ http://pypi.python.org/pypi?:action=pkg_edit&name=%s" % ( options.setup.name,))
++    print(docs_package)
+ 
+ 
+ def watchdog_pid():
+@@ -280,10 +280,10 @@ def autodocs():
+         build_dir.rmtree()
+ 
+     with pushd("docs"):
+-        print "\n*** Generating API doc ***\n"
++        print("\n*** Generating API doc ***\n")
+         sh("sphinx-apidoc -o apidoc -f -T ../src/pyrocore")
+         sh("sphinx-apidoc -o apidoc -f -T $(dirname $(python -c 'import tempita; print(tempita.__file__)'))")
+-        print "\n*** Generating HTML doc ***\n"
++        print("\n*** Generating HTML doc ***\n")
+         sh('command . ../bin/activate && '
+            'nohup %s/Makefile SPHINXBUILD="sphinx-autobuild -p %d'
+            ' -i \'.*\' -i \'*.log\' -i \'*.png\' -i \'*.txt\'" html >autobuild.log 2>&1 &'
+@@ -384,8 +384,8 @@ def release():
+         sys.exit(1)
+ 
+     # Check that source distribution can be built and is complete
+-    print
+-    print "~~~ TESTING SOURCE BUILD".ljust(78, '~')
++    print()
++    print("~~~ TESTING SOURCE BUILD".ljust(78, '~'))
+     sh( "{ command cd dist/ && unzip -q %s-%s.zip && command cd %s-%s/"
+         "  && /usr/bin/python setup.py sdist >/dev/null"
+         "  && if { unzip -ql ../%s-%s.zip; unzip -ql dist/%s-%s.zip; }"
+@@ -395,21 +395,21 @@ def release():
+         % tuple([project["name"], version] * 4)
+     )
+     path("dist/%s-%s" % (project["name"], version)).rmtree()
+-    print "~" * 78
++    print("~" * 78)
+ 
+-    print
+-    print "~~~ sdist vs. git ".ljust(78, '~')
++    print()
++    print("~~~ sdist vs. git ".ljust(78, '~'))
+     subprocess.call(
+         "unzip -v dist/pyrocore-*.zip | egrep '^ .+/' | cut -f2- -d/ | sort >./build/ls-sdist.txt"
+         " && git ls-files | sort >./build/ls-git.txt"
+         " && $(which colordiff || echo diff) -U0 ./build/ls-sdist.txt ./build/ls-git.txt || true", shell=True)
+-    print "~" * 78
++    print("~" * 78)
+ 
+-    print
+-    print "Created", " ".join([str(i) for i in path("dist").listdir()])
+-    print "Use 'paver sdist bdist_wheel' to build the release and"
+-    print "    'twine upload dist/*.{zip,whl}' to upload to PyPI"
+-    print "Use 'paver dist_docs' to prepare an API documentation upload"
++    print()
++    print("Created", " ".join([str(i) for i in path("dist").listdir()]))
++    print("Use 'paver sdist bdist_wheel' to build the release and")
++    print("    'twine upload dist/*.{zip,whl}' to upload to PyPI")
++    print("Use 'paver dist_docs' to prepare an API documentation upload")
+ 
+ 
+ #
+diff --git a/requirements.txt b/requirements.txt
+index 9cac2b8f..e4b5625e 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,9 +1,7 @@
+ # requirements for installation
+ Tempita>=0.5.1
+-ProxyTypes==0.9
+ pyrobase>=0.5
+ #-e git+https://github.com/pyroscope/pyrobase.git#egg=pyrobase
+-auvyon>=0.1
+ requests>=2.10,<3
+ prompt-toolkit>=1.0.14,<2
+ six==1.9.0
+diff --git a/src/pyrocore/config.py b/src/pyrocore/config.py
+index dd6bbbf6..fc981668 100644
+--- a/src/pyrocore/config.py
++++ b/src/pyrocore/config.py
+@@ -37,7 +37,7 @@ def lookup_announce_alias(name):
+ def map_announce2alias(url):
+     """ Get tracker alias for announce URL, and if none is defined, the 2nd level domain.
+     """
+-    import urlparse
++    from six.moves import urllib
+ 
+     # Try to find an exact alias URL match and return its label
+     for alias, urls in announce.items():
+@@ -45,8 +45,8 @@ def map_announce2alias(url):
+             return alias
+ 
+     # Try to find an alias URL prefix and return its label
+-    parts = urlparse.urlparse(url)
+-    server = urlparse.urlunparse((parts.scheme, parts.netloc, "/", None, None, None))
++    parts = urllib.parse.urlparse(url)
++    server = urllib.parse.urlunparse((parts.scheme, parts.netloc, "/", None, None, None))
+ 
+     for alias, urls in announce.items():
+         if any(i.startswith(server) for i in urls):
+diff --git a/src/pyrocore/daemon/webapp.py b/src/pyrocore/daemon/webapp.py
+index 83bcca8f..c78fa844 100644
+--- a/src/pyrocore/daemon/webapp.py
++++ b/src/pyrocore/daemon/webapp.py
+@@ -32,6 +32,8 @@
+ from webob.dec import wsgify
+ #from webob.response import Response
+ 
++import six
++
+ from pyrobase.parts import Bunch
+ from pyrocore import config, error
+ from pyrocore.util import pymagic, xmlrpc, stats
+@@ -102,7 +104,7 @@ def __call__(self, req):
+                     resp = json.dumps(resp, sort_keys=True)
+                 except (TypeError, ValueError, IndexError, AttributeError) as json_exc:
+                     raise exc.HTTPInternalServerError("JSON serialization error (%s)" % json_exc)
+-            if isinstance(resp, basestring):
++            if isinstance(resp, six.string_types):
+                 resp = Response(body=resp, content_type="application/json")
+         except exc.HTTPException as http_exc:
+             resp = http_exc
+@@ -201,7 +203,7 @@ def add_route(self, template, controller, **kwargs):
+             `controller` can be either a controller instance,
+             or the name of a callable that will be imported.
+         """
+-        if isinstance(controller, basestring):
++        if isinstance(controller, six.string_types):
+             controller = pymagic.import_name(controller)
+ 
+         self.routes.append((self.parse_route(template), controller, kwargs))
+diff --git a/src/pyrocore/scripts/base.py b/src/pyrocore/scripts/base.py
+index 48828964..dfb252ac 100644
+--- a/src/pyrocore/scripts/base.py
++++ b/src/pyrocore/scripts/base.py
+@@ -17,7 +17,7 @@
+ # You should have received a copy of the GNU General Public License along
+ # with this program; if not, write to the Free Software Foundation, Inc.,
+ # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-from __future__ import with_statement
++
+ 
+ import re
+ import sys
+@@ -30,6 +30,8 @@
+ import logging.config
+ from optparse import OptionParser
+ 
++from six.moves import input
++import six
+ import pkg_resources
+ 
+ from pyrocore import error, config
+@@ -229,7 +231,7 @@ def handle_completion(self):
+         if len(sys.argv) > 1 and sys.argv[1].startswith("--help-completion-"):
+             handler = getattr(self, sys.argv[1][2:].replace('-', '_'), None)
+             if handler:
+-                print '\n'.join(sorted(handler()))
++                print('\n'.join(sorted(handler())))
+                 self.STD_LOG_LEVEL = logging.DEBUG
+                 sys.exit(error.EX_OK)
+ 
+@@ -266,7 +268,7 @@ def run(self):
+ 
+                 # Template method with the tool's main loop
+                 self.mainloop()
+-            except error.LoggableError, exc:
++            except error.LoggableError as exc:
+                 if self.options.debug:
+                     raise
+ 
+@@ -274,21 +276,21 @@ def run(self):
+                 try:
+                     msg = str(exc)
+                 except UnicodeError:
+-                    msg = unicode(exc, "UTF-8")
++                    msg = six.text_type(exc, "UTF-8")
+                 self.LOG.error(msg)
+                 sys.exit(error.EX_SOFTWARE)
+-            except KeyboardInterrupt, exc:
++            except KeyboardInterrupt as exc:
+                 if self.options.debug:
+                     raise
+ 
+                 sys.stderr.write("\n\nAborted by CTRL-C!\n")
+                 sys.stderr.flush()
+ 
+                 # See https://www.cons.org/cracauer/sigint.html
+                 signal.signal(signal.SIGINT, signal.SIG_DFL)
+                 os.kill(os.getpid(), signal.SIGINT)
+                 sys.exit(error.EX_TEMPFAIL)  # being paranoid
+-            except IOError, exc:
++            except IOError as exc:
+                 # [Errno 32] Broken pipe?
+                 if exc.errno == errno.EPIPE:
+                     sys.stderr.write("\n%s, exiting!\n" % exc)
+@@ -370,7 +372,7 @@ def get_options(self):
+         for key_val in self.options.defines:
+             try:
+                 key, val = key_val.split('=', 1)
+-            except ValueError, exc:
++            except ValueError as exc:
+                 raise error.UserError("Bad config override %r (%s)" % (key_val, exc))
+             else:
+                 setattr(config, key, load_config.validate(key, val))
+@@ -431,7 +433,7 @@ def ask_bool(self, question, default=True):
+             # Let the user decide
+             choice = '*'
+             while choice not in "YNAQ":
+-                choice = raw_input("%s? [%s)es, %s)o, a)ll yes, q)uit]: " % (
++                choice = input("%s? [%s)es, %s)o, a)ll yes, q)uit]: " % (
+                     fmt.to_console(question), "yY"[int(default)], "Nn"[int(default)],
+                 ))
+                 choice = choice[:1].upper() or "NY"[int(default)]
+diff --git a/src/pyrocore/scripts/chtor.py b/src/pyrocore/scripts/chtor.py
+index 4cd85dc6..dc9575b5 100644
+--- a/src/pyrocore/scripts/chtor.py
++++ b/src/pyrocore/scripts/chtor.py
+@@ -23,7 +23,8 @@
+ import copy
+ import time
+ import hashlib
+-import urlparse
++
++from six.moves import urllib
+ 
+ from pyrobase import bencode
+ from pyrocore.scripts.base import ScriptBase, ScriptBaseWithConfig
+@@ -125,8 +126,8 @@ def mainloop(self):
+         filter_url_prefix = None
+         if self.options.reannounce:
+             # <scheme>://<netloc>/<path>?<query>
+-            filter_url_prefix = urlparse.urlsplit(self.options.reannounce, allow_fragments=False)
+-            filter_url_prefix = urlparse.urlunsplit((
++            filter_url_prefix = urllib.parse.urlsplit(self.options.reannounce, allow_fragments=False)
++            filter_url_prefix = urllib.parse.urlunsplit((
+                 filter_url_prefix.scheme, filter_url_prefix.netloc, '/', '', '' # bogus pylint: disable=E1103
+             ))
+             self.LOG.info("Filtering for metafiles with announce URL prefix %r..." % filter_url_prefix)
+@@ -138,7 +139,7 @@ def mainloop(self):
+             self.options.no_cross_seed = True
+ 
+         # Resolve tracker alias, if URL doesn't look like an URL
+-        if self.options.reannounce and not urlparse.urlparse(self.options.reannounce).scheme:
++        if self.options.reannounce and not urllib.parse.urlparse(self.options.reannounce).scheme:
+             tracker_alias, idx = self.options.reannounce, "0"
+             if '.' in tracker_alias:
+                 tracker_alias, idx = tracker_alias.split('.', 1)
+diff --git a/src/pyrocore/scripts/lstor.py b/src/pyrocore/scripts/lstor.py
+index 3e247cd0..1fd98b7d 100644
+--- a/src/pyrocore/scripts/lstor.py
++++ b/src/pyrocore/scripts/lstor.py
+@@ -17,7 +17,7 @@
+ # You should have received a copy of the GNU General Public License along
+ # with this program; if not, write to the Free Software Foundation, Inc.,
+ # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-from __future__ import with_statement
++
+ 
+ import json
+ import pprint
+diff --git a/src/pyrocore/scripts/pyroadmin.py b/src/pyrocore/scripts/pyroadmin.py
+index 86dfaeba..dfecc081 100644
+--- a/src/pyrocore/scripts/pyroadmin.py
++++ b/src/pyrocore/scripts/pyroadmin.py
+@@ -25,12 +25,13 @@
+ import shutil
+ import pprint
+ import fnmatch
+-import urllib2
+-import xmlrpclib
+ from zipfile import ZipFile
+-from StringIO import StringIO
+ from contextlib import closing
+ 
++from six.moves import StringIO, urllib
++from six.moves import xmlrpc_client as xmlrpclib
++import six
++
+ from pyrobase import fmt
+ from pyrocore.scripts.base import ScriptBase, ScriptBaseWithConfig
+ from pyrocore import config, error
+@@ -93,7 +94,7 @@ def download_resource(self, download_url, target, guard):
+             os.makedirs(target)
+ 
+         self.LOG.info("Downloading '%s' to '%s'..." % (download_url, target))
+-        with closing(urllib2.urlopen(download_url)) as url_handle:
++        with closing(urllib.request.urlopen(download_url)) as url_handle:
+             if download_url.endswith(".zip"):
+                 with closing(ZipFile(StringIO(url_handle.read()))) as zip_handle:  # pylint: disable=no-member
+                     zip_handle.extractall(target)  # pylint: disable=no-member
+@@ -164,7 +165,7 @@ def splitter(fields):
+                                     val = val[matches[0]]
+                                 else:
+                                     raise KeyError(key)
+-                    except (IndexError, KeyError), exc:
++                    except (IndexError, KeyError) as exc:
+                         if default is None:
+                             self.LOG.error("Field %r not found (%s)" % (field, exc))
+                             break
+@@ -172,7 +173,7 @@ def splitter(fields):
+                     else:
+                         values.append(str(val))
+                 else:
+-                    print '\t'.join(values)
++                    print('\t'.join(values))
+ 
+         elif self.options.create_import:
+             conf_dirs = {}
+@@ -299,7 +300,10 @@ def rc_quoted(text, in_brace=False):
+                         if name in builtins:
+                             print('{}.set = {}'.format(name, definition))
+                         else:
+-                            rctype = {str: 'string', int: 'value', long: 'value'}.get(objtype, 'simple')
++                            if six.PY2:
++                                rctype = {str: 'string', int: 'value', long: 'value'}.get(objtype, 'simple')
++                            else:
++                                rctype = {str: 'string', int: 'value'}.get(objtype, 'simple')
+                             if const:
+                                 rctype += '|const'
+                                 const = None
+@@ -331,7 +335,7 @@ def rc_quoted(text, in_brace=False):
+                     "    run()",
+                     "",
+                 ]))
+-            os.chmod(py_stub, 0755)
++            os.chmod(py_stub, 0o755)
+ 
+         else:
+             # Print usage
+diff --git a/src/pyrocore/scripts/pyrotorque.py b/src/pyrocore/scripts/pyrotorque.py
+index 7ccd65fa..dfa63968 100644
+--- a/src/pyrocore/scripts/pyrotorque.py
++++ b/src/pyrocore/scripts/pyrotorque.py
+@@ -25,6 +25,7 @@
+ import asyncore
+ from collections import defaultdict
+ 
++from six import iteritems
+ from pyrobase import logutil
+ from pyrobase.parts import Bunch
+ 
+@@ -116,7 +117,7 @@ def _validate_config(self):
+                 else:
+                     groups[stem][name][param] = val
+ 
+-        for key, val in groups.iteritems():
++        for key, val in iteritems(groups):
+             setattr(self, key.replace("job", "jobs"), Bunch(val))
+ 
+         # Validate httpd config
+diff --git a/src/pyrocore/scripts/rtcontrol.py b/src/pyrocore/scripts/rtcontrol.py
+index c5fbbecb..4cc02184 100644
+--- a/src/pyrocore/scripts/rtcontrol.py
++++ b/src/pyrocore/scripts/rtcontrol.py
+@@ -30,6 +30,7 @@
+ from pyrocore.util import os, fmt, osmagic, pymagic, matching, xmlrpc
+ from pyrocore.scripts.base import ScriptBase, ScriptBaseWithConfig, PromptDecorator
+ from pyrocore.torrent import engine, formatting
++import six
+ 
+ 
+ def print_help_fields():
+@@ -48,11 +49,11 @@ def kind_manifold():
+ 
+     print('')
+     print("Fields are:")
+-    print("\n".join(["  %-21s %s" % (name, field.__doc__)
+-        for name, field in sorted(engine.FieldDefinition.FIELDS.items() + [
++    print(("\n".join(["  %-21s %s" % (name, field.__doc__)
++        for name, field in sorted(list(engine.FieldDefinition.FIELDS.items()) + [
+             custom_manifold(), kind_manifold(), item_manifold(),
+         ])
+-    ]))
++    ])))
+ 
+     print('')
+     print("Format specifiers are:")
+@@ -78,11 +79,15 @@ def __init__(self, size):
+         self._basetime = time.time()
+ 
+ 
+-    def __nonzero__(self):
++    def __bool__(self):
+         "Truth"
+         return bool(self.total)
+ 
+ 
++    def __nonzero__(self):
++        return self.__bool__()
++
++
+     def add(self, field, val):
+         "Add a sample"
+         if engine.FieldDefinition.FIELDS[field]._matcher is matching.TimeFilter:
+@@ -104,8 +109,8 @@ def average(self):
+         # Calculate average if possible
+         if self.size:
+             result.update(
+-                (key, '' if isinstance(val, basestring) else val / self.size)
+-                for key, val in self.total.items()
++                (key, '' if isinstance(val, six.string_types) else val / self.size)
++                for key, val in list(self.total.items())
+             )
+ 
+         # Handle time fields
+@@ -345,7 +350,7 @@ def format_item(self, item, defaults=None, stencil=None):
+ 
+         try:
+             item_text = fmt.to_console(formatting.format_item(self.options.output_format, item, defaults))
+-        except (NameError, ValueError, TypeError), exc:
++        except (NameError, ValueError, TypeError) as exc:
+             self.fatal("Trouble with formatting item %r\n\n  FORMAT = %r\n\n  REASON =" % (item, self.options.output_format), exc)
+             raise # in --debug mode
+ 
+@@ -591,7 +596,7 @@ def mainloop(self):
+                         zip(self.options.select.split('-', 1), ("1", "-1")))
+                 else:
+                     selection = 1, int(self.options.select, 10)
+-            except (ValueError, TypeError), exc:
++            except (ValueError, TypeError) as exc:
+                 self.fatal("Bad selection '%s' (%s)" % (self.options.select, exc))
+ 
+ #        print repr(config.engine)
+@@ -750,7 +755,7 @@ def output_formatter(templ, namespace=None):
+ 
+             for item in matches:
+                 cmds = [[output_formatter(i, namespace=dict(item=item)) for i in k] for k in template_cmds]
+-                cmds = [[i.encode('utf-8') if isinstance(i, unicode) else i for i in k] for k in cmds]
++                cmds = [[i.encode('utf-8') if isinstance(i, six.text_type) else i for i in k] for k in cmds]
+ 
+                 if self.options.dry_run:
+                     self.LOG.info("Would call command(s) %r" % (cmds,))
+@@ -767,9 +772,9 @@ def output_formatter(templ, namespace=None):
+                                 subprocess.check_call(cmd[0], shell=True)
+                             else:
+                                 subprocess.check_call(cmd)
+-                        except subprocess.CalledProcessError, exc:
++                        except subprocess.CalledProcessError as exc:
+                             raise error.UserError("Command failed: %s" % (exc,))
+-                        except OSError, exc:
++                        except OSError as exc:
+                             raise error.UserError("Command failed (%s): %s" % (logged_cmd, exc,))
+ 
+         # Dump as JSON array?
+@@ -810,8 +815,8 @@ def output_formatter(templ, namespace=None):
+             self.LOG.info("Filtered %d out of %d torrents." % (len(matches), view.size(),))
+ 
+         if self.options.debug and 0:
+-            print '\n' + repr(matches[0])
+-            print '\n' + repr(matches[0].files)
++            print('\n' + repr(matches[0]))
++            print('\n' + repr(matches[0].files))
+ 
+         # XMLRPC stats
+         self.LOG.debug("XMLRPC stats: %s" % config.engine._rpc)
+diff --git a/src/pyrocore/scripts/rtxmlrpc.py b/src/pyrocore/scripts/rtxmlrpc.py
+index dedc253f..803e7a36 100644
+--- a/src/pyrocore/scripts/rtxmlrpc.py
++++ b/src/pyrocore/scripts/rtxmlrpc.py
+@@ -27,7 +27,6 @@
+ import logging
+ import tempfile
+ import textwrap
+-import xmlrpclib
+ from pprint import pformat
+ 
+ try:
+@@ -35,6 +34,9 @@
+ except ImportError:
+     requests = None
+ 
++from six.moves import xmlrpc_client
++import six
++
+ from pyrobase import bencode
+ from pyrobase.parts import Bunch
+ 
+@@ -143,7 +145,7 @@ def cooked(self, raw_args):
+                 if all(i.isdigit() for i in arg):
+                     arg = [int(i, 10) for i in arg]
+             elif arg.startswith('@'):
+-                arg = xmlrpclib.Binary(read_blob(arg))
++                arg = xmlrpc_client.Binary(read_blob(arg))
+             args.append(arg)
+ 
+         return args
+@@ -162,7 +164,7 @@ def execute(self, proxy, method, args):
+                     # Pretty-print if requested, or it's a collection and not a scalar
+                     result = pformat(result)
+                 elif hasattr(result, "__iter__"):
+-                    result = '\n'.join(i if isinstance(i, basestring) else pformat(i) for i in result)
++                    result = '\n'.join(i if isinstance(i, six.string_types) else pformat(i) for i in result)
+                 print(fmt.to_console(result))
+ 
+ 
+@@ -338,7 +340,7 @@ def filenames():
+             for name in data.views:
+                 try:
+                     proxy.view.set_visible(infohash, name)
+-                except xmlrpclib.Fault as exc:
++                except xmlrpc_client.Fault as exc:
+                     if 'Could not find view' not in str(exc):
+                         raise
+ 
+diff --git a/src/pyrocore/torrent/rtorrent.py b/src/pyrocore/torrent/rtorrent.py
+index 79c324c1..5b517af9 100644
+--- a/src/pyrocore/torrent/rtorrent.py
++++ b/src/pyrocore/torrent/rtorrent.py
+@@ -29,6 +29,8 @@
+ import operator
+ from collections import namedtuple
+ 
++import six
++
+ from pyrobase.parts import Bunch
+ from pyrocore import config, error
+ from pyrocore.util import os, xmlrpc, load_config, traits, fmt, matching
+@@ -173,7 +175,7 @@ def fetch(self, name, engine_name=None):
+         try:
+             return self._fields[name]
+         except KeyError:
+-            if isinstance(name, (int, long)):
++            if isinstance(name, six.integer_types):
+                 name = "custom_%d" % name
+ 
+             if name == "done":
+@@ -767,7 +769,7 @@ def items(self, view=None, prefetch=None, cache=True):
+ 
+         if view is None:
+             view = engine.TorrentView(self, "default")
+-        elif isinstance(view, basestring):
++        elif isinstance(view, six.string_types):
+             view = engine.TorrentView(self, self._resolve_viewname(view))
+         else:
+             view.viewname = self._resolve_viewname(view.viewname)
+diff --git a/src/pyrocore/util/load_config.py b/src/pyrocore/util/load_config.py
+index 0bf8fc1a..238f27f3 100644
+--- a/src/pyrocore/util/load_config.py
++++ b/src/pyrocore/util/load_config.py
+@@ -25,8 +25,9 @@
+ import re
+ import glob
+ import errno
+-import StringIO
+-import ConfigParser
++
++import six
++from six.moves import configparser as ConfigParser
+ 
+ from pyrocore import config, error
+ from pyrocore.util import os, pymagic
+@@ -105,7 +106,7 @@ def _validate_namespace(self, namespace):
+ 
+         # Validate announce URLs
+         for key, val in namespace["announce"].items():
+-            if isinstance(val, basestring):
++            if isinstance(val, six.string_types):
+                 namespace["announce"][key] = val.split()
+ 
+         # Re-escape output formats
+@@ -113,17 +114,17 @@ def _validate_namespace(self, namespace):
+ 
+         # Create objects from module specs
+         for factory in ("engine",):
+-            if isinstance(namespace[factory], basestring):
++            if isinstance(namespace[factory], six.string_types):
+                 namespace[factory] = pymagic.import_name(namespace[factory])() if namespace[factory] else None
+ 
+         # Do some standard type conversions
+         for key in namespace:
+             # Split lists
+-            if key.endswith("_list") and isinstance(namespace[key], basestring):
++            if key.endswith("_list") and isinstance(namespace[key], six.string_types):
+                 namespace[key] = [i.strip() for i in namespace[key].replace(',', ' ').split()]
+ 
+             # Resolve factory and callback handler lists
+-            elif any(key.endswith(i) for i in ("_factories", "_callbacks")) and isinstance(namespace[key], basestring):
++            elif any(key.endswith(i) for i in ("_factories", "_callbacks")) and isinstance(namespace[key], six.string_types):
+                 namespace[key] = [pymagic.import_name(i.strip()) for i in namespace[key].replace(',', ' ').split()]
+ 
+         # Update config values again
+@@ -136,7 +137,7 @@ def _set_from_ini(self, namespace, ini_file):
+         # Isolate global values
+         global_vars = dict((key, val)
+             for key, val in namespace.items()
+-            if isinstance(val, basestring)
++            if isinstance(val, six.string_types)
+         )
+ 
+         # Copy all sections
+@@ -182,7 +183,10 @@ def _set_defaults(self, namespace, optional_cfg_files):
+ 
+             ini_file = ConfigParser.SafeConfigParser()
+             ini_file.optionxform = str # case-sensitive option names
+-            ini_file.readfp(StringIO.StringIO(defaults), "<defaults>")
++            if six.PY2:
++                ini_file.readfp(six.StringIO(defaults), "<defaults>")
++            else:
++                ini_file.read_file(six.StringIO(defaults.decode('utf-8')), "<defaults>")
+             self._set_from_ini(namespace, ini_file)
+ 
+ 
+diff --git a/src/pyrocore/util/matching.py b/src/pyrocore/util/matching.py
+index c0b7ae03..fb2feba9 100644
+--- a/src/pyrocore/util/matching.py
++++ b/src/pyrocore/util/matching.py
+@@ -23,6 +23,8 @@
+ import fnmatch
+ import operator
+ 
++import six
++
+ from pyrocore import error, config
+ from pyrocore.util import fmt, pymagic
+ 
+@@ -57,7 +59,7 @@ def _time_ym_delta(timestamp, delta, months):
+     """
+     timestamp = list(time.localtime(timestamp))
+     timestamp[int(months)] += delta
+-    return time.mktime(timestamp)
++    return time.mktime(tuple(timestamp))
+ 
+ 
+ def unquote_pre_filter(pre_filter, _regex=re.compile(r'[\\]+')):
+@@ -104,7 +106,7 @@ class CompoundFilterAll(CompoundFilterBase):
+     """
+ 
+     def __str__(self):
+-        return ' '.join(str(i) for i in self)
++        return u' '.join(six.text_type(i) for i in self)
+ 
+     def pre_filter(self):
+         """ Return rTorrent condition to speed up data transfer.
+@@ -161,11 +163,11 @@ def __init__(self, inner):
+ 
+     def __str__(self):
+         if isinstance(self._inner, FieldFilter):
+-            return "%s=!%s" % tuple(str(self._inner).split('=', 1))
++            return six.text_type("%s=!%s" % tuple(six.text_type(self._inner).split('=', 1)))
+         elif isinstance(self._inner, CompoundFilterBase):
+-            return "[ NOT [ %s ] ]" % str(self._inner)
++            return u"[ NOT [ %s ] ]" %  six.text_type(self._inner)
+         else:
+-            return "[ NOT %s ]" % str(self._inner)
++            return u"[ NOT %s ]" %  six.text_type(self._inner)
+ 
+     def pre_filter(self):
+         """ Return rTorrent condition to speed up data transfer.
+@@ -250,7 +252,7 @@ def __init__(self, name, value):
+         self.validate()
+ 
+     def __str__(self):
+-        return fmt.to_utf8("%s=%s" % (self._name, self._condition))
++        return fmt.to_utf8("%s=%s" % (self._name, self._condition)).decode('utf-8')
+ 
+     def validate(self):
+         """ Validate filter condition (template method).
+@@ -461,8 +463,8 @@ def match(self, item):
+         """ Return True if filter matches item.
+         """
+         if 0 and getattr(item, self._name):
+-            print "%r %r %r %r %r %r" % (self._cmp(float(getattr(item, self._name)), self._value),
+-                  self._name, self._condition, item.name, getattr(item, self._name), self._value)
++            print("%r %r %r %r %r %r" % (self._cmp(float(getattr(item, self._name)), self._value),
++                  self._name, self._condition, item.name, getattr(item, self._name), self._value))
+         val = getattr(item, self._name) or 0
+         if self.not_null and self._value and not val:
+             return False
+@@ -494,7 +496,7 @@ def validate(self):
+ 
+         try:
+             self._value = float(self._value)
+-        except (ValueError, TypeError), exc:
++        except (ValueError, TypeError) as exc:
+             raise FilterError("Bad numerical value %r in %r (%s)" % (self._value, self._condition, exc))
+ 
+ 
+@@ -537,7 +539,7 @@ def validate_time(self, duration=False):
+             # Literal UNIX timestamp
+             try:
+                 timestamp = float(self._value)
+-            except (ValueError, TypeError), exc:
++            except (ValueError, TypeError) as exc:
+                 raise FilterError("Bad timestamp value %r in %r (%s)" % (self._value, self._condition, exc))
+         else:
+             # Something human readable
+@@ -577,8 +579,8 @@ def validate_time(self, duration=False):
+                     dtfmt += "T%H:%M:%S"[:3+3*val.count(':')]
+ 
+                 try:
+-                    timestamp = time.mktime(time.strptime(val, dtfmt))
+-                except (ValueError), exc:
++                    timestamp = time.mktime(tuple(time.strptime(val, dtfmt)))
++                except (ValueError) as exc:
+                     raise FilterError("Bad timestamp value %r in %r (%s)" % (self._value, self._condition, exc))
+ 
+                 if duration:
+@@ -655,7 +657,7 @@ def validate(self):
+         # Get float value
+         try:
+             self._value = float(self._value)
+-        except (ValueError, TypeError), exc:
++        except (ValueError, TypeError) as exc:
+             raise FilterError("Bad numerical value %r in %r (%s)" % (self._value, self._condition, exc))
+ 
+         # Scale to bytes
+@@ -796,9 +798,11 @@ def parse(self, conditions):
+             @type conditions: list or str
+         """
+         conditions_text = conditions
+-        try:
+-            conditions = shlex.split(fmt.to_utf8(conditions))
+-        except AttributeError:
++        if isinstance(conditions, six.binary_type):
++            conditions = shlex.split(conditions.decode('utf-8'))
++        elif isinstance(conditions, six.text_type):
++            conditions = shlex.split(conditions)
++        else:
+             # Not a string, assume parsed tree
+             conditions_text = self._tree2str(conditions)
+ 
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index 8d3d8d12..a58e8e2c 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -30,9 +30,9 @@
+ import pprint
+ import fnmatch
+ import hashlib
+-import urlparse
+ 
+ import six
++from six.moves import urllib
+ 
+ from pyrobase import bencode
+ from pyrobase.parts import Bunch
+@@ -50,6 +52,7 @@
+ PASSKEY_OK = ("announce", "TrackerServlet",)
+ 
+ # List of all standard keys in a metafile
++_i = None
+ METAFILE_STD_KEYS = [_i.split('.') for _i in (
+     "announce",
+     "announce-list", # BEP-0012
+@@ -68,7 +71,7 @@
+     "info.files.path",
+ )]
+ 
+-del _i  # pylint: disable=undefined-loop-variable
++del _i
+ 
+ 
+ def console_progress():
+@@ -93,7 +96,7 @@ def mask_keys(announce_url):
+     """ Mask any passkeys (hex sequences) in an announce URL.
+     """
+     return PASSKEY_RE.sub(
+-        lambda m: m.group() if m.group() in PASSKEY_OK else "*" * len(m.group()),
++        lambda m: m.group() if m.group() in PASSKEY_OK else u"*" * len(m.group()),
+         announce_url)
+ 
+ 
+@@ -104,7 +107,7 @@ class MaskingPrettyPrinter(pprint.PrettyPrinter):
+     def format(self, obj, context, maxlevels, level):  # pylint: disable=arguments-differ
+         """ Mask obj if it looks like an URL, then pass it to the super class.
+         """
+-        if isinstance(obj, basestring) and "://" in fmt.to_unicode(obj):
++        if isinstance(obj, six.string_types) and "://" in fmt.to_unicode(obj):
+             obj = mask_keys(obj)
+         return pprint.PrettyPrinter.format(self, obj, context, maxlevels, level)
+ 
+@@ -118,15 +121,15 @@ def check_info(info):
+         raise ValueError("bad metainfo - not a dictionary")
+ 
+     pieces = info.get("pieces")
+-    if not isinstance(pieces, basestring) or len(pieces) % 20 != 0:
++    if not isinstance(pieces, six.binary_type) or len(pieces) % 20 != 0:
+         raise ValueError("bad metainfo - bad pieces key")
+ 
+     piece_size = info.get("piece length")
+-    if not isinstance(piece_size, (int, long)) or piece_size <= 0:
++    if not isinstance(piece_size, six.integer_types) or piece_size <= 0:
+         raise ValueError("bad metainfo - illegal piece length")
+ 
+     name = info.get("name")
+-    if not isinstance(name, basestring):
++    if not isinstance(name, six.string_types):
+         raise ValueError("bad metainfo - bad name (type is %r)" % type(name).__name__)
+     if not ALLOWED_ROOT_NAME.match(name):
+         raise ValueError("name %s disallowed for security reasons" % name)
+@@ -136,7 +139,7 @@ def check_info(info):
+ 
+     if "length" in info:
+         length = info.get("length")
+-        if not isinstance(length, (int, long)) or length < 0:
++        if not isinstance(length, six.integer_types) or length < 0:
+             raise ValueError("bad metainfo - bad length")
+     else:
+         files = info.get("files")
+@@ -148,7 +151,7 @@ def check_info(info):
+                 raise ValueError("bad metainfo - bad file value")
+ 
+             length = item.get("length")
+-            if not isinstance(length, (int, long)) or length < 0:
++            if not isinstance(length, six.integer_types) or length < 0:
+                 raise ValueError("bad metainfo - bad length")
+ 
+             path = item.get("path")
+@@ -156,7 +159,7 @@ def check_info(info):
+                 raise ValueError("bad metainfo - bad path")
+ 
+             for part in path:
+-                if not isinstance(part, basestring):
++                if not isinstance(part, six.string_types):
+                     raise ValueError("bad metainfo - bad path dir")
+                 part = fmt.to_unicode(part)
+                 if part == '..':
+@@ -178,7 +181,7 @@ def check_meta(meta):
+     """
+     if not isinstance(meta, dict):
+         raise ValueError("bad metadata - not a dictionary")
+-    if not isinstance(meta.get("announce"), basestring):
++    if not isinstance(meta.get("announce"), six.string_types):
+         raise ValueError("bad announce URL - not a string")
+     check_info(meta.get("info"))
+ 
+@@ -376,10 +379,11 @@ def checked_open(filename, log=None, quiet=False):
+         raw_data = handle.read()
+     data = bencode.bdecode(raw_data)
+ 
++    # pylint: disable=
+     try:
+         check_meta(data)
+         if raw_data != bencode.bencode(data):
+-            raise ValueError("Bad bencoded data - dict keys out of order?")
++            raise ValueError("Bad bencoded data - dict keys out of order?")
+     except ValueError as exc:
+         if log:
+             # Warn about it, unless it's a quiet value query
+@@ -635,8 +639,8 @@ def create(self, datapath, tracker_urls, comment=None, root_name=None,
+         for tracker_url in tracker_urls:
+             # Lookup announce URLs from config file
+             try:
+-                if urlparse.urlparse(tracker_url).scheme:
+-                    tracker_alias = urlparse.urlparse(tracker_url).netloc.split(':')[0].split('.')
++                if urllib.parse.urlparse(tracker_url).scheme:
++                    tracker_alias = urllib.parse.urlparse(tracker_url).netloc.split(':')[0].split('.')
+                     tracker_alias = tracker_alias[-2 if len(tracker_alias) > 1 else 0]
+                 else:
+                     tracker_alias, tracker_url = config.lookup_announce_alias(tracker_url)
+@@ -706,7 +710,10 @@ def listing(self, masked=True):
+         """ List torrent info & contents. Returns a list of formatted lines.
+         """
+         # Assemble data
+-        metainfo, bad_encodings, bad_fields = sanitize(bencode.bread(self.filename), diagnostics=True)
++        metainfo = bencode.bread(self.filename)
++        bad_encodings, bad_fields = []
++        if six.PY2: #PY3 knows it's data
++            metainfo, bad_encodings, bad_fields = sanitize(bencode.bread(metainfo), diagnostics=True)
+         announce = metainfo['announce']
+         info = metainfo['info']
+         infohash = hashlib.sha1(bencode.bencode(info))
+diff --git a/src/pyrocore/util/proxies.py b/src/pyrocore/util/proxies.py
+new file mode 100644
+index 00000000..eefbe27f
+--- /dev/null
++++ b/src/pyrocore/util/proxies.py
+@@ -0,0 +1,174 @@
++# Taken from https://pypi.python.org/pypi/ProxyTypes
++class AbstractProxy(object):
++    """Delegates all operations (except ``.__subject__``) to another object"""
++    __slots__ = ()
++
++    def __call__(self,*args,**kw):
++        return self.__subject__(*args,**kw)
++
++    def __getattribute__(self, attr, oga=object.__getattribute__):
++        subject = oga(self,'__subject__')
++        if attr=='__subject__':
++            return subject
++        return getattr(subject,attr)
++
++    def __setattr__(self,attr,val, osa=object.__setattr__):
++        if attr=='__subject__':
++            osa(self,attr,val)
++        else:
++            setattr(self.__subject__,attr,val)
++
++    def __delattr__(self,attr, oda=object.__delattr__):
++        if attr=='__subject__':
++            oda(self,attr)
++        else:
++            delattr(self.__subject__,attr)
++
++    def __bool__(self):
++        return bool(self.__subject__)
++
++    def __getitem__(self,arg):
++        return self.__subject__[arg]
++
++    def __setitem__(self,arg,val):
++        self.__subject__[arg] = val
++
++    def __delitem__(self,arg):
++        del self.__subject__[arg]
++
++    def __getslice__(self,i,j):
++        return self.__subject__[i:j]
++
++    def __setslice__(self,i,j,val):
++        self.__subject__[i:j] = val
++
++    def __delslice__(self,i,j):
++        del self.__subject__[i:j]
++
++    def __contains__(self,ob):
++        return ob in self.__subject__
++
++    for name in 'repr str hash len abs complex int long float iter oct hex'.split():
++        exec("def __%s__(self): return %s(self.__subject__)" % (name,name))
++
++    for name in 'cmp', 'coerce', 'divmod':
++        exec("def __%s__(self,ob): return %s(self.__subject__,ob)" % (name,name))
++
++    for name,op in [
++        ('lt','<'), ('gt','>'), ('le','<='), ('ge','>='),
++        ('eq','=='), ('ne','!=')
++    ]:
++        exec("def __%s__(self,ob): return self.__subject__ %s ob" % (name,op))
++
++    for name,op in [('neg','-'), ('pos','+'), ('invert','~')]:
++        exec("def __%s__(self): return %s self.__subject__" % (name,op))
++
++    for name, op in [
++        ('or','|'),  ('and','&'), ('xor','^'), ('lshift','<<'), ('rshift','>>'),
++        ('add','+'), ('sub','-'), ('mul','*'), ('div','/'), ('mod','%'),
++        ('truediv','/'), ('floordiv','//')
++    ]:
++        exec((
++            "def __%(name)s__(self,ob):\n"
++            "    return self.__subject__ %(op)s ob\n"
++            "\n"
++            "def __r%(name)s__(self,ob):\n"
++            "    return ob %(op)s self.__subject__\n"
++            "\n"
++            "def __i%(name)s__(self,ob):\n"
++            "    self.__subject__ %(op)s=ob\n"
++            "    return self\n"
++        )  % locals())
++
++    del name, op
++
++    # Oddball signatures
++
++    def __rdivmod__(self,ob):
++        return divmod(ob, self.__subject__)
++
++    def __pow__(self,*args):
++        return pow(self.__subject__,*args)
++
++    def __ipow__(self,ob):
++        self.__subject__ **= ob
++        return self
++
++    def __rpow__(self,ob):
++        return pow(ob, self.__subject__)
++
++
++class ObjectProxy(AbstractProxy):
++    """Proxy for a specific object"""
++
++    __slots__ = "__subject__"
++
++    def __init__(self,subject):
++        self.__subject__ = subject
++
++
++class CallbackProxy(AbstractProxy):
++    """Proxy for a dynamically-chosen object"""
++
++    __slots__ = '__callback__'
++
++    def __init__(self, func):
++        set_callback(self,func)
++
++set_callback = CallbackProxy.__callback__.__set__
++get_callback = CallbackProxy.__callback__.__get__
++CallbackProxy.__subject__ = property(lambda self, gc=get_callback: gc(self)())
++
++class LazyProxy(CallbackProxy):
++    """Proxy for a lazily-obtained object, that is cached on first use"""
++    __slots__ = "__cache__"
++
++get_cache = LazyProxy.__cache__.__get__
++set_cache = LazyProxy.__cache__.__set__
++
++def __subject__(self, get_cache=get_cache, set_cache=set_cache):
++    try:
++        return get_cache(self)
++    except AttributeError:
++        set_cache(self, get_callback(self)())
++        return get_cache(self)
++
++LazyProxy.__subject__ = property(__subject__, set_cache)
++del __subject__
++
++class AbstractWrapper(AbstractProxy):
++    """Mixin to allow extra behaviors and attributes on proxy instance"""
++    __slots__ = ()
++
++    def __getattribute__(self, attr, oga=object.__getattribute__):
++        if attr.startswith('__'):
++            subject = oga(self,'__subject__')
++            if attr=='__subject__':
++                return subject
++            return getattr(subject,attr)
++        return oga(self,attr)
++
++    def __getattr__(self,attr, oga=object.__getattribute__):
++        return getattr(oga(self,'__subject__'), attr)
++
++    def __setattr__(self,attr,val, osa=object.__setattr__):
++        if (
++            attr=='__subject__'
++            or hasattr(type(self),attr) and not attr.startswith('__')
++        ):
++            osa(self,attr,val)
++        else:
++            setattr(self.__subject__,attr,val)
++
++    def __delattr__(self,attr, oda=object.__delattr__):
++        if (
++            attr=='__subject__'
++            or hasattr(type(self),attr) and not attr.startswith('__')
++        ):
++            oda(self,attr)
++        else:
++            delattr(self.__subject__,attr)
++
++class ObjectWrapper(ObjectProxy, AbstractWrapper):      __slots__ = ()
++class CallbackWrapper(CallbackProxy, AbstractWrapper):  __slots__ = ()
++class LazyWrapper(LazyProxy, AbstractWrapper):          __slots__ = ()
+diff --git a/src/pyrocore/util/pymagic.py b/src/pyrocore/util/pymagic.py
+index add6c9c0..881a8951 100644
+--- a/src/pyrocore/util/pymagic.py
++++ b/src/pyrocore/util/pymagic.py
+@@ -23,7 +23,7 @@
+ import logging
+ import pkg_resources
+ 
+-from peak.util.proxies import LazyProxy
++from pyrocore.util.proxies import LazyProxy
+ 
+ 
+ # Create aliases to make pydev / pylint happy
+diff --git a/src/pyrocore/util/traits.py b/src/pyrocore/util/traits.py
+index 1f665762..a478a6de 100644
+--- a/src/pyrocore/util/traits.py
++++ b/src/pyrocore/util/traits.py
+@@ -36,6 +36,7 @@
+ KIND_ARCHIVE = set(("rar", "zip", "tgz", "bz2", "iso", "bin"))
+ 
+ # Regex matchers for names
++_i = _k = None
+ _VIDEO_EXT = '|'.join(re.escape('.' + _i) for _i in KIND_VIDEO)
+ _TV_TRAIL = (
+     r"(?:[._ ](?P<release_tags>PREAIR|READNFO))?"
+diff --git a/src/pyrocore/util/xmlrpc.py b/src/pyrocore/util/xmlrpc.py
+index 96ea4cdd..dcbd4b22 100755
+--- a/src/pyrocore/util/xmlrpc.py
++++ b/src/pyrocore/util/xmlrpc.py
+@@ -17,13 +17,13 @@
+ # You should have received a copy of the GNU General Public License along
+ # with this program; if not, write to the Free Software Foundation, Inc.,
+ # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-from __future__ import absolute_import
++from __future__ import absolute_import, print_function
+ 
+ import sys
+ import time
+ import socket
+-import xmlrpclib
+ 
++from six.moves import xmlrpc_client as xmlrpclib
+ from pyrobase.io import xmlrpc2scgi
+ 
+ from pyrocore import config, error
+@@ -169,7 +169,7 @@ def __call__(self, *args, **kwargs):
+                         handle.write(xmlreq)
+                         handle.write("\nRESPONSE\n")
+                         handle.write(xmlresp)
+-                        print >>sys.stderr, "INFO: Bad data packets written to %r" % filename
++                        print("INFO: Bad data packets written to %r" % filename, file=sys.stderr)
+                     finally:
+                         handle.close()
+                 raise
+diff --git a/src/tests/test_matching.py b/src/tests/test_matching.py
+index 53ecf89e..20194c2d 100644
+--- a/src/tests/test_matching.py
++++ b/src/tests/test_matching.py
+@@ -22,6 +22,8 @@
+ import logging
+ import unittest
+ 
++import six
++
+ from pyrobase.parts import Bunch
+ from pyrocore.util import matching
+ 
+@@ -71,7 +73,7 @@ class FilterTest(unittest.TestCase):
+     ]
+ 
+     def test_conditions(self):
+-        for cond, expected in self.CASES:
++        for cond, expected in list(self.CASES):
+             keep = matching.ConditionParser(lookup, "name").parse(cond)
+             result = set(i.name for i in self.DATA if keep(i))
+             expected = set(expected.split())
+@@ -134,17 +136,17 @@ def test_magic_matching(self):
+ 
+ class ParserTest(unittest.TestCase):
+     GOOD = [
+-        ("num=+1", "%s"),
++        ("num=+1", "num=+1"),
+         ("num>1", "num=+1"),
+         ("num<=1", "num=!+1"),
+         ("num<1", "num=-1"),
+         ("num>=1", "num=!-1"),
+         ("num!=1", "num=!1"),
+         ("num<>1", "num=!1"),
+-        ("flag=y", "%ses"),
+-        ("some*name", "name=%s"),
++        ("flag=y", "flag=yes"),
++        ("some*name", "name=some*name"),
+         ("foo bar", "name=foo name=bar"),
+-        ("foo,bar", "name=%s"),
++        ("foo,bar", "name=foo,bar"),
+         ("foo OR bar", "[ name=foo OR name=bar ]"),
+     ]
+     BAD = [
+@@ -165,18 +167,16 @@ class ParserTest(unittest.TestCase):
+ 
+     def test_good_conditions(self):
+         for cond, canonical in self.GOOD:
+-            if '%' in canonical:
+-                canonical = canonical % cond
+             matcher = matching.ConditionParser(lookup, "name").parse(cond)
+             assert isinstance(matcher, matching.Filter), "Matcher is not a filter"
+-            assert str(matcher) == canonical, "'%s' != '%s'" % (matcher, canonical)
++            assert six.text_type(matcher) == canonical, "'%s' != '%s'" % (six.text_type(matcher), canonical)
+             assert matcher, "Matcher is empty"
+ 
+     def test_bad_conditions(self):
+         for cond in self.BAD:
+             try:
+                 matcher = matching.ConditionParser(lookup).parse(cond)
+-            except matching.FilterError, exc:
++            except matching.FilterError as exc:
+                 log.debug("BAD: '%s' ==> %s" % (cond, exc))
+             else:
+                 assert False, "[ %s ] '%s' raised no error" % (matcher, cond)
+diff --git a/src/tests/test_metafile.py b/src/tests/test_metafile.py
+index 029ff8d3..49ff33f4 100644
+--- a/src/tests/test_metafile.py
++++ b/src/tests/test_metafile.py
+@@ -33,17 +33,17 @@ class MaskTest(unittest.TestCase):
+ 
+     def test_urls(self):
+         testcases = (
+-            "http://example.com:1234/user/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
+-            "http://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
+-            "http://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ&someparam=0",
+-            "http://example.com/DDDDD/ZZZZZZZZZZZZZZZZ/announce",
+-            "http://example.com/tracker.php/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
+-            "https://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
+-            "http://tracker1.example.com/TrackerServlet/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/DDDDDDD/announce",
+-            "http://example.com:12345/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
+-            "http://example.com/announce.php?pid=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
+-            "http://example.com:1234/a/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
+-            "http://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ&uid=DDDDD",
++            u"http://example.com:1234/user/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
++            u"http://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
++            u"http://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ&someparam=0",
++            u"http://example.com/DDDDD/ZZZZZZZZZZZZZZZZ/announce",
++            u"http://example.com/tracker.php/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
++            u"https://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
++            u"http://tracker1.example.com/TrackerServlet/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/DDDDDDD/announce",
++            u"http://example.com:12345/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
++            u"http://example.com/announce.php?pid=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
++            u"http://example.com:1234/a/ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ/announce",
++            u"http://example.com/announce.php?passkey=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ&uid=DDDDD",
+         )
+         mapping = {
+             "D": lambda: random.choice("0123456789"),
+@@ -53,9 +53,8 @@ def test_urls(self):
+         for testcase in testcases:
+             expected = testcase.replace("D", "*").replace("Z", "*")
+             randomized = ''.join(mapping.get(i, lambda: i)() for i in testcase)
+-            print expected, randomized
+-            self.failIfEqual(expected, randomized)
+-            self.failUnlessEqual(expected, mask_keys(randomized))
++            self.assertNotEqual(expected, randomized)
++            self.assertEqual(expected, mask_keys(randomized))
+ 
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/src/tests/test_pymagic.py b/src/tests/test_pymagic.py
+index c84f3388..2e80494d 100644
+--- a/src/tests/test_pymagic.py
++++ b/src/tests/test_pymagic.py
+@@ -40,7 +40,7 @@ def test_import_name(self):
+     def test_import_fail(self):
+         try:
+             pymagic.import_name("pyrocore.does_not_exit", "__doc__")
+-        except ImportError, exc:
++        except ImportError as exc:
+             assert "pyrocore.does_not_exit" in str(exc), str(exc)
+         else:
+             assert False, "Import MUST fail!"
+@@ -54,7 +54,7 @@ def test_import_colon(self):
+     def test_import_missing_colon(self):
+         try:
+             pymagic.import_name("pyrocore")
+-        except ValueError, exc:
++        except ValueError as exc:
+             assert "pyrocore" in str(exc), str(exc)
+         else:
+             assert False, "Import MUST fail!"
+diff --git a/update-to-head.sh b/update-to-head.sh
+index 0500e359..bb760808 100755
+--- a/update-to-head.sh
++++ b/update-to-head.sh
+@@ -1,5 +1,5 @@
+ #! /bin/bash
+-git_projects="pyrobase auvyon"
++git_projects="pyrobase"
+ 
+ # Find most suitable Python
+ echo "~~~ On errors, paste EVERYTHING below ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+@@ -32,8 +32,7 @@ test -f ./bin/activate && vpy=$PWD/bin/python || vpy=$PYTHON
+ cat <<'.' | $vpy
+ import sys
+ print("Using Python %s" % sys.version)
+-assert sys.version_info >= (2, 7), "Use Python 2.7! Read the docs."
+-assert sys.version_info < (3,), "Use Python 2.7! Read the docs."
++assert sys.version_info[0:2] == (3, 5) or sys.version_info[0:2] == (2, 7), "Use Python 2.7 or 3.5! Read the docs."
+ .
+ 
+ echo "Updating your installation..."
+
+From 9d6089bad1e42c993a78c09d699e94b57220677a Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Mon, 22 Jan 2018 05:49:30 +0000
+Subject: [PATCH 02/32] Travis fix
+
+---
+ src/pyrocore/util/metafile.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index a58e8e2c..a5663dd2 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -598,7 +598,7 @@ def _make_meta(self, tracker_url, root_name, private, progress):
+         info, totalhashed = self._make_info(piece_size, progress, self.walk() if self._fifo else sorted(self.walk()))
+ 
+         # Enforce unique hash per tracker
+-        info["x_cross_seed"] = hashlib.md5(tracker_url).hexdigest()
++        info["x_cross_seed"] = hashlib.md5(tracker_url.encode('utf-8')).hexdigest()
+ 
+         # Set private flag
+         if private:
+
+From 42c3e277dcac276455650d016cd9fb086e4272ee Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Mon, 22 Jan 2018 19:46:29 +0000
+Subject: [PATCH 03/32] Enforce mostly-string metafile dicts
+
+---
+ src/pyrocore/util/metafile.py | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index a5663dd2..78c4f70d 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -159,7 +159,7 @@ def check_info(info):
+                 raise ValueError("bad metainfo - bad path")
+ 
+             for part in path:
+-                if not isinstance(part, six.string_types):
++                if not isinstance(part, six.text_type):
+                     raise ValueError("bad metainfo - bad path dir")
+                 part = fmt.to_unicode(part)
+                 if part == '..':
+@@ -232,6 +232,8 @@ def sanitize(meta, diagnostics=False):
+ 
+     def sane_encoding(field, text):
+         "Transcoding helper."
++        if isinstance(text, six.text_type):
++            return text.encode("utf-8")
+         for encoding in ('utf-8', meta.get('encoding', None), 'cp1252'):
+             if encoding:
+                 try:
+@@ -514,7 +516,7 @@ def _make_info(self, piece_size, progress, walker, piece_callback=None):
+             filepath = filename[len(os.path.dirname(self.datapath) if self._fifo else self.datapath):].lstrip(os.sep)
+             file_list.append({
+                 "length": filesize,
+-                "path": [fmt.to_utf8(x) for x in fmt.to_unicode(filepath).replace(os.sep, '/').split('/')],
++                "path": [x for x in fmt.to_unicode(filepath).replace(os.sep, '/').split('/')],
+             })
+             self.LOG.debug("Hashing %r, size %d..." % (filename, filesize))
+ 
+
+From c561c4939bfa88a80e642308e01d68eae60f9646 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Wed, 24 Jan 2018 20:41:11 +0000
+Subject: [PATCH 04/32] Move xml formatting to pyrobase
+
+---
+ src/pyrocore/scripts/rtxmlrpc.py | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/src/pyrocore/scripts/rtxmlrpc.py b/src/pyrocore/scripts/rtxmlrpc.py
+index 803e7a36..f81a4b3e 100644
+--- a/src/pyrocore/scripts/rtxmlrpc.py
++++ b/src/pyrocore/scripts/rtxmlrpc.py
+@@ -160,13 +160,9 @@ def execute(self, proxy, method, args):
+             self.return_code = error.EX_NOINPUT if "not find" in getattr(exc, "faultString", "") else error.EX_DATAERR
+         else:
+             if not self.options.quiet:
+-                if self.options.repr:
+-                    # Pretty-print if requested, or it's a collection and not a scalar
+-                    result = pformat(result)
+-                elif hasattr(result, "__iter__"):
+-                    result = '\n'.join(i if isinstance(i, six.string_types) else pformat(i) for i in result)
+-                print(fmt.to_console(result))
+-
++                result = fmt.xmlrpc_result_to_string(result, pretty=self.options.repr)
++                output = getattr(sys.stdout, 'buffer', sys.stdout)
++                output.write(fmt.to_console(result) + b"\n")
+ 
+     def repl_usage(self):
+         """Print a short REPL usage summary."""
+
+From ea5aed096986001e513b7b6142c5e7a08cee74dc Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Wed, 24 Jan 2018 20:41:19 +0000
+Subject: [PATCH 05/32] Syntax fix
+
+---
+ src/pyrocore/scripts/rtxmlrpc.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/scripts/rtxmlrpc.py b/src/pyrocore/scripts/rtxmlrpc.py
+index f81a4b3e..246eb5b6 100644
+--- a/src/pyrocore/scripts/rtxmlrpc.py
++++ b/src/pyrocore/scripts/rtxmlrpc.py
+@@ -134,7 +134,7 @@ def cooked(self, raw_args):
+             if arg and arg[0] in "+-":
+                 try:
+                     arg = int(arg, 10)
+-                except (ValueError, TypeError), exc:
++                except (ValueError, TypeError) as exc:
+                     self.LOG.warn("Not a valid number: %r (%s)" % (arg, exc))
+             elif arg.startswith('[['):  # escaping, not a list
+                 arg = arg[1:]
+
+From 5c5f1bd098cc0fb9258e8e7befeb5299b8362d38 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Wed, 24 Jan 2018 20:41:49 +0000
+Subject: [PATCH 06/32] String/data consistency fixes
+
+---
+ src/pyrocore/config.py            |  2 +-
+ src/pyrocore/scripts/rtcontrol.py | 31 +++++++++++++++++--------------
+ src/pyrocore/util/xmlrpc.py       | 17 ++++++++++-------
+ 3 files changed, 28 insertions(+), 22 deletions(-)
+
+diff --git a/src/pyrocore/config.py b/src/pyrocore/config.py
+index fc981668..dd4236b8 100644
+--- a/src/pyrocore/config.py
++++ b/src/pyrocore/config.py
+@@ -75,7 +75,7 @@ def map_announce2alias(url):
+ custom_field_factories = []
+ custom_template_helpers = Bunch()
+ xmlrpc = {}
+-output_header_ecma48 = ""
++output_header_ecma48 = b""
+ output_header_frequency = 1
+ waif_pattern_list = []
+ traits_by_alias = {}
+diff --git a/src/pyrocore/scripts/rtcontrol.py b/src/pyrocore/scripts/rtcontrol.py
+index 4cc02184..4dd600ef 100644
+--- a/src/pyrocore/scripts/rtcontrol.py
++++ b/src/pyrocore/scripts/rtcontrol.py
+@@ -355,11 +355,11 @@ def format_item(self, item, defaults=None, stencil=None):
+             raise # in --debug mode
+ 
+         if self.options.shell:
+-            item_text = '\t'.join(shell_escape(i) for i in item_text.split('\t'))
++            item_text = b'\t'.join(shell_escape(i) for i in item_text.split('\t'))
+ 
+         # Justify headers according to stencil
+         if stencil:
+-            item_text = '\t'.join(i.ljust(len(s)) for i, s in zip(item_text.split('\t'), stencil))
++            item_text = b'\t'.join(i.ljust(len(s)) for i, s in zip(item_text.split('\t'), stencil))
+ 
+         return item_text
+ 
+@@ -375,7 +375,10 @@ def emit(self, item, defaults=None, stencil=None, to_log=False, item_formatter=N
+ 
+         # For a header, use configured escape codes on a terminal
+         if item is None and os.isatty(sys.stdout.fileno()):
+-            item_text = ''.join((config.output_header_ecma48, item_text, "\x1B[0m"))
++            item_text = b''.join((config.output_header_ecma48.encode(), item_text, b"\x1B[0m"))
++
++        # Set up stdout for writing
++        output = getattr(sys.stdout, 'buffer', sys.stdout)
+ 
+         # Dump to selected target
+         if to_log:
+@@ -384,12 +387,11 @@ def emit(self, item, defaults=None, stencil=None, to_log=False, item_formatter=N
+             else:
+                 self.LOG.info(item_text)
+         elif self.options.nul:
+-            sys.stdout.write(item_text + '\0')
+-            sys.stdout.flush()
++            output.write(item_text + b'\0')
+         else:
+-            print(item_text)
++            output.write(item_text + b'\n')
+ 
+-        return item_text.count('\n') + 1
++        return item_text.count(b'\n') + 1
+ 
+ 
+     # TODO: refactor to formatting.OutputMapping as a class method
+@@ -432,13 +434,14 @@ def get_output_fields(self):
+         """
+         # Re-engineer list from output format
+         # XXX TODO: Would be better to use a FieldRecorder class to catch the full field names
+-        emit_fields = list(i.lower() for i in re.sub(r"[^_A-Z]+", ' ', self.format_item(None)).split())
++        emit_fields = list(i.lower() for i in re.sub(b"[^_A-Z]+", b' ', self.format_item(None)).split())
+ 
+         # Validate result
+         result = []
+         for name in emit_fields[:]:
++            name = name.decode()
+             if name not in engine.FieldDefinition.FIELDS:
+-                self.LOG.warn("Omitted unknown name '%s' from statistics and output format sorting" % name)
++                self.LOG.warn("Omitted unknown name '%s' from statistics and output format sorting" % name.decode())
+             else:
+                 result.append(name)
+ 
+@@ -755,7 +758,7 @@ def output_formatter(templ, namespace=None):
+ 
+             for item in matches:
+                 cmds = [[output_formatter(i, namespace=dict(item=item)) for i in k] for k in template_cmds]
+-                cmds = [[i.encode('utf-8') if isinstance(i, six.text_type) else i for i in k] for k in cmds]
++                cmds = [[i.decode('utf-8') if isinstance(i, six.binary_type) else i for i in k] for k in cmds]
+ 
+                 if self.options.dry_run:
+                     self.LOG.info("Would call command(s) %r" % (cmds,))
+@@ -805,10 +808,10 @@ def output_formatter(templ, namespace=None):
+             # Print summary?
+             if matches and summary:
+                 self.emit(None, stencil=stencil)
+-                self.emit(summary.total, item_formatter=lambda i: i.rstrip() + " [SUM of %d item(s)]" % len(matches))
+-                self.emit(summary.min, item_formatter=lambda i: i.rstrip() + " [MIN of %d item(s)]" % len(matches))
+-                self.emit(summary.average, item_formatter=lambda i: i.rstrip() + " [AVG of %d item(s)]" % len(matches))
+-                self.emit(summary.max, item_formatter=lambda i: i.rstrip() + " [MAX of %d item(s)]" % len(matches))
++                self.emit(summary.total, item_formatter=lambda i: i.rstrip() + b" [SUM of %d item(s)]" % len(matches))
++                self.emit(summary.min, item_formatter=lambda i: i.rstrip() + b" [MIN of %d item(s)]" % len(matches))
++                self.emit(summary.average, item_formatter=lambda i: i.rstrip() + b" [AVG of %d item(s)]" % len(matches))
++                self.emit(summary.max, item_formatter=lambda i: i.rstrip() + b" [MAX of %d item(s)]" % len(matches))
+ 
+             self.LOG.info("Dumped %d out of %d torrents." % (len(matches), view.size(),))
+         else:
+diff --git a/src/pyrocore/util/xmlrpc.py b/src/pyrocore/util/xmlrpc.py
+index dcbd4b22..8feb420b 100755
+--- a/src/pyrocore/util/xmlrpc.py
++++ b/src/pyrocore/util/xmlrpc.py
+@@ -123,7 +123,7 @@ def __call__(self, *args, **kwargs):
+                     args = (0,) + args
+ 
+             # Prepare request
+-            xmlreq = xmlrpclib.dumps(args, self._proxy._map_call(self._method_name))
++            xmlreq = xmlrpclib.dumps(args, self._proxy._map_call(self._method_name)).encode()
+             ##xmlreq = xmlreq.replace('\n', '')
+             self._outbound = len(xmlreq)
+             self._proxy._outbound += self._outbound
+@@ -141,6 +141,7 @@ def __call__(self, *args, **kwargs):
+             self._net_latency = scgi_req.latency
+             self._proxy._net_latency += self._net_latency
+ 
++            xmlresp = xmlresp.decode('utf-8')
+             # Return raw XML response?
+             if raw_xml:
+                 return xmlresp
+@@ -151,7 +152,7 @@ def __call__(self, *args, **kwargs):
+ 
+             try:
+                 # Deserialize data
+-                result = xmlrpclib.loads(xmlresp)[0][0]
++                result = xmlrpclib.loads(xmlresp.encode('utf-8'))[0][0]
+             except (KeyboardInterrupt, SystemExit):
+                 # Don't catch these
+                 raise
+@@ -163,12 +164,14 @@ def __call__(self, *args, **kwargs):
+                 if not fail_silently:
+                     # Dump the bad packet, then re-raise
+                     filename = "/tmp/xmlrpc2scgi-%s.xml" % os.getuid()
+-                    handle = open(filename, "w")
++                    handle = open(filename, "wb")
+                     try:
+-                        handle.write("REQUEST\n")
++                        print(type(xmlreq))
++                        print(type(xmlresp))
++                        handle.write(b"REQUEST\n")
+                         handle.write(xmlreq)
+-                        handle.write("\nRESPONSE\n")
+-                        handle.write(xmlresp)
++                        handle.write(b"\nRESPONSE\n")
++                        handle.write(xmlresp.encode('utf-8'))
+                         print("INFO: Bad data packets written to %r" % filename, file=sys.stderr)
+                     finally:
+                         handle.close()
+@@ -264,7 +267,7 @@ def _set_mappings(self):
+     def _fix_mappings(self):
+         """ Add computed stuff to mappings.
+         """
+-        self._mapping.update((key+'=', val+'=') for key, val in self._mapping.items() if not key.endswith('='))
++        self._mapping.update((key+'=', val+'=') for key, val in list(self._mapping.items()) if not key.endswith('='))
+ 
+         if config.debug:
+             self.LOG.debug("CMD MAPPINGS ARE: %r" % (self._mapping,))
+
+From 54f9319a41014e7107a0a951f9cb4c9a532b2710 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Wed, 24 Jan 2018 20:47:05 +0000
+Subject: [PATCH 07/32] Clean up print statements
+
+---
+ src/pyrocore/util/xmlrpc.py | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/src/pyrocore/util/xmlrpc.py b/src/pyrocore/util/xmlrpc.py
+index 8feb420b..f351d1b0 100755
+--- a/src/pyrocore/util/xmlrpc.py
++++ b/src/pyrocore/util/xmlrpc.py
+@@ -166,8 +166,6 @@ def __call__(self, *args, **kwargs):
+                     filename = "/tmp/xmlrpc2scgi-%s.xml" % os.getuid()
+                     handle = open(filename, "wb")
+                     try:
+-                        print(type(xmlreq))
+-                        print(type(xmlresp))
+                         handle.write(b"REQUEST\n")
+                         handle.write(xmlreq)
+                         handle.write(b"\nRESPONSE\n")
+
+From 48988121866d83d3e3b3114e6ec87114a6cd1f7c Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Sun, 11 Feb 2018 17:28:43 +0000
+Subject: [PATCH 08/32] Make sure a string of all Zs can't happen
+
+---
+ src/tests/test_metafile.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/tests/test_metafile.py b/src/tests/test_metafile.py
+index 49ff33f4..9f573a78 100644
+--- a/src/tests/test_metafile.py
++++ b/src/tests/test_metafile.py
+@@ -47,7 +47,7 @@ def test_urls(self):
+         )
+         mapping = {
+             "D": lambda: random.choice("0123456789"),
+-            "Z": lambda: random.choice("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
++            "Z": lambda: random.choice("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYabcdefghijklmnopqrstuvwxyz"),
+         }
+ 
+         for testcase in testcases:
+
+From a0b4d0303667ae1aee4bd2a1c88b6965a6facb7f Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 22 Feb 2018 16:11:41 +0000
+Subject: [PATCH 09/32] Increase test cases
+
+---
+ pavement.py                  |  5 +--
+ setup.cfg                    |  1 -
+ src/pyrocore/torrent/jobs.py | 12 +++----
+ src/tests/multi.torrent      |  1 +
+ src/tests/test_metafile.py   | 65 ++++++++++++++++++++++++++++++++++++
+ 5 files changed, 75 insertions(+), 9 deletions(-)
+ create mode 100644 src/tests/multi.torrent
+
+diff --git a/pavement.py b/pavement.py
+index ff366bbe..351c8893 100644
+--- a/pavement.py
++++ b/pavement.py
+@@ -323,10 +323,10 @@ def stopdocs():
+ #
+ 
+ @task
+-@needs("nosetests")
+ def test():
+     "run unit tests"
+-
++    sh("coverage run $(which nosetests)")
++    sh('coverage report --include="*pyrocore*" --omit="*test*"')
+ 
+ @task
+ def coverage():
+@@ -334,6 +334,7 @@ def coverage():
+     coverage_index = path("build/coverage/index.html")
+     coverage_index.remove()
+     sh("paver test")
++    sh('coverage html --include="*pyrocore*" --omit="*test*" -d build/coverage/')
+     coverage_index.exists() and webbrowser.open(coverage_index)
+ 
+ 
+diff --git a/setup.cfg b/setup.cfg
+index b09c1321..5ca221ea 100644
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -12,7 +12,6 @@ show_response = 1
+ #where = src
+ verbosity = 0
+ detailed-errors = 1
+-with-coverage = 1
+ cover-html = 1
+ cover-html-dir = ../build/coverage
+ cover-package = pyrocore
+diff --git a/src/pyrocore/torrent/jobs.py b/src/pyrocore/torrent/jobs.py
+index 3a76faef..78b4bb34 100644
+--- a/src/pyrocore/torrent/jobs.py
++++ b/src/pyrocore/torrent/jobs.py
+@@ -75,7 +75,7 @@ def run(self):
+                 fmt.human_duration(proxy.system.time() - config_ini.engine.startup, 0, 2, True).strip(),
+                 proxy
+             ))
+-        except (error.LoggableError, xmlrpc.ERRORS), exc:
++        except (error.LoggableError, xmlrpc.ERRORS) as exc:
+             self.LOG.warn(str(exc))
+ 
+ 
+@@ -131,7 +131,7 @@ def _push_data(self):
+                     columns=views.keys(),
+                     points=[views.values()]
+                 ))
+-            except (error.LoggableError, xmlrpc.ERRORS), exc:
++            except (error.LoggableError, xmlrpc.ERRORS) as exc:
+                 self.LOG.warn("InfluxDB stats: {0}".format(exc))
+ 
+ #        if self.config.series_host:
+@@ -154,7 +154,7 @@ def _push_data(self):
+         try:
+             # TODO: Use a session
+             requests.post(fluxurl, data=fluxjson, timeout=self.influxdb.timeout)
+-        except RequestException, exc:
++        except RequestException as exc:
+             self.LOG.info("InfluxDB POST error: {0}".format(exc))
+ 
+ 
+@@ -177,13 +177,13 @@ def module_test():
+         print("%s - %s" % (engine.engine_id, engine.open()))
+ 
+         data, views = _flux_engine_data(engine)
+-        print "data = ",
++        print("data = ")
+         pprint.pprint(data)
+-        print "views = ",
++        print("views = ")
+         pprint.pprint(views)
+ 
+         print("%s - %s" % (engine.engine_id, engine.open()))
+-    except (error.LoggableError, xmlrpc.ERRORS), torrent_exc:
++    except (error.LoggableError, xmlrpc.ERRORS) as torrent_exc:
+         print("ERROR: %s" % torrent_exc)
+ 
+ 
+diff --git a/src/tests/multi.torrent b/src/tests/multi.torrent
+new file mode 100644
+index 00000000..4c7392c0
+--- /dev/null
++++ b/src/tests/multi.torrent
+@@ -0,0 +1 @@
++d8:announce45:http://tracker.openbittorrent.com:80/announce10:created by27:PyroScope 0.6.1.dev2018021113:creation datei1518372811e4:infod5:filesld6:lengthi1695e4:pathl11:fifotest.sheed6:lengthi455e4:pathl11:logging.cfgeee4:name5:tests12:piece lengthi32768e6:pieces20:�����Ւ���H
+u�12:x_cross_seed32:3567e0a41721abd735d7be20f0f50e7bee
+\ No newline at end of file
+diff --git a/src/tests/test_metafile.py b/src/tests/test_metafile.py
+index 9f573a78..174dde92 100644
+--- a/src/tests/test_metafile.py
++++ b/src/tests/test_metafile.py
+@@ -22,12 +22,22 @@
+ import random
+ import logging
+ import unittest
++import copy
++import operator
++from functools import reduce  # forward compatibility for Python 3
+ 
+ from pyrocore.util.metafile import * #@UnusedWildImport
++from pyrobase.bencode import bread
+ 
+ log = logging.getLogger(__name__)
+ log.trace("module loaded")
+ 
++# helper methods to make tests easier to write
++def get_from_dict(data_dict, map_list):
++    return reduce(operator.getitem, map_list, data_dict)
++def set_in_dict(data_dict, map_list, value):
++    get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
++
+ 
+ class MaskTest(unittest.TestCase):
+ 
+@@ -56,5 +66,60 @@ def test_urls(self):
+             self.assertNotEqual(expected, randomized)
+             self.assertEqual(expected, mask_keys(randomized))
+ 
++class AssignTest(unittest.TestCase):
++    def test_assign_fields(self):
++        # 4-elem tuples: initial, key, value, expected
++        tests = [
++            (
++                {},
++                "test",
++                "test",
++                {"test", "test"}
++            ),
++        ]
++        for initial, key, value, expected in tests:
++            continue
++            self.assertEqual(initial)
++
++class CheckMetaTest(unittest.TestCase):
++    def test_metadicts(self):
++        bad_dicts = [
++            ['a'],
++            {'agsdg': 'asdga'},
++            {'announce', 3},
++        ]
++        for testcase in bad_dicts:
++            self.failUnlessRaises(ValueError, check_meta, testcase)
++        dir_path = os.path.dirname(os.path.realpath(__file__))
++        good_metainfo = bread(os.path.join(dir_path, 'multi.torrent'))
++        bad_meta_info_data = [
++            ([], ['a']),
++            (['pieces'], u"test"),
++            (['piece length'], -1),
++            (['name'], 5),
++            (['name'], '/tmp/file'),
++            (['length'], good_metainfo['info']['files']),
++            (['length'], -1),
++            (['files'], 1),
++            (['files'], [1]),
++            (['files'], [{'length': -1}]),
++            (['files'], [{'length': 1, 'path': -1}]),
++            (['files'], [{'length': 1, 'path': -1}]),
++            (['files'], [{'length': 1, 'path': [-1]}]),
++            (['files'], [{'length': 1, 'path': [u'file', u'/tmp/file']}]),
++            (['files'], [{'length': 1, 'path': [u'..', u'file']}]),
++            (['files'], [
++                {'length': 1, 'path': [u'file']},
++                {'length': 1, 'path': [u'file']},
++            ]),
++        ]
++        for key, data in bad_meta_info_data:
++            meta = copy.deepcopy(good_metainfo)
++            set_in_dict(meta, ['info'] + key, data)
++            print meta
++            self.failUnlessRaises(ValueError, check_meta, meta)
++
++        self.assertEqual(good_metainfo, check_meta(good_metainfo))
++
+ if __name__ == "__main__":
+     unittest.main()
+
+From 6fd8efda08a9c173dcd6ff34993d847e802c0c94 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Tue, 24 Apr 2018 16:11:34 +0000
+Subject: [PATCH 10/32] Fix print statement
+
+---
+ src/tests/test_metafile.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/tests/test_metafile.py b/src/tests/test_metafile.py
+index 174dde92..3279f825 100644
+--- a/src/tests/test_metafile.py
++++ b/src/tests/test_metafile.py
+@@ -116,7 +116,7 @@ def test_metadicts(self):
+         for key, data in bad_meta_info_data:
+             meta = copy.deepcopy(good_metainfo)
+             set_in_dict(meta, ['info'] + key, data)
+-            print meta
++            print(meta)
+             self.failUnlessRaises(ValueError, check_meta, meta)
+ 
+         self.assertEqual(good_metainfo, check_meta(good_metainfo))
+
+From 3aba3d8ff0e0b9826c00dfea458dc06d7f88e086 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 3 May 2018 18:02:46 +0000
+Subject: [PATCH 11/32] Fix listing metafiles
+
+---
+ src/pyrocore/util/metafile.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index 78c4f70d..3f300320 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -713,7 +713,8 @@ def listing(self, masked=True):
+         """
+         # Assemble data
+         metainfo = bencode.bread(self.filename)
+-        bad_encodings, bad_fields = []
++        bad_encodings = []
++        bad_fields = []
+         if six.PY2: #PY3 knows it's data
+             metainfo, bad_encodings, bad_fields = sanitize(bencode.bread(metainfo), diagnostics=True)
+         announce = metainfo['announce']
+
+From 999d40a55edf98fbecd79518f96d41b5423b08f6 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Wed, 6 Jun 2018 22:02:50 +0000
+Subject: [PATCH 12/32] Update util.sh for python 3
+
+---
+ src/pyrocore/util/load_config.py |  2 +-
+ util.sh                          | 14 ++++++++++++--
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/src/pyrocore/util/load_config.py b/src/pyrocore/util/load_config.py
+index 238f27f3..20e65f73 100644
+--- a/src/pyrocore/util/load_config.py
++++ b/src/pyrocore/util/load_config.py
+@@ -284,6 +284,6 @@ def create(self, remove_all_rc_files=False):
+             else:
+                 config_trail.append('')
+             for i in config_trail:
+-                with open(config_file + i, "w") as handle:
++                with open(config_file + i, "wb") as handle:
+                     handle.write(text)
+                 self.LOG.info("Configuration file %r written!" % (config_file + i,))
+diff --git a/util.sh b/util.sh
+index cb9e8b43..b0c41a04 100644
+--- a/util.sh
++++ b/util.sh
+@@ -29,10 +29,12 @@ export PROJECT_ROOT
+ 
+ fix_wrappers() {
+     # Ensure unversioned wrappers exist
+-    for i in "$PROJECT_ROOT"/bin/*-2.*; do
++    shopt -s nullglob
++    for i in "$PROJECT_ROOT"/bin/*-{2,3}.*; do
+         tool=${i%-*}
+         test -x "$tool" || ln -s $(basename "$i") "$tool"
+     done
++    shopt -u nullglob
+ }
+ 
+ ensure_pip() {
+@@ -53,7 +55,15 @@ install_venv() {
+     venv_url="https://pypi.python.org/packages/d4/0c/9840c08189e030873387a73b90ada981885010dd9aea134d6de30cd24cb8/virtualenv-15.1.0.tar.gz"
+     mkdir -p "$PROJECT_ROOT/lib"
+     test -f "$PROJECT_ROOT/lib/virtualenv.tgz" || \
+-        $PYTHON -c "import urllib2; open('$PROJECT_ROOT/lib/virtualenv.tgz','w').write(urllib2.urlopen('$venv_url').read())"
++      $PYTHON <<-EOF
++       try:
++             # For Python 3.0 and later
++             from urllib.request import urlopen
++       except ImportError:
++             # Fall back to Python 2's urllib2
++             from urllib2 import urlopen
++       open('$PROJECT_ROOT/lib/virtualenv.tgz','wb').write(urlopen('$venv_url').read())
++EOF
+     test -d "$PROJECT_ROOT/lib/virtualenv" || \
+         ( mkdir -p lib/virtualenv && cd lib/virtualenv && tar -xz -f ../virtualenv.tgz --strip-components=1 )
+     deactivate 2>/dev/null || true
+
+From 9c9b4c699619ba65ddc6066f02a8cdbe4ad00146 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Tue, 12 Jun 2018 20:08:44 +0000
+Subject: [PATCH 13/32] Fix -i option in rtxmlrpc
+
+---
+ src/pyrocore/scripts/rtxmlrpc.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/scripts/rtxmlrpc.py b/src/pyrocore/scripts/rtxmlrpc.py
+index 246eb5b6..6993bc7f 100644
+--- a/src/pyrocore/scripts/rtxmlrpc.py
++++ b/src/pyrocore/scripts/rtxmlrpc.py
+@@ -240,7 +240,7 @@ def do_import(self):
+                     script_text = sys.stdin.read()
+ 
+                 with tempfile.NamedTemporaryFile(suffix='.rc', prefix='rtxmlrpc-', delete=False) as handle:
+-                    handle.write(script_text)
++                    handle.write(script_text.encode('utf-8'))
+                     tmp_import = handle.name
+                 args = (xmlrpc.NOHASH, tmp_import)
+ 
+
+From d8aa54ad73be4e66944b86edd852c6e86e3745fb Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Wed, 13 Jun 2018 17:38:59 +0000
+Subject: [PATCH 14/32] Change spaces to tabs for a proper indented heredoc
+
+---
+ util.sh | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/util.sh b/util.sh
+index b0c41a04..56f58684 100644
+--- a/util.sh
++++ b/util.sh
+@@ -56,13 +56,13 @@ install_venv() {
+     mkdir -p "$PROJECT_ROOT/lib"
+     test -f "$PROJECT_ROOT/lib/virtualenv.tgz" || \
+       $PYTHON <<-EOF
+-       try:
+-             # For Python 3.0 and later
+-             from urllib.request import urlopen
+-       except ImportError:
+-             # Fall back to Python 2's urllib2
+-             from urllib2 import urlopen
+-       open('$PROJECT_ROOT/lib/virtualenv.tgz','wb').write(urlopen('$venv_url').read())
++	try:
++	      # For Python 3.0 and later
++	      from urllib.request import urlopen
++	except ImportError:
++	      # Fall back to Python 2's urllib2
++	      from urllib2 import urlopen
++	open('$PROJECT_ROOT/lib/virtualenv.tgz','wb').write(urlopen('$venv_url').read())
+ EOF
+     test -d "$PROJECT_ROOT/lib/virtualenv" || \
+         ( mkdir -p lib/virtualenv && cd lib/virtualenv && tar -xz -f ../virtualenv.tgz --strip-components=1 )
+
+From 6468dcac3fc764de0bb679d42937893ba2f42dd9 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 14 Jun 2018 16:40:04 +0000
+Subject: [PATCH 15/32] Make rt-stuck-trackers.py PY3 compatible
+
+---
+ docs/examples/rt-stuck-trackers.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/examples/rt-stuck-trackers.py b/docs/examples/rt-stuck-trackers.py
+index 54b16b53..a6d7e4e6 100755
+--- a/docs/examples/rt-stuck-trackers.py
++++ b/docs/examples/rt-stuck-trackers.py
+@@ -4,6 +4,7 @@
+ from pyrocore import config
+ from pyrocore.scripts import base
+ 
++from six.moves.urllib.parse import urlparse
+ 
+ class StuckTrackers(base.ScriptBaseWithConfig):
+     """
+@@ -31,7 +32,6 @@ def add_options(self):
+ 
+     def mainloop(self):
+         import time
+-        from urlparse import urlparse
+         from collections import namedtuple, Counter
+ 
+         from pyrobase import fmt
+
+From 39f213e79a1d0073905ffa761eddd99b3fbcd479 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Sun, 17 Jun 2018 16:31:41 +0000
+Subject: [PATCH 16/32] Don't re-bread metainfos in PY2
+
+---
+ src/pyrocore/util/metafile.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index 3f300320..4547f636 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -716,7 +716,7 @@ def listing(self, masked=True):
+         bad_encodings = []
+         bad_fields = []
+         if six.PY2: #PY3 knows it's data
+-            metainfo, bad_encodings, bad_fields = sanitize(bencode.bread(metainfo), diagnostics=True)
++            metainfo, bad_encodings, bad_fields = sanitize(metainfo, diagnostics=True)
+         announce = metainfo['announce']
+         info = metainfo['info']
+         infohash = hashlib.sha1(bencode.bencode(info))
+
+From 7cd0645cd8b4a85aebc61e68a2cd68db7ecee859 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Tue, 4 Sep 2018 16:27:55 +0000
+Subject: [PATCH 17/32] Make sure shlex is fed a string
+
+---
+ src/pyrocore/torrent/rtorrent.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/torrent/rtorrent.py b/src/pyrocore/torrent/rtorrent.py
+index 5b517af9..7facdd6d 100644
+--- a/src/pyrocore/torrent/rtorrent.py
++++ b/src/pyrocore/torrent/rtorrent.py
+@@ -359,7 +359,7 @@ def execute(self, commands):
+         for command in commands:
+             try:
+                 method, args = command.split('=', 1)
+-                args = tuple(CommaLexer(args))
++                args = tuple(CommaLexer(args.decode("utf-8")))
+             except (ValueError, TypeError) as exc:
+                 raise error.UserError("Bad command %r, probably missing a '=' (%s)" % (command, exc))
+ 
+
+From ee011fbd9820f2a2d27fae416add0c483e52c350 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 11 Oct 2018 00:32:38 +0000
+Subject: [PATCH 18/32] Fix CommaLexer
+
+---
+ src/pyrocore/torrent/rtorrent.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/pyrocore/torrent/rtorrent.py b/src/pyrocore/torrent/rtorrent.py
+index 7facdd6d..a1cc75d1 100644
+--- a/src/pyrocore/torrent/rtorrent.py
++++ b/src/pyrocore/torrent/rtorrent.py
+@@ -41,7 +41,7 @@ class CommaLexer(shlex.shlex):
+     """Helper to split argument lists."""
+ 
+     def __init__(self, text):
+-        shlex.shlex.__init__(self, fmt.to_utf8(text), None, True)
++        shlex.shlex.__init__(self, text, None, True)
+         self.whitespace += ','
+         self.whitespace_split = True
+         self.commenters = ''
+@@ -359,7 +359,7 @@ def execute(self, commands):
+         for command in commands:
+             try:
+                 method, args = command.split('=', 1)
+-                args = tuple(CommaLexer(args.decode("utf-8")))
++                args = tuple(CommaLexer(args))
+             except (ValueError, TypeError) as exc:
+                 raise error.UserError("Bad command %r, probably missing a '=' (%s)" % (command, exc))
+ 
+
+From c331b2f2eae3c6a7c471e757549cd1a1da946d30 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Fri, 12 Oct 2018 14:54:21 +0000
+Subject: [PATCH 19/32] Support python 3.6
+
+---
+ pavement.py       | 1 +
+ update-to-head.sh | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/pavement.py b/pavement.py
+index 351c8893..d9c13167 100644
+--- a/pavement.py
++++ b/pavement.py
+@@ -150,6 +150,7 @@
+         "Operating System :: POSIX",
+         "Programming Language :: Python :: 2.7",
+         "Programming Language :: Python :: 3.5",
++        "Programming Language :: Python :: 3.6",
+         "Topic :: Communications :: File Sharing",
+         "Topic :: Software Development :: Libraries :: Python Modules",
+         "Topic :: Utilities",
+diff --git a/update-to-head.sh b/update-to-head.sh
+index bb760808..d6211f1e 100755
+--- a/update-to-head.sh
++++ b/update-to-head.sh
+@@ -32,7 +32,7 @@ test -f ./bin/activate && vpy=$PWD/bin/python || vpy=$PYTHON
+ cat <<'.' | $vpy
+ import sys
+ print("Using Python %s" % sys.version)
+-assert sys.version_info[0:2] == (3, 5) or sys.version_info[0:2] == (2, 7), "Use Python 2.7 or 3.5! Read the docs."
++assert sys.version_info[0:2] in [(2, 7), (3, 5), (3, 6)], "Use Python 2.7 or 3.5! Read the docs."
+ .
+ 
+ echo "Updating your installation..."
+
+From f7393d6e020026596f9af80e52ef8c98a0c14a56 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 10 Jan 2019 19:06:00 +0000
+Subject: [PATCH 20/32] Fix some pyroadmin output
+
+---
+ src/pyrocore/scripts/pyroadmin.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/scripts/pyroadmin.py b/src/pyrocore/scripts/pyroadmin.py
+index dfecc081..19251bd7 100644
+--- a/src/pyrocore/scripts/pyroadmin.py
++++ b/src/pyrocore/scripts/pyroadmin.py
+@@ -287,7 +287,7 @@ def rc_quoted(text, in_brace=False):
+                             val = rc_quoted(val)
+                             if len(val) > self.RC_CONTINUATION_THRESHOLD:
+                                 val = '\\\n    ' + val
+-                            print(b'method.set_key = {}, "{}", {}'.format(name, fmt.to_utf8(key), fmt.to_utf8(val)))
++                            print(u'method.set_key = {}, "{}", {}'.format(name, fmt.to_unicode(key), fmt.to_unicode(val)))
+                     elif objtype is str:
+                         definition = rc_quoted(value)
+                     elif objtype is int:
+
+From 23b608d4ad5ac349673a143449ab8b49ded9571c Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 10 Jan 2019 19:37:19 +0000
+Subject: [PATCH 21/32] Fix some pyrotorque logging
+
+---
+ src/pyrocore/torrent/queue.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/pyrocore/torrent/queue.py b/src/pyrocore/torrent/queue.py
+index cc0b8fc6..414aae17 100644
+--- a/src/pyrocore/torrent/queue.py
++++ b/src/pyrocore/torrent/queue.py
+@@ -127,8 +127,8 @@ def _start(self, items):
+             if not self.config.dry_run:
+                 item.start()
+                 if not self.config.quiet:
+-                    self.proxy.log(xmlrpc.NOHASH, "%s: Started '%s' {%s}" % (
+-                        self.__class__.__name__, fmt.to_utf8(item.name), item.alias,
++                    self.proxy.log(xmlrpc.NOHASH, u"%s: Started '%s' {%s}" % (
++                        self.__class__.__name__, fmt.to_unicode(item.name), item.alias,
+                     ))
+ 
+ 
+
+From f550cc36905016537d0386ab4a95f3f588b1ba69 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 9 May 2019 22:42:22 +0000
+Subject: [PATCH 22/32] Fix nested regex set for py3.7
+
+---
+ src/pyrocore/util/traits.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/pyrocore/util/traits.py b/src/pyrocore/util/traits.py
+index a478a6de..e45c323c 100644
+--- a/src/pyrocore/util/traits.py
++++ b/src/pyrocore/util/traits.py
+@@ -6,7 +6,7 @@
+ """
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+-# the Free Software Foundation; either version 2 of the License, or
++å# the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+@@ -88,7 +88,7 @@
+ 
+ MOVIE_PATTERNS = [(_k, re.compile(_i, re.I)) for _k, _i in (
+     ("Scene tagged movie",
+-        r"^(?P<title>.+?)[. ][[(]?(?P<year>\d{4})[)\]]?"
++        r"^(?P<title>.+?)[. ][\[(]?(?P<year>\d{4})[)\]]?"
+         r"(?:[._ ](?P<release>UNRATED|REPACK|INTERNAL|MULTI|PROPER|LIMITED|RERiP))*"
+         r"(?:[._ ](?P<format>480p|576p|720p|1080p|1080i|2160p))?"
+         r"(?:[._ ](?P<source>BDRip|BRRip|HDRip|DVDRip|PAL|NTSC))"
+
+From e3f628f5d89cf3a74867ac2fbf2ccfc26b69c4e2 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Thu, 9 May 2019 23:02:02 +0000
+Subject: [PATCH 23/32] Fix unicode char that snuck in
+
+---
+ src/pyrocore/util/traits.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/util/traits.py b/src/pyrocore/util/traits.py
+index e45c323c..4efc75f9 100644
+--- a/src/pyrocore/util/traits.py
++++ b/src/pyrocore/util/traits.py
+@@ -6,7 +6,7 @@
+ """
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+-å# the Free Software Foundation; either version 2 of the License, or
++# the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+
+From f48ae85dd6fef88a515048d4a58cffcf006bd92b Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Mon, 13 May 2019 22:26:04 +0000
+Subject: [PATCH 24/32] Fix another nested set
+
+---
+ src/pyrocore/util/traits.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pyrocore/util/traits.py b/src/pyrocore/util/traits.py
+index 4efc75f9..3ed0db63 100644
+--- a/src/pyrocore/util/traits.py
++++ b/src/pyrocore/util/traits.py
+@@ -100,7 +100,7 @@
+         r"(?P<extension>" + _VIDEO_EXT + ")?$"
+     ),
+     ("Blu-ray movie",
+-        r"^(?P<title>.+?)[. ][[(]?(?P<year>\d{4})[)\]]?"
++        r"^(?P<title>.+?)[. ][\[(]?(?P<year>\d{4})[)\]]?"
+         r"(?:[._ ](?P<release>UNRATED|REPACK|INTERNAL|MULTI|PROPER|LIMITED|RERiP))*"
+         r"(?:[._ ](?P<format0>720p|1080p|1080i|2160p))?"
+         r"(?:[._ ](?P<source>Blu-ray|BluRay|BD25|BD50))"
+
+From 10937e2788e8dd2ecbcf7da767212c662712fe28 Mon Sep 17 00:00:00 2001
+From: kannibalox <kannibalox@gmail.com>
+Date: Mon, 23 Sep 2019 16:36:13 +0000
+Subject: [PATCH 25/32] Fix up minor diplay issues
+
+---
+ src/pyrocore/scripts/base.py      | 4 ++--
+ src/pyrocore/scripts/rtcontrol.py | 2 +-
+ src/pyrocore/torrent/queue.py     | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/pyrocore/scripts/base.py b/src/pyrocore/scripts/base.py
+index dfb252ac..2f974a3c 100644
+--- a/src/pyrocore/scripts/base.py
++++ b/src/pyrocore/scripts/base.py
+@@ -433,8 +433,8 @@ def ask_bool(self, question, default=True):
+             # Let the user decide
+             choice = '*'
+             while choice not in "YNAQ":
+-                choice = input("%s? [%s)es, %s)o, a)ll yes, q)uit]: " % (
+-                    fmt.to_console(question), "yY"[int(default)], "Nn"[int(default)],
++                choice = input(u"%s? [%s)es, %s)o, a)ll yes, q)uit]: " % (
++                    question, "yY"[int(default)], "Nn"[int(default)],
+                 ))
+                 choice = choice[:1].upper() or "NY"[int(default)]
+ 
+diff --git a/src/pyrocore/scripts/rtcontrol.py b/src/pyrocore/scripts/rtcontrol.py
+index 4dd600ef..a4cff3c8 100644
+--- a/src/pyrocore/scripts/rtcontrol.py
++++ b/src/pyrocore/scripts/rtcontrol.py
+@@ -710,7 +710,7 @@ def output_formatter(templ, namespace=None):
+             # Perform chosen action on matches
+             template_args = [formatting.preparse("{{#tempita}}" + i if "{{" in i else i) for i in action.args]
+             for item in matches:
+-                if not self.prompt.ask_bool("%s item %s" % (action.label, item.name)):
++                if not self.prompt.ask_bool(u"%s item %s" % (action.label, item.name)):
+                     continue
+                 if (self.options.output_format
+                         and not self.options.view_only
+diff --git a/src/pyrocore/torrent/queue.py b/src/pyrocore/torrent/queue.py
+index 414aae17..0581071a 100644
+--- a/src/pyrocore/torrent/queue.py
++++ b/src/pyrocore/torrent/queue.py
+@@ -121,9 +121,9 @@ def _start(self, items):
+             # If we made it here, start it!
+             self.last_start = now
+             downloading.append(item)
+-            self.LOG.info("%s '%s' [%s, #%s]" % (
++            self.LOG.info(u"%s '%s' [%s, #%s]" % (
+                 "WOULD start" if self.config.dry_run else "Starting",
+-                fmt.to_utf8(item.name), item.alias, item.hash))
++                item.name, item.alias, item.hash))
+             if not self.config.dry_run:
+                 item.start()
+                 if not self.config.quiet:
+
+From e2670110bf319c1a482251e0ec7637d426917e62 Mon Sep 17 00:00:00 2001
+From: Amar1729 <amar.paul16@gmail.com>
+Date: Sun, 3 May 2020 02:18:30 -0400
+Subject: [PATCH 26/32] travis: install self and update extras name templating
+
+---
+ .travis.yml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/.travis.yml b/.travis.yml
+index 68957416..3caf9907 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -12,7 +12,8 @@ install:
+   - pip install -U setuptools
+   - pip install -U wheel
+   - pip install -r requirements-dev.txt
+-  - pip install -e .[templates,repl]
++  - pip install -e .
++  - pip install -e .[templating,repl]
+ script:
+   - paver test
+   - paver functest
+
+From a84d5344f3d3178f708ea71d22f07d372b8a14f7 Mon Sep 17 00:00:00 2001
+From: Amar1729 <amar.paul16@gmail.com>
+Date: Sun, 3 May 2020 02:19:10 -0400
+Subject: [PATCH 27/32] update requirements: - add coverage for unittests -
+ remove six as an explicit (it's depended on recursively anyway) - use current
+ pyrobase for testing
+
+---
+ requirements-dev.txt | 1 +
+ requirements.txt     | 5 ++---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+index 1be6a25a..d695a698 100644
+--- a/requirements-dev.txt
++++ b/requirements-dev.txt
+@@ -9,5 +9,6 @@ sphinx-rtd-theme==0.4.0
+ sphinx-autobuild==0.7.1
+ 
+ nose==1.3.7
++coverage>=5.0
+ 
+ -r docs/requirements.txt
+diff --git a/requirements.txt b/requirements.txt
+index e4b5625e..7085554f 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,7 +1,6 @@
+ # requirements for installation
+ Tempita>=0.5.1
+-pyrobase>=0.5
+-#-e git+https://github.com/pyroscope/pyrobase.git#egg=pyrobase
++# pyrobase>=0.5
++-e git+https://github.com/pyroscope/pyrobase.git#egg=pyrobase
+ requests>=2.10,<3
+ prompt-toolkit>=1.0.14,<2
+-six==1.9.0
+
+From 32e4e13279b3498a2e6494d90c06dc7bb0fe3029 Mon Sep 17 00:00:00 2001
+From: Amar1729 <amar.paul16@gmail.com>
+Date: Sun, 3 May 2020 02:30:39 -0400
+Subject: [PATCH 28/32] add python 3.6-3.8 to travis
+
+---
+ .travis.yml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/.travis.yml b/.travis.yml
+index c0071c81..dd014ab8 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -4,6 +4,9 @@ language: python
+ python:
+   - "2.7"
+   - "3.5"
++  - "3.6"
++  - "3.7"
++  - "3.8"
+ #before_install:
+ # - sudo apt-get update -qq
+ # - sudo apt-get install -qq python-apt python-pycurl
+
+From e634d17d55c569da12219a6d165db0efd8f39f8f Mon Sep 17 00:00:00 2001
+From: bobbintb <bobbintb@gmail.com>
+Date: Fri, 19 Feb 2021 10:57:49 -0700
+Subject: [PATCH 29/32] 2to3
+
+---
+ pavement.py | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/pavement.py b/pavement.py
+index ecb3602c..64e91917 100644
+--- a/pavement.py
++++ b/pavement.py
+@@ -323,10 +323,10 @@ def stopdocs():
+ #
+ 
+ @task
++@needs("nosetests")
+ def test():
+     "run unit tests"
+-    sh("coverage run $(which nosetests)")
+-    sh('coverage report --include="*pyrocore*" --omit="*test*"')
++
+ 
+ @task
+ def coverage():
+@@ -334,7 +334,6 @@ def coverage():
+     coverage_index = path("build/coverage/index.html")
+     coverage_index.remove()
+     sh("paver test")
+-    sh('coverage html --include="*pyrocore*" --omit="*test*" -d build/coverage/')
+     coverage_index.exists() and webbrowser.open(coverage_index)
+ 
+ 
+
+From 5c598dde9bc69f2769a4b4db500717217bee4355 Mon Sep 17 00:00:00 2001
+From: bobbintb <bobbintb@gmail.com>
+Date: Thu, 4 Mar 2021 18:38:12 -0700
+Subject: [PATCH 30/32] Update metafile.py to fix dictionary issues
+
+When creating the metafile to make the torrent, the dictionary keys are not binary strings, just strings. So this breaks in Python 3. Changes a bunch of references to dictionary keys to binary strings and it now creates a proper torrent file. Not sure if every method works though.
+---
+ src/pyrocore/util/metafile.py | 191 +++++++++++++++++-----------------
+ 1 file changed, 95 insertions(+), 96 deletions(-)
+
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index fe4e0af6..9acb8eb8 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -53,22 +53,22 @@
+ 
+ # List of all standard keys in a metafile
+ _i = None
+-METAFILE_STD_KEYS = [_i.split('.') for _i in (
+-    "announce",
+-    "announce-list", # BEP-0012
+-    "comment",
+-    "created by",
+-    "creation date",
+-    "encoding",
+-    "info",
+-    "info.length",
+-    "info.name",
+-    "info.piece length",
+-    "info.pieces",
+-    "info.private",
+-    "info.files",
+-    "info.files.length",
+-    "info.files.path",
++METAFILE_STD_KEYS = [_i.split(b'.') for _i in (
++    b"announce",
++    b"announce-list", # BEP-0012
++    b"comment",
++    b"created by",
++    b"creation date",
++    b"encoding",
++    b"info",
++    b"info.length",
++    b"info.name",
++    b"info.piece length",
++    b"info.pieces",
++    b"info.private",
++    b"info.files",
++    b"info.files.length",
++    b"info.files.path",
+ )]
+ 
+ del _i
+@@ -120,29 +120,29 @@ def check_info(info):
+     if not isinstance(info, dict):
+         raise ValueError("bad metainfo - not a dictionary")
+ 
+-    pieces = info.get("pieces")
++    pieces = info.get(b"pieces")
+     if not isinstance(pieces, six.binary_type) or len(pieces) % 20 != 0:
+         raise ValueError("bad metainfo - bad pieces key")
+ 
+-    piece_size = info.get("piece length")
++    piece_size = info.get(b"piece length")
+     if not isinstance(piece_size, six.integer_types) or piece_size <= 0:
+         raise ValueError("bad metainfo - illegal piece length")
+ 
+-    name = info.get("name")
++    name = info.get(b"name")
+     if not isinstance(name, six.string_types):
+         raise ValueError("bad metainfo - bad name (type is %r)" % type(name).__name__)
+     if not ALLOWED_ROOT_NAME.match(name):
+         raise ValueError("name %s disallowed for security reasons" % name)
+ 
+-    if ("files" in info) == ("length" in info):
++    if (b"files" in info) == (b"length" in info):
+         raise ValueError("single/multiple file mix")
+ 
+-    if "length" in info:
+-        length = info.get("length")
++    if b"length" in info:
++        length = info.get(b"length")
+         if not isinstance(length, six.integer_types) or length < 0:
+             raise ValueError("bad metainfo - bad length")
+     else:
+-        files = info.get("files")
++        files = info.get(b"files")
+         if not isinstance(files, (list, tuple)):
+             raise ValueError("bad metainfo - bad file list")
+ 
+@@ -150,11 +150,11 @@ def check_info(info):
+             if not isinstance(item, dict):
+                 raise ValueError("bad metainfo - bad file value")
+ 
+-            length = item.get("length")
++            length = item.get(b"length")
+             if not isinstance(length, six.integer_types) or length < 0:
+                 raise ValueError("bad metainfo - bad length")
+ 
+-            path = item.get("path")
++            path = item.get(b"path")
+             if not isinstance(path, (list, tuple)) or not path:
+                 raise ValueError("bad metainfo - bad path")
+ 
+@@ -167,7 +167,7 @@ def check_info(info):
+                 if part and not ALLOWED_PATH_NAME.match(part):
+                     raise ValueError("path %s disallowed for security reasons" % part)
+ 
+-        file_paths = [os.sep.join(item["path"]) for item in files]
++        file_paths = [os.sep.join(item[b"path"]) for item in files]
+         if len(set(file_paths)) != len(file_paths):
+             raise ValueError("bad metainfo - duplicate path")
+ 
+@@ -181,9 +181,9 @@ def check_meta(meta):
+     """
+     if not isinstance(meta, dict):
+         raise ValueError("bad metadata - not a dictionary")
+-    if not isinstance(meta.get("announce"), six.string_types):
++    if not isinstance(meta.get(b"announce"), six.string_types):
+         raise ValueError("bad announce URL - not a string")
+-    check_info(meta.get("info"))
++    check_info(meta.get(b"info"))
+ 
+     return meta
+ 
+@@ -204,23 +204,23 @@ def clean_meta(meta, including_info=False, logger=None):
+             modified.add(key)
+ 
+     if including_info:
+-        for key in meta["info"].keys():
+-            if ["info", key] not in METAFILE_STD_KEYS:
++        for key in meta[b"info"].keys():
++            if [b"info", key] not in METAFILE_STD_KEYS:
+                 if logger:
+                     logger("Removing key %r..." % ("info." + key,))
+-                del meta["info"][key]
+-                modified.add("info." + key)
++                del meta[b"info"][key]
++                modified.add(b"info." + key)
+ 
+-        for idx, entry in enumerate(meta["info"].get("files", [])):
++        for idx, entry in enumerate(meta[b"info"].get(b"files", [])):
+             for key in entry.keys():
+-                if ["info", "files", key] not in METAFILE_STD_KEYS:
++                if [b"info", b"files", key] not in METAFILE_STD_KEYS:
+                     if logger:
+                         logger("Removing key %r from file #%d..." % (key, idx + 1))
+                     del entry[key]
+-                    modified.add("info.files." + key)
++                    modified.add(b"info.files." + key)
+ 
+             # Remove crap that certain PHP software puts in paths
+-            entry["path"] = [i for i in entry["path"] if i]
++            entry[b"path"] = [i for i in entry[b"path"] if i]
+ 
+     return modified
+ 
+@@ -248,19 +248,17 @@ def sane_encoding(field, text):
+             # Broken beyond anything reasonable
+             bad_encodings.add('UNKNOWN/EXOTIC')
+             bad_fields.add(field)
+-            if not isinstance(text, six.text_type):
+-                text = six.text_type(text, 'utf-8', 'replace')
+-            return text.replace('\ufffd', '_').encode("utf-8")
++            return six.text_type(text, 'utf-8', 'replace').replace('\ufffd', '_').encode("utf-8")
+ 
+     # Go through all string fields and check them
+-    for field in ("comment", "created by"):
++    for field in (b"comment", b"created by"):
+         if field in meta:
+             meta[field] = sane_encoding(field, meta[field])
+ 
+-    meta["info"]["name"] = sane_encoding('info name', meta["info"]["name"])
++    meta[b"info"][b"name"] = sane_encoding(b'info name', meta[b"info"][b"name"])
+ 
+-    for entry in meta["info"].get("files", []):
+-        entry["path"] = [sane_encoding('file path', i) for i in entry["path"]]
++    for entry in meta[b"info"].get(b"files", []):
++        entry[b"path"] = [sane_encoding(b'file path', i) for i in entry[b"path"]]
+ 
+     return (meta, bad_encodings, bad_fields) if diagnostics else meta
+ 
+@@ -309,43 +307,43 @@ def add_fast_resume(meta, datapath):
+     """ Add fast resume data to a metafile dict.
+     """
+     # Get list of files
+-    files = meta["info"].get("files", None)
++    files = meta[b"info"].get(b"files", None)
+     single = files is None
+     if single:
+         if os.path.isdir(datapath):
+-            datapath = os.path.join(datapath, meta["info"]["name"])
++            datapath = os.path.join(datapath, meta[b"info"][b"name"])
+         files = [Bunch(
+             path=[os.path.abspath(datapath)],
+-            length=meta["info"]["length"],
++            length=meta[b"info"][b"length"],
+         )]
+ 
+     # Prepare resume data
+     resume = meta.setdefault("libtorrent_resume", {})
+-    resume["bitfield"] = len(meta["info"]["pieces"]) // 20
++    resume["bitfield"] = len(meta[b"info"][b"pieces"]) // 20
+     resume["files"] = []
+-    piece_length = meta["info"]["piece length"]
++    piece_length = meta[b"info"][b"piece length"]
+     offset = 0
+ 
+     for fileinfo in files:
+         # Get the path into the filesystem
+-        filepath = os.sep.join(fileinfo["path"])
++        filepath = os.sep.join(fileinfo[b"path"])
+         if not single:
+             filepath = os.path.join(datapath, filepath.strip(os.sep))
+ 
+         # Check file size
+-        if os.path.getsize(filepath) != fileinfo["length"]:
++        if os.path.getsize(filepath) != fileinfo[b"length"]:
+             raise OSError(errno.EINVAL, "File size mismatch for %r [is %d, expected %d]" % (
+-                filepath, os.path.getsize(filepath), fileinfo["length"],
++                filepath, os.path.getsize(filepath), fileinfo[b"length"],
+             ))
+ 
+         # Add resume data for this file
+-        resume["files"].append(dict(
++        resume[b"files"].append(dict(
+             priority=1,
+             mtime=int(os.path.getmtime(filepath)),
+-            completed=(offset+fileinfo["length"]+piece_length-1) // piece_length
++            completed=(offset+fileinfo[b"length"]+piece_length-1) // piece_length
+                      - offset // piece_length,
+         ))
+-        offset += fileinfo["length"]
++        offset += fileinfo[b"length"]
+ 
+     return meta
+ 
+@@ -353,20 +351,20 @@ def add_fast_resume(meta, datapath):
+ def info_hash(metadata):
+     """ Return info hash as a string.
+     """
+-    return hashlib.sha1(bencode.bencode(metadata['info'])).hexdigest().upper()
++    return hashlib.sha1(bencode.bencode(metadata[b'info'])).hexdigest().upper()
+ 
+ 
+ def data_size(metadata):
+     """ Calculate the size of a torrent based on parsed metadata.
+     """
+-    info = metadata['info']
++    info = metadata[b'info']
+ 
+-    if 'length' in info:
++    if b'length' in info:
+         # Single file
+-        total_size = info['length']
++        total_size = info[b'length']
+     else:
+         # Directory structure
+-        total_size = sum([f['length'] for f in info['files']])
++        total_size = sum([f[b'length'] for f in info[b'files']])
+ 
+     return total_size
+ 
+@@ -390,7 +388,7 @@ def checked_open(filename, log=None, quiet=False):
+         if log:
+             # Warn about it, unless it's a quiet value query
+             if not quiet:
+-                log.warn("%r: %s" % (filename, exc))
++                log.warn("%s: %s" % (filename, exc))
+         else:
+             raise
+ 
+@@ -515,8 +513,8 @@ def _make_info(self, piece_size, progress, walker, piece_callback=None):
+             filesize = os.path.getsize(filename)
+             filepath = filename[len(os.path.dirname(self.datapath) if self._fifo else self.datapath):].lstrip(os.sep)
+             file_list.append({
+-                "length": filesize,
+-                "path": [x for x in fmt.to_unicode(filepath).replace(os.sep, '/').split('/')],
++                b"length": filesize,
++                b"path": [x for x in fmt.to_unicode(filepath).replace(os.sep, '/').split('/')],
+             })
+             self.LOG.debug("Hashing %r, size %d..." % (filename, filesize))
+ 
+@@ -556,16 +554,17 @@ def _make_info(self, piece_size, progress, walker, piece_callback=None):
+ 
+         # Build the meta dict
+         metainfo = {
+-            "pieces": b"".join(pieces),
+-            "piece length": piece_size,
+-            "name": os.path.basename(self.datapath),
++            b"pieces": b"".join(pieces),
++            b"piece length": piece_size,
++            b"name": os.path.basename(self.datapath),
+         }
+ 
+         # Handle directory/FIFO vs. single file
+         if self._fifo or os.path.isdir(self.datapath):
+-            metainfo["files"] = file_list
++            metainfo[b"files"] = file_list
+         else:
+-            metainfo["length"] = totalhashed
++            metainfo[b"length"] = totalhashed
++        print(metainfo)
+ 
+         hashing_secs = time.time() - hashing_secs
+         self.LOG.info("Hashing of %s took %.1f secs (%s/s)" % (
+@@ -600,20 +599,20 @@ def _make_meta(self, tracker_url, root_name, private, progress, chunk_min, chunk
+         info, totalhashed = self._make_info(piece_size, progress, self.walk() if self._fifo else sorted(self.walk()))
+ 
+         # Enforce unique hash per tracker
+-        info["x_cross_seed"] = hashlib.md5(tracker_url.encode('utf-8')).hexdigest()
++        info[b"x_cross_seed"] = hashlib.md5(tracker_url.encode('utf-8')).hexdigest()
+ 
+         # Set private flag
+         if private:
+-            info["private"] = 1
++            info[b"private"] = 1
+ 
+         # Freely chosen root name (default is basename of the data path)
+         if root_name:
+-            info["name"] = root_name
++            info[b"name"] = root_name
+ 
+         # Torrent metadata
+         meta = {
+-            "info": info,
+-            "announce": tracker_url.strip(),
++            b"info": info,
++            b"announce": tracker_url.strip(),
+         }
+ 
+         #XXX meta["encoding"] = "UTF-8"
+@@ -670,11 +669,11 @@ def create(self, datapath, tracker_urls, comment=None, root_name=None,
+ 
+             # Add optional fields
+             if comment:
+-                meta["comment"] = comment
++                meta[b"comment"] = comment
+             if created_by:
+-                meta["created by"] = created_by
++                meta[b"created by"] = created_by
+             if not no_date:
+-                meta["creation date"] = int(time.time())
++                meta[b"creation date"] = int(time.time())
+             if callback:
+                 callback(meta)
+ 
+@@ -695,17 +694,17 @@ def check(self, metainfo, datapath, progress=None):
+ 
+         def check_piece(filename, piece):
+             "Callback for new piece"
+-            if piece != metainfo["info"]["pieces"][check_piece.piece_index:check_piece.piece_index+20]:
++            if piece != metainfo[b"info"][b"pieces"][check_piece.piece_index:check_piece.piece_index+20]:
+                 self.LOG.warn("Piece #%d: Hashes differ in file %r" % (check_piece.piece_index//20, filename))
+             check_piece.piece_index += 20
+         check_piece.piece_index = 0
+ 
+-        datameta, _ = self._make_info(int(metainfo["info"]["piece length"]), progress,
+-            [datapath] if "length" in metainfo["info"] else
+-            (os.path.join(*([datapath] + i["path"])) for i in metainfo["info"]["files"]),
++        datameta, _ = self._make_info(int(metainfo[b"info"][b"piece length"]), progress,
++            [datapath] if b"length" in metainfo[b"info"] else
++            (os.path.join(*([datapath] + i[b"path"])) for i in metainfo[b"info"][b"files"]),
+             piece_callback=check_piece
+         )
+-        return datameta["pieces"] == metainfo["info"]["pieces"]
++        return datameta[b"pieces"] == metainfo[b"info"][b"pieces"]
+ 
+ 
+     def listing(self, masked=True):
+@@ -717,12 +716,12 @@ def listing(self, masked=True):
+         bad_fields = []
+         if six.PY2: #PY3 knows it's data
+             metainfo, bad_encodings, bad_fields = sanitize(metainfo, diagnostics=True)
+-        announce = metainfo['announce']
+-        info = metainfo['info']
++        announce = metainfo[b'announce']
++        info = metainfo[b'info']
+         infohash = hashlib.sha1(bencode.bencode(info))
+ 
+         total_size = data_size(metainfo)
+-        piece_length = info['piece length']
++        piece_length = info[b'piece length']
+         piece_number, last_piece_length = divmod(total_size, piece_length)
+ 
+         # Build result
+@@ -735,38 +734,38 @@ def listing(self, masked=True):
+             ),
+             "META %s (pieces %s %.1f%%)" % (
+                 fmt.human_size(os.path.getsize(self.filename)).strip(),
+-                fmt.human_size(len(info["pieces"])).strip(),
+-                100.0 * len(info["pieces"]) / os.path.getsize(self.filename),
++                fmt.human_size(len(info[b"pieces"])).strip(),
++                100.0 * len(info[b"pieces"]) / os.path.getsize(self.filename),
+             ),
+             "HASH %s" % (infohash.hexdigest().upper()),
+             "URL  %s" % (mask_keys if masked else str)(announce),
+-            "PRV  %s" % ("YES (DHT/PEX disabled)" if info.get("private") else "NO (DHT/PEX enabled)"),
+-            "TIME %s" % ("N/A" if "creation date" not in metainfo else
+-                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(metainfo["creation date"]))
++            "PRV  %s" % ("YES (DHT/PEX disabled)" if info.get(b"private") else "NO (DHT/PEX enabled)"),
++            "TIME %s" % ("N/A" if b"creation date" not in metainfo else
++                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(metainfo[b"creation date"]))
+             ),
+         ]
+ 
+-        for label, key in (("BY  ", "created by"), ("REM ", "comment")):
++        for label, key in (("BY  ", b"created by"), ("REM ", b"comment")):
+             if key in metainfo:
+                 result.append("%s %s" % (label, metainfo.get(key, "N/A")))
+ 
+         result.extend([
+             "",
+-            "FILE LISTING%s" % ("" if 'length' in info else " [%d file(s)]" % len(info['files']),),
++            "FILE LISTING%s" % ("" if b'length' in info else " [%d file(s)]" % len(info[b'files']),),
+         ])
+-        if 'length' in info:
++        if b'length' in info:
+             # Single file
+             result.append("%-69s%9s" % (
+-                    fmt.to_unicode(info['name']),
++                    fmt.to_unicode(info[b'name']),
+                     fmt.human_size(total_size),
+             ))
+         else:
+             # Directory structure
+-            result.append("%s/" % fmt.to_unicode(info['name']))
++            result.append("%s/" % fmt.to_unicode(info[b'name']))
+             oldpaths = [None] * 99
+-            for entry in info['files']:
++            for entry in info[b'files']:
+                 # Remove crap that certain PHP software puts in paths
+-                entry_path = [fmt.to_unicode(i) for i in entry["path"] if i]
++                entry_path = [fmt.to_unicode(i) for i in entry[b"path"] if i]
+ 
+                 for idx, item in enumerate(entry_path[:-1]):
+                     if item != oldpaths[idx]:
+@@ -774,7 +773,7 @@ def listing(self, masked=True):
+                         oldpaths[idx] = item
+                 result.append("%-69s%9s" % (
+                     ' ' * (4*len(entry_path)) + entry_path[-1],
+-                    fmt.human_size(entry['length']),
++                    fmt.human_size(entry[b'length']),
+                 ))
+ 
+         if bad_encodings:
+
+From 7d489e4deba45d816cc03bb7c9095934cfefbe16 Mon Sep 17 00:00:00 2001
+From: bobbintb <bobbintb@gmail.com>
+Date: Thu, 4 Mar 2021 18:42:26 -0700
+Subject: [PATCH 31/32] Update metafile.py
+
+left a print for troubleshooting
+---
+ src/pyrocore/util/metafile.py | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/pyrocore/util/metafile.py b/src/pyrocore/util/metafile.py
+index 9acb8eb8..6383840d 100644
+--- a/src/pyrocore/util/metafile.py
++++ b/src/pyrocore/util/metafile.py
+@@ -564,7 +564,6 @@ def _make_info(self, piece_size, progress, walker, piece_callback=None):
+             metainfo[b"files"] = file_list
+         else:
+             metainfo[b"length"] = totalhashed
+-        print(metainfo)
+ 
+         hashing_secs = time.time() - hashing_secs
+         self.LOG.info("Hashing of %s took %.1f secs (%s/s)" % (
+
+From ec35387a8b378a2000d7bb02eb3556ad77ab6c78 Mon Sep 17 00:00:00 2001
+From: bobbintb <bobbintb@gmail.com>
+Date: Mon, 5 Apr 2021 13:28:51 -0600
+Subject: [PATCH 32/32] py3 fix
+
+another py3 fix
+---
+ src/pyrocore/scripts/base.py  | 2 +-
+ src/pyrocore/scripts/lstor.py | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/pyrocore/scripts/base.py b/src/pyrocore/scripts/base.py
+index 80b2b3ec..13e7cb43 100644
+--- a/src/pyrocore/scripts/base.py
++++ b/src/pyrocore/scripts/base.py
+@@ -145,7 +145,7 @@ def __init__(self):
+             self.version = pkg_dict.get("Version", "DEV")
+ 
+         where = os.path.commonprefix([__file__, os.path.realpath(sys.argv[0]), sys.prefix])
+-        where = re.sub('^' + os.path.expanduser('~') + os.sep, '~' + os.sep, where + os.sep).rstrip(os.sep)
++        where = re.sub(u"'^' + os.path.expanduser('~') + os.sep", u"'~' + os.sep", where + os.sep).rstrip(os.sep)
+         self.version_info = '{}{}{} on Python {}'.format(
+            self.version, ' from ' if where else '', where, sys.version.split()[0])
+ 
+diff --git a/src/pyrocore/scripts/lstor.py b/src/pyrocore/scripts/lstor.py
+index 1fd98b7d..b3471e1c 100644
+--- a/src/pyrocore/scripts/lstor.py
++++ b/src/pyrocore/scripts/lstor.py
+@@ -85,7 +85,7 @@ def mainloop(self):
+                 listing = None
+ 
+                 if self.options.raw or self.options.json:
+-                    if not self.options.reveal and "info" in data:
++                    if not self.options.reveal and b"info" in data:
+                         # Shorten useless binary piece hashes
+                         data["info"]["pieces"] = "<%d piece hashes>" % (
+                             len(data["info"]["pieces"]) / len(hashlib.sha1().digest()) # bogus pylint: disable=E1101
+@@ -104,7 +104,7 @@ def splitter(fields):
+                                 yield field.strip()
+ 
+                     data["__file__"] = filename
+-                    if 'info' in data:
++                    if b'info' in data:
+                         data["__hash__"] = metafile.info_hash(data)
+                         data["__size__"] = metafile.data_size(data)
+                     values = []
+@@ -128,7 +128,7 @@ def splitter(fields):
+                 self.LOG.warning("Bad metafile %r (%s: %s)" % (filename, type(exc).__name__, exc))
+             else:
+                 if listing is not None:
+-                    print(fmt.to_utf8(listing))
++                    print(listing)
+ 
+ 
+ def run(): #pragma: no cover
