@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+# Copyright 2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="vaultwarden daemon"
+description=""
+
+command="/var/lib/vaultwarden/vaultwarden"
+pidfile="/run/vaultwarden.pid"
+description="Unofficial Bitwarden compatible server written in Rust"
+start_stop_daemon_args="--env VAULTWARDEN_CONFIG=$VAULTWARDEN_CONFIG --user ${VAULTWARDEN_USER} --group ${VAULTWARDEN_GROUP} --pidfile ${pidfile} --make-pidfile --background"
+
+depend() {
+	need net
+	use mysql postgresql
+}
