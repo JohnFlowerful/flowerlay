@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+# Copyright 2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="RoonServer daemon"
+description="A music management and listening solution"
+
+command="/opt/RoonServer/start.sh"
+pidfile="/run/roonserver.pid"
+start_stop_daemon_args="--env ROON_DATAROOT=$ROON_DATAROOT --env ROON_ID_DIR=$ROON_ID_DIR --user ${ROONSERVER_USER} --group ${ROONSERVER_GROUP} --pidfile ${pidfile} --make-pidfile --background"
+
+depend() {
+	need net
+}

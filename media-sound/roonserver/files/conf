@@ -1,0 +1,8 @@
+# Settings for /etc/init.d/roonserver
+
+# User and group
+ROONSERVER_USER="roon"
+ROONSERVER_GROUP="roon"
+
+ROON_DATAROOT="/var/lib/roon"
+ROON_ID_DIR="/var/lib/roon"
