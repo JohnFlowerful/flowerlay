@@ -16,6 +16,7 @@ LICENSE="all-rights-reserved"
 SLOT="0"
 KEYWORDS="~amd64"
 
+RESTRICT="strip"
 
 ACCT_DEPEND="
 	acct-group/roon
