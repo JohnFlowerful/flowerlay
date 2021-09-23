@@ -30,6 +30,15 @@ RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/RoonServer"
 
+# 1:file 2:prepend_string
+file_to_prepended_string() {
+	list=$(<"${FILESDIR}"/${1})
+	list=($list)
+	list=("${list[@]/#/${2}'/'}")
+	printf -v list "%s " "${list[@]}"
+	echo $list
+}
+
 src_install() {
 	newinitd "${FILESDIR}"/init roonserver
 	newconfd "${FILESDIR}"/conf roonserver
@@ -40,4 +49,7 @@ src_install() {
 
     insinto /opt/RoonServer
     doins -r *
+
+	executables=$(file_to_prepended_string executables "/opt/RoonServer")
+	fperms +x ${executables}
 }
