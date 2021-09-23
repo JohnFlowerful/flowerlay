@@ -52,4 +52,8 @@ src_install() {
 
 	executables=$(file_to_prepended_string executables "/opt/RoonServer")
 	fperms +x ${executables}
+
+	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RAATServer
+	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RoonAppliance
+	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RoonServer
 }
