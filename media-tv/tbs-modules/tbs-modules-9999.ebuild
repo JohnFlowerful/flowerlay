@@ -1,9 +1,7 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-# THIS IS WORK IN PROGRESS, IT MIGHT NOT EVEN COMPILE
-
-EAPI=6
+EAPI=7
 
 inherit eutils linux-mod git-r3
 
