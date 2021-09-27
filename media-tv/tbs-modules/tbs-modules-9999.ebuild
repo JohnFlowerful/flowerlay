@@ -13,6 +13,8 @@ GIT_REPO_MEDIA_BUILD="https://github.com/tbsdtv/media_build.git"
 GIT_REPO_LINUX_MEDIA="https://github.com/tbsdtv/linux_media.git"
 GIT_LINUX_MEDIA_BRANCH="latest"
 
+CONFIG_CHECK="I2C_MUX REGMAP_I2C I2C_ALGOBIT"
+
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS=""
@@ -28,7 +30,7 @@ export DESTDIR="${ED}"
 
 pkg_setup() {
 	get_version
-	CONFIG_CHECK="REGMAP_I2C"
+	linux-mod_pkg_setup
 }
 
 src_unpack() {
