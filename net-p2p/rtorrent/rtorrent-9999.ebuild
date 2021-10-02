@@ -1,18 +1,18 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
-inherit autotools eutils linux-info systemd git-r3
+inherit autotools linux-info systemd git-r3
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
 EGIT_REPO_URI="https://github.com/rakshasa/rtorrent.git"
-EGIT_BRANCH="feature/bind-merge"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="daemon debug pyroscope selinux test xmlrpc"
+IUSE="daemon debug ipv6 pyroscope selinux test xmlrpc"
+RESTRICT="!test? ( test )"
 
 COMMON_DEPEND="~net-libs/libtorrent-9999
 	>=net-misc/curl-7.19.1
@@ -23,7 +23,6 @@ RDEPEND="${COMMON_DEPEND}
 	selinux? ( sec-policy/selinux-rtorrent )
 "
 DEPEND="${COMMON_DEPEND}
-	test? ( dev-util/cppunit )
 	virtual/pkgconfig"
 
 DOCS=( doc/rtorrent.rc )
@@ -38,16 +37,12 @@ pkg_setup() {
 }
 
 src_prepare() {
-	if [[ ${PV} == *9999* ]]; then
-		./autogen.sh
-	fi
+	default
 
 	# fixed upstream:
 	#"${FILESDIR}/${PN}-0.9.7-tinfo.patch" (bug #462788)
 	#"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch"
 	#"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
-	epatch \
-		"${FILESDIR}/${PN}-0.9.6-ncurses.patch" # bug #358271
 
 	if use pyroscope; then
 		# fixed upstream:
@@ -89,6 +84,7 @@ src_configure() {
 	CONFIG_SHELL=${BASH} econf \
 		--disable-dependency-tracking \
 		$(use_enable debug) \
+		$(use_enable ipv6) \
 		$(use_with xmlrpc xmlrpc-c)
 }
 

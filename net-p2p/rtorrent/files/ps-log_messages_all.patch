@@ -28,6 +28,6 @@
 +    line += '\n';
 +    ::write(log_messages_fd, line.c_str(), line.length());
 +  }
-
-   lt_log_print(torrent::LOG_DEBUG, msg, 0);
  }
+
+ Manager::Manager() :

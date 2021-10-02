@@ -1,14 +1,13 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
-inherit eutils libtool toolchain-funcs git-r3
+inherit autotools toolchain-funcs git-r3
 
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 EGIT_REPO_URI="https://github.com/rakshasa/libtorrent.git"
-EGIT_BRANCH="feature/bind-merge"
 
 LICENSE="GPL-2"
 
@@ -18,29 +17,31 @@ LICENSE="GPL-2"
 # subslot.
 SLOT="0"
 
-IUSE="debug libressl ssl test"
+IUSE="debug ssl test"
+RESTRICT="!test? ( test )"
 
 RDEPEND="
 	sys-libs/zlib
 	ssl? (
-		!libressl? ( dev-libs/openssl:0= )
-		libressl? ( dev-libs/libressl:= )
+		dev-libs/openssl:0=
 	)"
 DEPEND="${RDEPEND}
 	virtual/pkgconfig
 	test? ( dev-util/cppunit )"
 
 src_prepare() {
-	elibtoolize
-	if [[ ${PV} == *9999* ]]; then
-		./autogen.sh
-	fi
-
+	default
 	# fixed upstream:
-	# "${FILESDIR}"/lt-ps-log_open_file-reopen_all.patch
+	#"${FILESDIR}"/lt-base-c11-fixes.patch
+	#"${FILESDIR}"/lt-base-cppunit-pkgconfig.patch
+	#"${FILESDIR}"/lt-open-ssl-1.1.patch
+	#"${FILESDIR}"/lt-ps-fix_horrible_interval_setters_0.13.2.patch
+	#"${FILESDIR}"/lt-ps-log_open_file-reopen_all.patch
 	epatch \
-		"${FILESDIR}"/lt-ps-honor_system_file_allocate_all.patch \
-		"${FILESDIR}"/lt-ps-better-bencode-errors_all.patch
+		"${FILESDIR}"/lt-ps-better-bencode-errors_all.patch \
+		"${FILESDIR}"/lt-ps-honor_system_file_allocate_all.patch
+
+	eautoreconf
 }
 
 src_configure() {
@@ -58,11 +59,12 @@ src_configure() {
 		$(use_enable debug) \
 		$(use_enable ssl openssl) \
 		${disable_instrumentation} \
-		--with-posix-fallocate
+		--with-posix-fallocate \
+		--with-zlib="${EROOT%/}/usr/"
 }
 
 src_install() {
 	default
 
-	prune_libtool_files --all
+	find "${D}" -name '*.la' -delete
 }
