@@ -3,7 +3,7 @@
 
 EAPI=6
 
-inherit autotools linux-info systemd git-r3
+inherit autotools linux-info systemd tmpfiles git-r3
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
@@ -19,7 +19,7 @@ COMMON_DEPEND="~net-libs/libtorrent-9999
 	sys-libs/ncurses:0=
 	xmlrpc? ( dev-libs/xmlrpc-c )"
 RDEPEND="${COMMON_DEPEND}
-	daemon? ( app-misc/screen )
+	daemon? ( app-misc/tmux )
 	selinux? ( sec-policy/selinux-rtorrent )
 "
 DEPEND="${COMMON_DEPEND}
@@ -95,6 +95,7 @@ src_install() {
 	if use daemon; then
 		newinitd "${FILESDIR}/rtorrentd.init" rtorrentd
 		newconfd "${FILESDIR}/rtorrentd.conf" rtorrentd
+		newtmpfiles "${FILESDIR}/rt_tmpfiles.conf" ${PN}.conf
 		systemd_newunit "${FILESDIR}/rtorrentd_at.service" "rtorrentd@.service"
 	fi
 }

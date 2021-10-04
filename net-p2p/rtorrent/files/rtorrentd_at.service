@@ -1,15 +1,16 @@
 [Unit]
-Description=rTorrent
+Description=rtorrent
 Requires=network.target local-fs.target
+After=network.target
 
 [Service]
 Type=forking
-RemainAfterExit=yes
-KillMode=none
-User=%I
-ExecStart=/usr/bin/screen -d -m -S rtorrentd /usr/bin/rtorrent
-ExecStop=/usr/bin/screen -S rtorrentd -X quit
-WorkingDirectory=/home/%I/
+ExecStartPre=/bin/bash -c "if test -e ~/.session/rtorrent.lock && test -z `pidof rtorrent`; then rm -f ~/.session/rtorrent.lock; fi"
+ExecStart=/usr/bin/tmux -L rt new-session -s rt -n rtorrent -d
+ExecStartPost=/usr/bin/tmux -L rt send -t rt:rtorrent "rtorrent -n -o import=~/rtorrent/rtorrent.rc" ENTER
+ExecStop=/bin/bash -c "/usr/bin/tmux -L rt send-keys -t rt:rtorrent C-q; while pidof rtorrent > /dev/null; do echo stopping rtorrent...; sleep 3; done"
+Restart=on-failure
+TimeoutStopSec=180
 
 [Install]
-WantedBy=multi-user.target
+WtntedBy=default.target
