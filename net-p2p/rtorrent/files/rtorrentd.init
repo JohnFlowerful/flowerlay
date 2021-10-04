@@ -82,14 +82,15 @@ stop() {
 		while true; do
 			read -p "Do you want to stop all processes? " yn
 			case $yn in
-				[Yy]* ) tmux_safe_kill_panes rtorrent_$USER; SKIP_RTORRENT=1; tmux_safe_kill_panes rtorrent_$USER; break;;
+				[Yy]* ) break;;
 				[Nn]* ) exit 1;;
 				* ) echo "Please answer yes or no.";;
 			esac
 		done
-	else
-		tmux -S $TMUX_SOCKET_PATH send-keys -t rtorrent_$USER 'C-q'
 	fi
+	tmux_safe_kill_panes rtorrent_$USER
+	SKIP_RTORRENT=1
+	tmux_safe_kill_panes rtorrent_$USER
 
 	s=0
 	while ps -p $(cat $RTPID) -o comm= > /dev/null; do 
