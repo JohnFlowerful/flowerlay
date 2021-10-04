@@ -99,3 +99,7 @@ src_install() {
 		systemd_newunit "${FILESDIR}/rtorrentd_at.service" "rtorrentd@.service"
 	fi
 }
+
+pkg_postinst() {
+	tmpfiles_process ${PN}.conf
+}
