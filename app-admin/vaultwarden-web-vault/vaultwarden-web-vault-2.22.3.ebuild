@@ -13,6 +13,7 @@ EGIT_COMMIT="v${PV}"
 # jslib's commit requires manual attention (possible upstream rebase?). update as required
 EGIT_OVERRIDE_COMMIT_BITWARDEN_JSLIB="1f0127966e85aa29f9e50144de9b2a03b00de5d4"
 
+# vaultwarden patch
 SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${PV}.patch"
 
 LICENSE="GPL-3"
@@ -22,6 +23,8 @@ KEYWORDS="~amd64"
 DEPEND=""
 RDEPEND="${DEPEND}"
 BDEPEND=">=net-libs/nodejs-14.17[npm]"
+
+RESTRICT="mirror network-sandbox"
 
 src_prepare() {
     eapply "${DISTDIR}/v${PV}.patch"
