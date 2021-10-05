@@ -10,8 +10,6 @@ HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 EGIT_REPO_URI="https://github.com/bitwarden/web.git"
 EGIT_COMMIT="v${PV}"
-# jslib's commit requires manual attention (possible upstream rebase?). update as required
-EGIT_OVERRIDE_COMMIT_BITWARDEN_JSLIB="1f0127966e85aa29f9e50144de9b2a03b00de5d4"
 
 # vaultwarden patch
 SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${PV}.patch"
@@ -33,12 +31,16 @@ src_prepare() {
     # make sure the package.json provided doesn't try to update submodules again
     sed -i -r "s/npm run sub:init//" "${S}/package.json" || die
 
-    npm install
+    # https://vaultwarden.discourse.group/t/error-build-web-vault-patch-2-23-0/1158
+	rm -rf package-lock.json
+
+    npm install --omit=optional
 }
 
 src_compile() {
     npm audit fix
-    npm run dist
+
+    npm run build:selfhost:prod:oss
 }
 
 src_install() {
