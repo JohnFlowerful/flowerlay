@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+# Copyright 2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="flood daemon"
+description="A modern web UI for various torrent clients with a Node.js backend and React frontend."
+
+command=/usr/bin/npm
+command_args="run start --prefix /usr/lib/flood -- --rundir=\"${RUNDIR}\" ${FLOOD_OPTS}"
+
+pidfile="/run/flood.pid"
+start_stop_daemon_args="--user ${USER} --group ${GROUP} --pidfile ${pidfile} --make-pidfile --background"
+
+depend() {
+	use net
+}
