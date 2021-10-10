@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+<herd>mail-mta</herd>
+<longdescription lang="en">
+	A third-party, open-source ProtonMail CardDAV, IMAP and SMTP bridge
+</longdescription>
+<use>
+	<flag name='daemon'>Pulls service accounts and installs configuration
+        files to run hydroxide as a system service</flag>
+</use>
+
+</pkgmetadata>

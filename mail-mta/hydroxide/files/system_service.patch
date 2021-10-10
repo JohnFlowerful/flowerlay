@@ -1,0 +1,25 @@
+diff --git a/config/config.go b/config/config.go
+index d1a2c19..d08b39b 100644
+--- a/config/config.go
++++ b/config/config.go
+@@ -7,16 +7,15 @@ import (
+ )
+ 
+ func Path(filename string) (string, error) {
+-	configHome := os.Getenv("XDG_CONFIG_HOME")
+-	if configHome == "" {
+-		home := os.Getenv("HOME")
++	home := os.Getenv("XDG_CONFIG_HOME")
++	if home == "" {
++		home = os.Getenv("HOME")
+ 		if home == "" {
+ 			return "", errors.New("HOME not set")
+ 		}
+-		configHome = filepath.Join(home, ".config")
+ 	}
+ 
+-	p := filepath.Join(configHome, "hydroxide", filename)
++	p := filepath.Join(home, filename)
+ 
+ 	dirname, _ := filepath.Split(p)
+ 	if err := os.MkdirAll(dirname, 0700); err != nil {

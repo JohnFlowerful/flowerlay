@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+# Copyright 2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="hydroxide daemon"
+description="A third-party, open-source ProtonMail CardDAV, IMAP and SMTP bridge"
+
+command="/usr/bin/hydroxide"
+command_args="${HYDROXIDE_MODE} ${HYDROXIDE_OPTS}"
+
+pidfile="/run/hydroxide.pid"
+start_stop_daemon_args="--user ${USER} --pidfile ${pidfile} --make-pidfile --background"
+
+depend() {
+	need net
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=A third-party, open-source ProtonMail CardDAV, IMAP and SMTP bridge
+ConditionPathExistsGlob=%E/hydroxide/*.db
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/hydroxide ${HYDROXIDE_MODE}
+
+[Install]
+WantedBy=default.target
