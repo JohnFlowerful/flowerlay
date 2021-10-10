@@ -6,7 +6,7 @@ name="hydroxide daemon"
 description="A third-party, open-source ProtonMail CardDAV, IMAP and SMTP bridge"
 
 command="/usr/bin/hydroxide"
-command_args="${HYDROXIDE_MODE} ${HYDROXIDE_OPTS}"
+command_args="${HYDROXIDE_OPTS} ${HYDROXIDE_MODE}"
 
 pidfile="/run/hydroxide.pid"
 start_stop_daemon_args="--user ${USER} --pidfile ${pidfile} --make-pidfile --background"
