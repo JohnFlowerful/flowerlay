@@ -10,13 +10,14 @@ HOMEPAGE="https://roonlabs.com/"
 MY_PV_MAJOR=$(ver_cut 1)
 MY_PV_MINOR=$(ver_cut 2)
 MY_PV_BUILD=$(ver_cut 3)
-SRC_URI="http://download.roonlabs.com/builds/RoonServer_linuxx64_${MY_PV_MAJOR}00${MY_PV_MINOR}00${MY_PV_BUILD}.tar.bz2"
+MY_PV_SUFFIX=$(ver_cut 4)
+SRC_URI="RoonServer_linuxx64_${MY_PV_MAJOR}00${MY_PV_MINOR}00${MY_PV_BUILD}_${MY_PV_SUFFIX}.tar.bz2"
 
 LICENSE="Roon"
 SLOT="0"
 KEYWORDS="~amd64"
 
-RESTRICT="strip"
+RESTRICT="fetch strip"
 
 ACCT_DEPEND="
 	acct-group/roon
@@ -29,6 +30,16 @@ DEPEND="
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/RoonServer"
+
+pkg_nofetch() {
+	einfo
+	einfo "This package requires Roon private beta access. You can find the"
+	einfo "tarball in the private beta section: https://community.roonlabs.com/c/private-beta"
+	einfo
+	einfo "Please download ${SRC_URI}"
+	einfo "and place it in your distfiles directory"
+	einfo
+}
 
 # 1:file 2:prepend_string
 file_to_prepended_string() {
@@ -50,10 +61,10 @@ src_install() {
 	insinto /opt/RoonServer
 	doins -r *
 
-	executables=$(file_to_prepended_string executables "/opt/RoonServer")
+	executables=$(file_to_prepended_string executables_beta "/opt/RoonServer")
 	fperms +x ${executables}
 
-	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RAATServer
-	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RoonAppliance
-	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RoonServer
+	dosym /opt/RoonServer/RoonDotnet/dotnet /opt/RoonServer/RoonDotnet/RAATServer
+	dosym /opt/RoonServer/RoonDotnet/dotnet /opt/RoonServer/RoonDotnet/RoonAppliance
+	dosym /opt/RoonServer/RoonDotnet/dotnet /opt/RoonServer/RoonDotnet/RoonServer
 }
