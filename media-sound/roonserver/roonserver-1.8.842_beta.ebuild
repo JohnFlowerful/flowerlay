@@ -25,6 +25,7 @@ ACCT_DEPEND="
 "
 DEPEND="
     ${ACCT_DEPEND}
+	dev-libs/icu
     media-video/ffmpeg
 "
 RDEPEND="${DEPEND}"
