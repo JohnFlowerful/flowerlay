@@ -30,7 +30,7 @@ DEPEND="
 	${ACCT_DEPEND}
 	dev-libs/openssl:0=
 	dev-lang/rust[nightly]
-	>=app-admin/vaultwarden-web-vault-2.22.3
+	>=app-admin/vaultwarden-web-vault-2.24.1
 	mysql? ( virtual/mysql )
 	postgres? ( dev-db/postgresql )
 	sqlite? ( dev-db/sqlite )
@@ -68,19 +68,19 @@ src_install() {
 	einstalldocs
 
 	# Install init.d and conf.d scripts
-	newinitd "${FILESDIR}"/init vaultwarden
-	newconfd "${FILESDIR}"/conf vaultwarden
-	systemd_newunit "${FILESDIR}"/vaultwarden.service vaultwarden.service
+	newinitd "${FILESDIR}"/${PN}.init ${PN}
+	newconfd "${FILESDIR}"/${PN}.conf ${PN}
+	systemd_newunit "${FILESDIR}"/${PN}.service ${PN}.service
 
 	# Install /etc/vaultwarden.env
 	insinto /etc
-	newins .env.template vaultwarden.env
-	fowners root:vaultwarden /etc/vaultwarden.env
-	fperms 640 /etc/vaultwarden.env
+	newins .env.template ${PN}.env
+	fowners root:vaultwarden /etc/${PN}.env
+	fperms 640 /etc/${PN}.env
 
 	# Install launch wrapper
 	exeinto /var/lib/vaultwarden
-	doexe "${FILESDIR}"/vaultwarden
+	doexe "${FILESDIR}"/${PN}
 
 	# Keep data dir
 	keepdir /var/lib/vaultwarden/data
