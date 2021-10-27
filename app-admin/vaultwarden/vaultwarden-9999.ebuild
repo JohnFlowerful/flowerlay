@@ -9,7 +9,7 @@ DESCRIPTION="Unofficial Bitwarden compatible server written in Rust"
 HOMEPAGE="https://github.com/dani-garcia/vaultwarden"
 
 EGIT_REPO_URI="https://github.com/dani-garcia/${PN}.git"
-if [[ "${PV}" == *9999* ]]; then
+if [[ "${PV}" == 9999 ]]; then
 	KEYWORDS=""
 else
 	EGIT_COMMIT="${PV}"
