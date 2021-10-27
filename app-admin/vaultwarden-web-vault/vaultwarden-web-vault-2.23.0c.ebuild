@@ -8,11 +8,12 @@ inherit git-r3
 DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
+MY_PV=$(ver_cut 1-3)
+
 EGIT_REPO_URI="https://github.com/bitwarden/web.git"
-EGIT_COMMIT="v${PV}"
+EGIT_COMMIT="v${MY_PV}"
 
 # vaultwarden patch
-MY_PV=$(ver_cut 1-3)
 SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PV}/patches/v${MY_PV}.patch"
 
 LICENSE="GPL-3"
@@ -26,7 +27,7 @@ BDEPEND=">=net-libs/nodejs-14.17[npm]"
 RESTRICT="mirror network-sandbox"
 
 src_prepare() {
-    eapply "${DISTDIR}/v${PV}.patch"
+    eapply "${DISTDIR}/v${MY_PV}.patch"
     eapply_user
 
     # make sure the package.json provided doesn't try to update submodules again
