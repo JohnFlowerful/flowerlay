@@ -81,7 +81,6 @@ ACCT_DEPEND="
 RDEPEND="daemon? ( ${ACCT_DEPEND} )"
 
 src_prepare() {
-	cd  "src/github.com/emersion/${PN}"
 	if use daemon; then
 		eapply "${FILESDIR}/system_service.patch"
 	fi
@@ -94,7 +93,6 @@ src_compile() {
 
 src_install() {
 	dobin hydroxide
-	systemd_douserunit "${FILESDIR}/${PN}.service"
 	dodoc "README.md"
 	dodoc "LICENSE"
 
