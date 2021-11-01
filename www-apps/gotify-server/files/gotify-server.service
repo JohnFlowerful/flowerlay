@@ -1,0 +1,16 @@
+[Unit]
+Description=gotify-server
+After=network.target
+
+[Service]
+User=%I
+Group=%I
+Type=simple
+KillMode=process
+WorkingDirectory=/var/lib/gotify
+ExecStart=/usr/bin/gotify-server
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

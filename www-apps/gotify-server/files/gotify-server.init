@@ -1,0 +1,18 @@
+#!/sbin/openrc-run
+# Copyright 1999-2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="gotify-server daemon"
+description="A simple server for sending and receiving messages in real-time per WebSocket. (Includes a sleek web-ui)"
+
+command="/usr/bin/gotify-server"
+command_args="${GOTIFY_OPTS}"
+
+pidfile="/run/gotify.pid"
+PWHOME="$(getent passwd $USER | awk -F: '{ print $6 }')"
+start_stop_daemon_args="--user ${USER} --group ${GROUP} --chdir ${PWHOME} --pidfile ${pidfile} --make-pidfile --background"
+
+depend() {
+	use net
+	use mysql postgresql
+}
