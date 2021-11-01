@@ -407,11 +407,18 @@ src_compile() {
 	npm audit fix --legacy-peer-deps
 	npm run build || die
 	popd
-	go run hack/packr/packr.go || die
+	go run hack/packr/packr.go -- . || die
 
 	# build binary
-	MY_LDFLAGS="-w -s -X main.Version=$(git describe --tags | cut -c 2-) -X main.BuildDate=$(date "+%F-%T") -X main.Commit=$(git rev-parse --verify HEAD) -X main.Mode=prod";
-	go build -ldflags="$MY_LDFLAGS" -o ${PN} || die
+	MY_COMMIT="$(zcat ${DISTDIR}/${P}.tar.gz | git get-tar-commit-id)";
+	MY_DATE=$(date "+%F-%T")
+	go build \
+		-o ${PN} \
+		-trimpath \
+		-ldflags="-X 'main.Version=${PV}' \
+			-X 'main.Commit=${MY_COMMIT}' \
+			-X 'main.BuildDate=${MY_DATE}' \
+			-X 'main.Mode=prod'" || die
 }
 
 src_install() {
