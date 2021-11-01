@@ -364,11 +364,12 @@ EGO_SUM=(
 	"honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod"
 )
 go-module_set_globals
-SRC_URI="https://github.com/gotify/server/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	${EGO_SUM_SRC_URI}"
+SRC_URI="
+	https://github.com/gotify/server/archive/v${PV}.tar.gz -> ${P}.tar.gz
+	${EGO_SUM_SRC_URI}
+"
 
-# almost certainly requires more licenses but golicense says the binary isnt built with GO_SUM?
-LICENSE="MIT"
+LICENSE="Apache-2.0 BSD-2 BSD MIT"
 SLOT="0"
 IUSE="mysql postgres sqlite"
 REQUIRED_USE="|| ( mysql postgres sqlite )"
