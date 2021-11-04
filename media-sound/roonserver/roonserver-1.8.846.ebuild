@@ -16,7 +16,7 @@ LICENSE="Roon"
 SLOT="0"
 KEYWORDS="~amd64"
 
-RESTRICT="strip"
+RESTRICT="mirror strip"
 
 ACCT_DEPEND="
 	acct-group/roon
@@ -24,6 +24,7 @@ ACCT_DEPEND="
 "
 DEPEND="
     ${ACCT_DEPEND}
+	dev-libs/icu
     media-video/ffmpeg
 "
 RDEPEND="${DEPEND}"
@@ -53,7 +54,7 @@ src_install() {
 	executables=$(file_to_prepended_string executables "/opt/RoonServer")
 	fperms +x ${executables}
 
-	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RAATServer
-	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RoonAppliance
-	dosym /opt/RoonServer/RoonMono/bin/mono-sgen /opt/RoonServer/RoonMono/bin/RoonServer
+	dosym /opt/RoonServer/RoonDotnet/dotnet /opt/RoonServer/RoonDotnet/RAATServer
+	dosym /opt/RoonServer/RoonDotnet/dotnet /opt/RoonServer/RoonDotnet/RoonAppliance
+	dosym /opt/RoonServer/RoonDotnet/dotnet /opt/RoonServer/RoonDotnet/RoonServer
 }
