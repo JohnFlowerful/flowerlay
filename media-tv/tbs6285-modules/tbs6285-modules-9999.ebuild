@@ -77,6 +77,7 @@ src_install() {
 	# install firmware
 	insinto /lib/firmware
 	pushd "${WORKDIR}/tbs-tuner-firmware"
+	doins "dvb-demod-si2168-b40-01.fw"
 	doins "dvb-demod-si2168-02.fw"
 	doins "dvb-tuner-si2158-a20-01.fw"
 	popd
