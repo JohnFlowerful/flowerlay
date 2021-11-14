@@ -23,9 +23,9 @@ ACCT_DEPEND="
 	acct-user/roon
 "
 DEPEND="
-    ${ACCT_DEPEND}
+	${ACCT_DEPEND}
 	dev-libs/icu
-    media-video/ffmpeg
+	media-video/ffmpeg
 "
 RDEPEND="${DEPEND}"
 
