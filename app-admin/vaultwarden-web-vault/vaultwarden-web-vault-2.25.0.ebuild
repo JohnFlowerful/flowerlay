@@ -25,25 +25,22 @@ BDEPEND=">=net-libs/nodejs-14.17[npm]"
 RESTRICT="mirror network-sandbox"
 
 src_prepare() {
-    eapply "${DISTDIR}/v${PV}.patch"
-    eapply_user
+	eapply "${DISTDIR}/v${PV}.patch"
+	eapply_user
 
-    # make sure the package.json provided doesn't try to update submodules again
-    sed -i -r "s/npm run sub:init//" "${S}/package.json" || die
+	# make sure the package.json provided doesn't try to update submodules again
+	sed -i -r "s/npm run sub:init//" "${S}/package.json" || die
 
-    # https://vaultwarden.discourse.group/t/error-build-web-vault-patch-2-23-0/1158
-	rm -rf package-lock.json
-
-    npm install --omit=optional
+	npm ci --legacy-peer-deps --omit=optional
 }
 
 src_compile() {
-    npm audit fix
+	npm audit fix --legacy-peer-deps
 
-    npm run build:selfhost:prod:oss
+	npm run build:oss:selfhost:prod
 }
 
 src_install() {
-    insinto /usr/share/vaultwarden-web-vault/htdocs
-    doins -r build/*
+	insinto /usr/share/vaultwarden-web-vault/htdocs
+	doins -r build/*
 }
