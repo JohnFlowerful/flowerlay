@@ -7,7 +7,6 @@ inherit go-module systemd
 
 DESCRIPTION="A simple server for sending and receiving messages in real-time per WebSocket. (Includes a sleek web-ui)"
 HOMEPAGE="https://gotify.net/"
-
 EGO_SUM=(
 	"cloud.google.com/go v0.26.0/go.mod"
 	"github.com/BurntSushi/toml v0.3.0/go.mod"
