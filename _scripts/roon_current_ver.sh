@@ -98,7 +98,7 @@ fi
 
 cd ${WORKDIR}
 
-echo -e "${PREFIX}downloading ${RED}${ROONSERVER_FILENAME}"
+echo -e "${PREFIX}downloading ${RED}${ROONSERVER_FILENAME}${NC}"
 if [[ -f "$ROONSERVER_FILENAME" ]]; then
 	echo -e "${WARN_PREFIX}${RED}${ROONSERVER_FILENAME} ${NC}already exists."
 	while true; do
@@ -107,7 +107,7 @@ if [[ -f "$ROONSERVER_FILENAME" ]]; then
 		case $yn in
 			[Yy]* )
 				rm -f ${ROONSERVER_FILENAME}
-				wget "http://download.roonlabs.com/builds/"${ROONSERVER_FILENAME}
+				wget ${ROONSERVER_BASEURL}${ROONSERVER_FILENAME}
 				break;;
 			[Nn]* )
 				break;;
