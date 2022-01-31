@@ -9,10 +9,12 @@ DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 EGIT_REPO_URI="https://github.com/bitwarden/web.git"
-EGIT_COMMIT="v${PV}"
+MY_COMMIT="$(ver_cut 1-3)"
+EGIT_COMMIT="v${MY_COMMIT}"
 
 # vaultwarden patch
-SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${PV}.patch"
+MY_PATCHV=$(ver_cut 1-2).0
+SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PATCHV}/patches/v${MY_PATCHV}.patch"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -20,12 +22,12 @@ KEYWORDS="~amd64"
 
 DEPEND=""
 RDEPEND="${DEPEND}"
-BDEPEND=">=net-libs/nodejs-14.17[npm]"
+BDEPEND=">=net-libs/nodejs-16.13.1[npm]"
 
 RESTRICT="mirror network-sandbox"
 
 src_prepare() {
-	eapply "${DISTDIR}/v${PV}.patch"
+	eapply "${DISTDIR}/v${MY_PATCHV}.patch"
 	eapply_user
 
 	# make sure the package.json provided doesn't try to update submodules again

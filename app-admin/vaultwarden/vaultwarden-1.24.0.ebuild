@@ -29,7 +29,7 @@ ACCT_DEPEND="
 DEPEND="
 	${ACCT_DEPEND}
 	dev-libs/openssl:0=
-	>=dev-lang/rust-1.57[nightly]
+	>=dev-lang/rust-1.58.1[nightly]
 	>=app-admin/vaultwarden-web-vault-2.24.1
 	mysql? ( virtual/mysql )
 	postgres? ( dev-db/postgresql )
@@ -56,6 +56,9 @@ src_configure() {
 		$(usex postgres postgresql '')
 		$(usev sqlite)
 	)
+
+	# this version of vaultwarden works with rust 1.58
+	sed -i -r 's/(rust-version\ \=\ ).+/\1"1.58"/' "${S}/Cargo.toml" || die
 }
 
 src_compile() {
