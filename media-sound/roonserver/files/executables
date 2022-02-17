@@ -40,7 +40,6 @@ Appliance/libraatmanager.so
 Appliance/libroonbase.so
 Appliance/libroondevialet.so
 Appliance/libroonmedia.so
-Appliance/libroonsearch.so
 Appliance/pl/FSharp.Core.resources.dll
 Appliance/processreaper
 Appliance/pt-BR/FSharp.Core.resources.dll
