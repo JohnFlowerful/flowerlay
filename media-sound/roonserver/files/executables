@@ -48,6 +48,8 @@ Appliance/roon_smb_watcher
 Appliance/ru/FSharp.Core.resources.dll
 Appliance/tr/FSharp.Core.resources.dll
 Appliance/webroot/cast.js
+Appliance/webroot/img/display_album_default.png
+Appliance/webroot/img/display_roon_icon.svg
 Appliance/zh-Hans/FSharp.Core.resources.dll
 Appliance/zh-Hant/FSharp.Core.resources.dll
 RoonDotnet/dotnet
