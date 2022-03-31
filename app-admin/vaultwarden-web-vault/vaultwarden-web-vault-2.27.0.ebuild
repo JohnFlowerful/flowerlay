@@ -11,6 +11,8 @@ HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 EGIT_REPO_URI="https://github.com/bitwarden/web.git"
 MY_COMMIT="$(ver_cut 1-3)"
 EGIT_COMMIT="v${MY_COMMIT}"
+# jslib's commit requires manual attention (possible upstream rebase?). update as required
+EGIT_OVERRIDE_COMMIT_BITWARDEN_JSLIB="3ec0f6977acc9374b7b379cbd59a2d7d1dbe8beb"
 
 # vaultwarden patch
 MY_PATCHV=$(ver_cut 1-2).0
