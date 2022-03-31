@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">manrajgrover/py-log-symbols</remote-id>
+	</upstream>
+	<longdescription>
+		Colored symbols for various log levels for Python
+	</longdescription>
+</pkgmetadata>

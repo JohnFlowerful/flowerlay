@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">manrajgrover/py-spinners</remote-id>
+	</upstream>
+	<longdescription>
+		More than 60 spinners for terminal, this is python port of amazing node library cli-spinners.
+	</longdescription>
+</pkgmetadata>

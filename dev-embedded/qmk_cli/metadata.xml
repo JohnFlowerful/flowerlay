@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">qmk/qmk_cli</remote-id>
+	</upstream>
+	<longdescription>
+		A program to help users work with QMK Firmware.
+	</longdescription>
+	<use>
+		<flag name="chibios">Pulls <pkg>sys-devel/clang</pkg> for building chibios binaries.</flag>
+	</use>
+</pkgmetadata>
