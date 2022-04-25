@@ -9,14 +9,10 @@ DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 EGIT_REPO_URI="https://github.com/bitwarden/web.git"
-MY_COMMIT="$(ver_cut 1-3)"
-EGIT_COMMIT="v${MY_COMMIT}"
-# jslib's commit requires manual attention (possible upstream rebase?). update as required
-EGIT_OVERRIDE_COMMIT_BITWARDEN_JSLIB="3ec0f6977acc9374b7b379cbd59a2d7d1dbe8beb"
+EGIT_COMMIT="v${PV}"
 
 # vaultwarden patch
-MY_PATCHV=$(ver_cut 1-2).0
-SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PATCHV}/patches/v${MY_PATCHV}.patch"
+SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${PV}.patch"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -29,7 +25,7 @@ BDEPEND=">=net-libs/nodejs-16.13.1[npm]"
 RESTRICT="mirror network-sandbox"
 
 src_prepare() {
-	eapply "${DISTDIR}/v${MY_PATCHV}.patch"
+	eapply "${DISTDIR}/v${PV}.patch"
 	eapply_user
 
 	# make sure the package.json provided doesn't try to update submodules again
