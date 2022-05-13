@@ -12,7 +12,8 @@ EGIT_REPO_URI="https://github.com/bitwarden/web.git"
 EGIT_COMMIT="v${PV}"
 
 # vaultwarden patch
-SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${PV}.patch"
+MY_PATCHV=$(ver_cut 1-2).0
+SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PATCHV}/patches/v${MY_PATCHV}.patch"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -25,7 +26,7 @@ BDEPEND=">=net-libs/nodejs-16.13.1[npm]"
 RESTRICT="mirror network-sandbox"
 
 src_prepare() {
-	eapply "${DISTDIR}/v${PV}.patch"
+	eapply "${DISTDIR}/v${MY_PATCHV}.patch"
 	eapply_user
 
 	# make sure the package.json provided doesn't try to update submodules again
