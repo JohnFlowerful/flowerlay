@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">pterodactyl/wings</remote-id>
+	</upstream>
+	<longdescription lang="en">
+		The server control plane for Pterodactyl Panel. Written from the ground-up
+		with security, speed, and stability in mind. 
+	</longdescription>
+</pkgmetadata>
