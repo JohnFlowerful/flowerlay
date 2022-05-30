@@ -1,4 +1,4 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -13,7 +13,10 @@ EGIT_COMMIT="v${PV}"
 
 # vaultwarden patch
 MY_PATCHV=$(ver_cut 1-2).0
-SRC_URI="https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PATCHV}/patches/v${MY_PATCHV}.patch"
+SRC_URI="
+	https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PATCHV}/patches/v${MY_PATCHV}.patch -> ${P}.patch
+	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-cache.tar.xz
+"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -21,23 +24,26 @@ KEYWORDS="~amd64"
 
 DEPEND=""
 RDEPEND="${DEPEND}"
-BDEPEND=">=net-libs/nodejs-16.13.1[npm]"
+BDEPEND="=net-libs/nodejs-16*[npm]"
 
-RESTRICT="mirror network-sandbox"
+RESTRICT="mirror"
 
-src_prepare() {
-	eapply "${DISTDIR}/v${MY_PATCHV}.patch"
+src_unpack() {
+	unpack "${P}-npm-cache.tar.xz"
+	git-r3_src_unpack
+}
+
+src_configure() {
+	eapply "${DISTDIR}/${P}.patch"
 	eapply_user
 
 	# make sure the package.json provided doesn't try to update submodules again
-	sed -i -r "s/npm run sub:init//" "${S}/package.json" || die
+	sed -i -r 's/npm run sub:init//' "${S}/package.json" || die
 
-	npm ci --legacy-peer-deps --omit=optional
+	npm clean-install --legacy-peer-deps --omit=optional --cache "${WORKDIR}/npm-cache" || die
 }
 
 src_compile() {
-	npm audit fix --legacy-peer-deps
-
 	npm run build:oss:selfhost:prod
 }
 

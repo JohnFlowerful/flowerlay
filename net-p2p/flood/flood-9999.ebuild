@@ -1,4 +1,4 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -11,10 +11,15 @@ HOMEPAGE="https://flood.js.org/"
 if [[ "${PV}" == 9999 ]]; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/jesec/${PN}.git"
+	IUSE="+build-online"
 	KEYWORDS=""
 else
-	SRC_URI="https://github.com/jesec/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~amd64"
+	SRC_URI="
+		https://github.com/jesec/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
+		https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-cache.tar.xz
+	"
+	IUSE="build-online"
+	KEYWORDS="amd64"
 fi
 
 LICENSE="GPL-3"
@@ -26,18 +31,22 @@ ACCT_DEPEND="
 "
 DEPEND="${ACCT_DEPEND}"
 RDEPEND="${DEPEND}"
-BDEPEND=">=net-libs/nodejs-14.17[npm]"
+BDEPEND="=net-libs/nodejs-14*[npm]"
 
-RESTRICT="mirror network-sandbox"
+RESTRICT="mirror build-online? ( network-sandbox )"
 
-src_prepare() {
-	npm ci --omit=optional
-
-	eapply_user
+src_configure() {
+	if ! use build-online; then
+		# remember to `npm cache add fsevents@$ver'...
+		export npm_config_cache="${WORKDIR}/npm-cache"
+	fi
+	npm clean-install --legacy-peer-deps --omit=optional || die
 }
 
 src_compile() {
-	npm audit fix
+	if use build-online; then
+		npm audit fix
+	fi
 
 	npm run build
 }
