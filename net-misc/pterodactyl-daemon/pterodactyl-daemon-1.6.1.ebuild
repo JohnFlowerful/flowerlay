@@ -13,7 +13,7 @@ SRC_URI="
 	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.xz
 "
 
-LICENSE="MIT"
+LICENSE="Apache-2.0 BSD BSD-2 CC-BY-SA-4.0 LGPL-3 MIT"
 SLOT="0"
 IUSE=""
 KEYWORDS="amd64"
