@@ -1,4 +1,4 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -12,6 +12,8 @@ EGIT_REPO_URI="https://github.com/dani-garcia/${PN}.git"
 if [[ "${PV}" == 9999 ]]; then
 	KEYWORDS=""
 else
+	# cant use source tarball until job_scheduler is packaged as a crate rather
+	# than an external github repository
 	EGIT_COMMIT="${PV}"
 	KEYWORDS="~amd64"
 fi
