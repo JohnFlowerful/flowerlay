@@ -28,7 +28,10 @@ DEPEND="
 	dev-php/composer
 	virtual/mysql
 "
-RDEPEND="${DEPEND}"
+RDEPEND="
+	${DEPEND}
+	www-apps/pterodactyl-panel-common
+"
 
 RESTRICT="mirror"
 
@@ -40,7 +43,7 @@ S="${WORKDIR}/panel-${PV}"
 
 src_prepare() {
 	# cleanup
-	find ${S} -type f -name '.git*' -delete
+	find "${S}" -type f -name '.git*' -delete
 	rm -rf .github
 
 	default
@@ -80,14 +83,4 @@ src_install() {
 	webapp_configfile "${MY_HTDOCSDIR}"/storage
 
 	webapp_src_install
-
-	newinitd "${FILESDIR}"/pteroq.init pteroq
-	newconfd "${FILESDIR}"/pteroq.conf pteroq
-
-	insinto /etc/cron.d
-	newins "${FILESDIR}"/pterodactyl-panel.cron ${PN}
-
-	insinto /usr/libexec/${PN}
-	insopts -m755
-	doins "${FILESDIR}"/run-schedule
 }

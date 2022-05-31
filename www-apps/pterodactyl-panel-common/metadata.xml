@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">pterodactyl/panel</remote-id>
+	</upstream>
+	<longdescription lang="en">
+		Service and other related files for pterodactyl-panel
+	</longdescription>
+</pkgmetadata>
