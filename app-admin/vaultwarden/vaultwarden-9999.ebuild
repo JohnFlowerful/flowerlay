@@ -31,7 +31,7 @@ ACCT_DEPEND="
 DEPEND="
 	${ACCT_DEPEND}
 	dev-libs/openssl:0=
-	dev-lang/rust[nightly]
+	dev-lang/rust
 	>=app-admin/vaultwarden-web-vault-2.24.1
 	mysql? ( virtual/mysql )
 	postgres? ( dev-db/postgresql )
