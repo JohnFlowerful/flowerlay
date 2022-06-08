@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription lang="en">
+		Brother printer driver for DCP-J1100DW
+	</longdescription>
+	<use>
+		<flag name="metric">Use A4 as default paper type, instead of Letter.</flag>
+		<flag name="scanner">Enable scanner on multifunction devices which support it</flag>
+	</use>
+</pkgmetadata>
