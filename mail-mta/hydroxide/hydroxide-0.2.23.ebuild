@@ -30,6 +30,10 @@ src_prepare() {
 	if use daemon; then
 		eapply "${FILESDIR}/system_service.patch"
 	fi
+
+	# patch required until new release
+	eapply "${FILESDIR}/api_endpoint.patch"
+
 	eapply_user
 }
 
