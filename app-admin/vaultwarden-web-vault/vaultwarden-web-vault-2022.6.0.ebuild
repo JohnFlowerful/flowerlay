@@ -8,8 +8,8 @@ inherit git-r3
 DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
-EGIT_REPO_URI="https://github.com/bitwarden/web.git"
-EGIT_COMMIT="${PV}"
+EGIT_REPO_URI="https://github.com/bitwarden/clients.git"
+EGIT_COMMIT="web-v${PV}"
 
 # vaultwarden patch
 #MY_PATCHV=$(ver_cut 1-2).0
@@ -34,20 +34,28 @@ src_unpack() {
 	git-r3_src_unpack
 }
 
-src_configure() {
+src_prepare() {
+	# we're patching in an update to change sha1 to sha512 for this version.
+	# run 'npm update' and diff package-lock.json to get the patch.
+	# only required due to cache misses (integrity check failures) while offline
+	eapply "${FILESDIR}/${P}-sha1_to_sha512.patch"
+
 	eapply "${DISTDIR}/${P}.patch"
 
-	# make sure the package.json provided doesn't try to update submodules again
-	sed -i -r 's/npm run sub:init//' "${S}/package.json" || die
+	default
+}
 
-	npm clean-install --legacy-peer-deps --omit=optional --cache "${WORKDIR}/npm-cache" || die
+src_configure() {
+	npm clean-install --omit=optional --offline --cache "${WORKDIR}/npm-cache" || die
 }
 
 src_compile() {
+	pushd apps/web
 	npm run build:oss:selfhost:prod
+	popd
 }
 
 src_install() {
 	insinto /usr/share/vaultwarden-web-vault/htdocs
-	doins -r build/*
+	doins -r apps/web/build/*
 }
