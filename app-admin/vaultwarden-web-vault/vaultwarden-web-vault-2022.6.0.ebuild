@@ -50,6 +50,7 @@ src_prepare() {
 }
 
 src_configure() {
+	npm config set nodedir "/usr/include/node" || die
 	npm clean-install --omit=optional --offline --cache "${WORKDIR}/npm-cache" || die
 }
 
