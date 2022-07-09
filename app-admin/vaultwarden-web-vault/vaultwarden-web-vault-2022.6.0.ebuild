@@ -40,6 +40,10 @@ src_prepare() {
 	# only required due to cache misses (integrity check failures) while offline
 	eapply "${FILESDIR}/${P}-sha1_to_sha512.patch"
 
+	# new repo for bitwarden clients includes desktop versions as well...
+	# removing electron will suffice for now
+	eapply "${FILESDIR}/${P}-remove_electron.patch"
+
 	eapply "${DISTDIR}/${P}.patch"
 
 	default
