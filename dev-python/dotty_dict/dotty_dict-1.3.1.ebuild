@@ -3,6 +3,7 @@
 
 EAPI=8
 
+DISTUTILS_USE_PEP517=poetry
 PYTHON_COMPAT=( python3_{8..10} )
 
 inherit distutils-r1
@@ -15,4 +16,4 @@ LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
 
-distutils_enable_tests pytest
+RESTRICT="test"

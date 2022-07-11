@@ -18,7 +18,7 @@ KEYWORDS="amd64"
 RDEPEND="
 	dev-libs/hidapi"
 
-distutils_enable_tests nose
+RESTRICT="test"
 
 src_prepare() {
 	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die

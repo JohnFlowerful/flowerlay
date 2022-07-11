@@ -15,4 +15,4 @@ LICENSE="AFL-2.1 MIT"
 SLOT="0"
 KEYWORDS="amd64"
 
-distutils_enable_tests pytest
+RESTRICT="test"

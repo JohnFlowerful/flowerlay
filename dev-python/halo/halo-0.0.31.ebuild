@@ -22,7 +22,7 @@ DEPEND="
 	>=dev-python/spinners-0.0.24
 	>=dev-python/termcolor-1.1.0"
 
-distutils_enable_tests pytest
+RESTRICT="test"
 
 src_prepare() {
 	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die

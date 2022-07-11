@@ -22,7 +22,7 @@ DEPEND="
 	dev-python/halo
 	dev-python/spinners"
 
-distutils_enable_tests nose
+RESTRICT="test"
 
 src_prepare() {
 	for i in setup.{cfg,py}; do

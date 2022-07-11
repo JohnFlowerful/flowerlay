@@ -3,7 +3,9 @@
 
 EAPI=8
 
+DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{8..10} )
+inherit distutils-r1
 
 DESCRIPTION="A program to help users work with QMK"
 HOMEPAGE="https://qmk.fm/"
@@ -14,9 +16,7 @@ SLOT="0"
 KEYWORDS="amd64"
 IUSE="chibios"
 
-BDEPEND="
-	dev-python/build"
-DEPEND="
+RDEPEND="
 	app-arch/unzip
 	app-arch/zip
 	app-mobilephone/dfu-util
@@ -38,14 +38,17 @@ DEPEND="
 	net-misc/wget
 	sys-apps/hwloc
 	chibios? ( sys-devel/clang )
-	sys-devel/crossdev"
+	sys-devel/crossdev
+"
 
-src_compile() {
-	python -m build --wheel --skip-dependency-check --no-isolation
+RESTRICT="test"
+
+src_prepare() {
+	default
+	sed -rz -i 's/,\n.+"wheel"//' "${S}/pyproject.toml" || die
 }
 
-src_install() {
-	python -m installer --destdir="${D}" dist/*.whl
+pkg_postinst() {
 	[ ! -x /usr/bin/avr-gcc ] && ewarn "Missing avr-gcc; you need to 'crossdev -s4 avr'"
 	[ ! -x /usr/bin/arm-none-eabi-gcc ] && ewarn "Missing arm-none-eabi-gcc; you need to 'crossdev -s4 arm-none-eabi'"
 }

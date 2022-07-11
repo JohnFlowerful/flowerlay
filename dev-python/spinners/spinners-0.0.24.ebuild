@@ -15,7 +15,7 @@ LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
 
-distutils_enable_tests pytest
+RESTRICT="test"
 
 src_prepare() {
 	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die

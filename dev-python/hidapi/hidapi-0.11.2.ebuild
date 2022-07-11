@@ -20,7 +20,7 @@ DEPEND="
 RDEPEND="
 	${DEPEND}"
 
-distutils_enable_tests pytest
+RESTRICT="test"
 
 src_prepare() {
 	# rename the module to avoid conflict with dev-python/hid
