@@ -35,6 +35,17 @@ BDEPEND="=net-libs/nodejs-14*[npm]"
 
 RESTRICT="mirror build-online? ( network-sandbox )"
 
+src_prepare() {
+	if ! use build-online; then
+		# we're patching in an update to change sha1 to sha512 for this version.
+		# run 'npm update' and diff package-lock.json to get the patch.
+		# only required due to cache misses (integrity check failures) while offline
+		eapply "${FILESDIR}/${P}-sha1_to_sha512.patch"
+	fi
+
+	default
+}
+
 src_configure() {
 	if ! use build-online; then
 		# remember to `npm cache add fsevents@$ver'...
