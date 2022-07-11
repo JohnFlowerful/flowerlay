@@ -18,9 +18,10 @@ SLOT="0"
 RESTRICT="test"
 
 RDEPEND=">=dev-python/tempita-0.5.2"
-DEPEND="${RDEPEND}
+DEPEND="
+	${RDEPEND}
 	dev-python/setuptools[${PYTHON_USEDEP}]
-	test? ( dev-python/nose[${PYTHON_USEDEP}] )"
+"
 
 S="${WORKDIR}/${MY_P}"
 
