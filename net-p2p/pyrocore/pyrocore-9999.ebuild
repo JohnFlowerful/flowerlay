@@ -1,8 +1,8 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
-PYTHON_COMPAT=( python3_9 )
+EAPI=8
+PYTHON_COMPAT=( python3_{8..10} )
 
 inherit distutils-r1 git-r3
 
@@ -15,7 +15,7 @@ EGIT_REPO_URI="https://github.com/pyroscope/pyrocore.git"
 LICENSE="GPL-2"
 SLOT="0"
 #KEYWORDS="x86 amd64"
-IUSE=""
+RESTRICT="test"
 
 COMMON_DEPEND=">=dev-python/APScheduler-3.6.3
 	>=dev-python/pyinotify-0.9.6
