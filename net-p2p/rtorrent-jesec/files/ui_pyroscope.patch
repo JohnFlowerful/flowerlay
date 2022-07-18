@@ -1,0 +1,96 @@
+diff --git a/include/display/canvas.h b/include/display/canvas.h
+index 911215e..d4cca92 100644
+--- a/include/display/canvas.h
++++ b/include/display/canvas.h
+@@ -246,8 +246,10 @@ Canvas::print(unsigned int x, unsigned int y, const char* str, ...) {
+   if (m_isInitialized) {
+     va_list arglist;
+     va_start(arglist, str);
+-    wmove(m_window, y, x);
+-    vw_printw(m_window, const_cast<char*>(str), arglist);
++    if (y < height()) {
++      wmove(m_window, y, x);
++      vw_printw(m_window, const_cast<char*>(str), arglist);
++    }
+     va_end(arglist);
+   }
+ }
+diff --git a/src/command_helpers.cc b/src/command_helpers.cc
+index 7112593..25e72ae 100644
+--- a/src/command_helpers.cc
++++ b/src/command_helpers.cc
+@@ -39,6 +39,8 @@ void
+ initialize_command_scheduler();
+ void
+ initialize_command_ui();
++void
++initialize_command_ui_pyroscope();
+ 
+ void
+ initialize_commands() {
+@@ -58,6 +60,7 @@ initialize_commands() {
+   initialize_command_throttle();
+   initialize_command_tracker();
+   initialize_command_scheduler();
++  initialize_command_ui_pyroscope();
+ }
+ 
+ void
+diff --git a/src/display/canvas.cc b/src/display/canvas.cc
+index ac1c08e..25fef28 100644
+--- a/src/display/canvas.cc
++++ b/src/display/canvas.cc
+@@ -93,6 +93,8 @@ Canvas::initialize() {
+                   << std::endl;
+       }
+     });
++    extern void ui_pyroscope_canvas_init();
++    ui_pyroscope_canvas_init();
+     initscr();
+     raw();
+     noecho();
+diff --git a/src/display/window_download_list.cc b/src/display/window_download_list.cc
+index 2b8c3bb..1acdb2a 100644
+--- a/src/display/window_download_list.cc
++++ b/src/display/window_download_list.cc
+@@ -61,6 +61,11 @@ WindowDownloadList::redraw() {
+                    "]")
+                     .c_str());
+ 
++  bool ui_pyroscope_download_list_redraw(
++    Window * window, display::Canvas * canvas, core::View * view);
++  if (ui_pyroscope_download_list_redraw(this, m_canvas, m_view))
++    return;
++
+   // show "X of Y"
+   if (width > 16 + 8 + m_view->name().length()) {
+     int item_idx = m_view->focus() - m_view->begin_visible();
+@@ -124,6 +129,14 @@ WindowDownloadList::redraw() {
+       m_canvas->print(
+         0, pos++, "%c %s", range.first == m_view->focus() ? '*' : ' ', buffer);
+ 
++      void ui_pyroscope_download_list_redraw_item(Window * window,
++                                                  display::Canvas * canvas,
++                                                  core::View * view,
++                                                  int    pos,
++                                                  Range& range);
++      ui_pyroscope_download_list_redraw_item(
++        this, m_canvas, m_view, pos, range);
++
+       range.first++;
+     }
+ 
+diff --git a/src/display/window_statusbar.cc b/src/display/window_statusbar.cc
+index 944eb44..3d975f3 100644
+--- a/src/display/window_statusbar.cc
++++ b/src/display/window_statusbar.cc
+@@ -40,6 +40,9 @@ WindowStatusbar::redraw() {
+     m_canvas->print(width - (position - buffer), 0, "%s", buffer);
+   }
+ 
++  void ui_pyroscope_statusbar_redraw(Window * window, display::Canvas * canvas);
++  ui_pyroscope_statusbar_redraw(this, m_canvas);
++
+   m_lastTick = control->tick();
+ 
+   free(buffer);

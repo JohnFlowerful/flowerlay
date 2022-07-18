@@ -1,0 +1,154 @@
+#!/sbin/openrc-run
+# Copyright 2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+: ${TMUX_TMPDIR:="/tmp"}
+: ${TMUX_SOCKET:="default"}
+
+: ${RTORRENTRC:=".rtorrent.rc"}
+: ${SESSIONDIR:=".session"}
+
+__IFS="
+"
+
+USER=${SVCNAME#*.}
+if ! [[ $(id $USER 2> /dev/null) ]] && [[ ${SVCNAME} == "rtorrentd."* ]]; then
+	eerror "Symlink service file with valid user"
+	exit 1
+else
+	TMUX_SOCKET_PATH="$TMUX_TMPDIR/tmux-$(id -u $USER 2> /dev/null)/$TMUX_SOCKET"
+	RUNDIR="/run/rtorrent/$USER"
+	RTPID="/run/rtorrent/$USER/rtorrentd.pid"
+fi
+
+depend() {
+	use net
+}
+
+start() {
+	PWHOME="$(getent passwd $USER | awk -F: '{ print $6 }')"
+
+	RTORRENTRC="$PWHOME/$RTORRENTRC"
+	if [[ ! -f "$RTORRENTRC" ]]; then
+		eerror "$RTORRENTRC not found."
+		exit 1
+	fi
+
+	SESSIONDIR="$PWHOME/$SESSIONDIR"
+	if [[ -f "$SESSIONDIR/rtorrent.lock" ]]; then
+		if [[ ! $(pgrep -u $USER rtorrent) ]]; then 
+			rm -f "$SESSIONDIR/rtorrent.lock"
+		else
+			eerror "rtorrent instance detected. Aborting."
+			exit 1
+		fi
+	fi
+
+	ebegin "Starting rtorrent for $USER"
+
+	# make a directory for users to place sockets into
+	mkdir "$RUNDIR"
+	chown $USER:$USER "$RUNDIR"
+
+	env TERM="xterm-256color" \
+		start-stop-daemon \
+			--start \
+			--make-pidfile \
+			--pidfile $RTPID \
+			--background \
+			--user $USER \
+			--env HOME="${PWHOME:-/home/$USER}" \
+			--env TMUX_TMPDIR="$TMUX_TMPDIR" \
+			--name rtorrent \
+			--exec tmux -- -L $TMUX_SOCKET new-session -s rtorrent_$USER -n rtorrent -d rtorrent -n -o import=$RTORRENTRC
+	
+	# set the pid
+	sleep 2
+	rt_pids=$(tmux -S $TMUX_SOCKET_PATH list-panes -a -F "#{pane_pid}")
+	readarray -t array <<< $rt_pids
+	declare -p array > /dev/null
+	for pid in ${array[@]}; do
+	 	if [[ $(ps -p $pid -o comm=) == "rtorrent"* ]]; then
+			echo $pid > $RTPID
+		fi
+	done
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping rtorrent for $USER"
+	if [[ $(tmux -S $TMUX_SOCKET_PATH list-panes -a | grep rtorrent_$USER | wc -l) -gt 1 ]]; then
+		ewarn "Warning: more than one pane found in tmux session 'rtorrent_$USER'"
+		while true; do
+			read -p "Do you want to stop all processes? " yn
+			case $yn in
+				[Yy]* ) break;;
+				[Nn]* ) exit 1;;
+				* ) echo "Please answer yes or no.";;
+			esac
+		done
+	fi
+	tmux_safe_kill_panes rtorrent_$USER
+	SKIP_RTORRENT=1
+	tmux_safe_kill_panes rtorrent_$USER
+
+	s=0
+	while ps -p $(cat $RTPID) -o comm= > /dev/null; do 
+		echo -ne "Stopping rtorrent... $s"\\r
+		let "s=s+1"
+		sleep 1
+	done
+
+	rm -rf "$RUNDIR"
+
+	eend $?
+}
+
+function safe_end_procs {
+	array=$1
+
+	OIFS="$IFS"
+	local IFS=$__IFS
+
+	for pane_set in $array; do
+		pane_id=$(echo "$pane_set" | awk -F " " '{print $1}')
+		pane_proc=$(echo "$pane_set" | awk -F " " '{print tolower($2)}')
+		cmd="C-c"
+		if [[ "$pane_proc" == "vi" ]] || [[ "$pane_proc" == "vim" ]] || [[ "$pane_proc" == "nvim" ]]; then
+			cmd=$(echo 'Escape ":qa!" Enter' || echo 'Escape ":qa" Enter')
+		elif [[ "$pane_proc" == "man" ]] || [[ "$pane_proc" == "less" ]]; then
+			cmd='"q"'
+		elif [[ "$pane_proc" == "bash" ]] || [[ "$pane_proc" == "zsh" ]] || [[ "$pane_proc" == "fish" ]]; then
+			cmd='C-c C-u space "exit" Enter'
+		elif [[ "$pane_proc" == "ssh" ]] || [[ "$pane_proc" == "vagrant" ]]; then
+			cmd='Enter "~."'
+		elif [[ "$pane_proc" == "psql" ]] || [[ "$pane_proc" == "mysql" ]]; then
+			cmd='Enter "\q"'
+		elif [[ "$pane_proc" == "rtorrent" ]]; then
+			if ! [[ $SKIP_RTORRENT == 1 ]]; then
+				cmd='C-q'
+			else
+				continue
+			fi
+		fi
+		echo $cmd | xargs tmux -S $TMUX_SOCKET_PATH send-keys -t "$pane_id"
+		einfo "Closed $pane_proc"
+
+	done
+	IFS="$OIFS"
+}
+
+function tmux_safe_kill_panes {
+	session=$1
+
+	current_panes=$(tmux -S $TMUX_SOCKET_PATH list-panes -a -F "#{pane_id} #{pane_current_command} #{session_name}\n" | grep "$session")
+
+	SIFS="$IFS"
+	IFS=$__IFS
+	array=($current_panes)
+	IFS=$SIFS
+	for (( i=0; i<${#array[@]}; i++ )) do
+		safe_end_procs "${array[$i]}"
+		sleep 0.8
+	done
+}

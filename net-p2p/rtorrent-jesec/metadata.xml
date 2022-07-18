@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">jesec/rtorrent</remote-id>
+	</upstream>
+	<use>
+		<flag name='clang'>Use Clang compiler instead of GCC</flag>
+		<flag name='daemon'>Uses <pkg>app-misc/tmux</pkg> to daemonize this
+			application
+		</flag>
+		<flag name='jsonrpc'>Enable JSON-RPC interface</flag>
+		<flag name='lto'>Build using Link Time Optimizations (LTO)</flag>
+		<flag name='pyroscope'>Applies pyroscope patches</flag>
+		<flag name='xmlrpc'>Enable XML-RPC interface</flag>
+	</use>
+	<longdescription lang="en">
+		Console BitTorrent client using ncurses based on libtorrent written in C++.
+		This distribution focuses on additional user-facing features,
+		optimizations and better integrations with modern users of RPC interfaces.
+	</longdescription>
+</pkgmetadata>
