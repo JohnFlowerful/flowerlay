@@ -42,6 +42,7 @@ COMMON_DEPEND="
 	xmlrpc? ( dev-libs/xmlrpc-c[abyss,cxx] )"
 RDEPEND="
 	${COMMON_DEPEND}
+	!net-p2p/rtorrent
 	daemon? ( app-misc/tmux )
 	selinux? ( sec-policy/selinux-rtorrent )"
 DEPEND="${COMMON_DEPEND}"
