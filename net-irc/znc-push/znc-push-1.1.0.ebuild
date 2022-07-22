@@ -1,16 +1,19 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=8
 
-inherit eutils git-r3
+inherit git-r3
 
 DESCRIPTION="A ZNC module that will send notifications to multiple push notification services"
-EGIT_REPO_URI="https://github.com/jreese/znc-push.git"
 HOMEPAGE="https://github.com/jreese/znc-push"
+
+EGIT_REPO_URI="https://github.com/jreese/znc-push.git"
+EGIT_COMMIT="v${PV}"
 
 LICENSE="MIT"
 SLOT="0"
+KEYWORDS="~amd64"
 IUSE="+curl"
 
 RDEPEND="
@@ -23,7 +26,8 @@ DEPEND="${RDEPEND}
 ZNC_DATADIR="${ZNC_DATADIR:-"/var/lib/znc"}"
 
 src_prepare() {
-	epatch "${FILESDIR}"/destdir.patch
+	eapply "${FILESDIR}"/destdir.patch
+	default
 }
 
 src_compile() {
