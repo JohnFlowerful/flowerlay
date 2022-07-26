@@ -10,7 +10,7 @@ HOMEPAGE="https://roonlabs.com/"
 MY_PV_MAJOR=$(ver_cut 1)
 MY_PV_MINOR=$(ver_cut 2)
 MY_PV_BUILD=$(ver_cut 3)
-SRC_URI="http://download.roonlabs.com/builds/RoonServer_linuxx64_${MY_PV_MAJOR}00${MY_PV_MINOR}00${MY_PV_BUILD}.tar.bz2"
+SRC_URI="http://download.roonlabs.com/builds/RoonServer_linuxx64_${MY_PV_MAJOR}00${MY_PV_MINOR}0${MY_PV_BUILD}.tar.bz2"
 
 LICENSE="Roon"
 SLOT="0"
