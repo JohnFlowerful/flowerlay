@@ -344,19 +344,15 @@ CRATES="
 	winreg-0.7.0
 	winreg-0.10.1
 	yansi-0.5.1
-	yubico-0.11.0
-"
+	yubico-0.11.0"
 
-inherit cargo git-r3 systemd
+inherit cargo systemd
 
 DESCRIPTION="Unofficial Bitwarden compatible server written in Rust"
 HOMEPAGE="https://github.com/dani-garcia/vaultwarden"
 
-EGIT_REPO_URI="https://github.com/dani-garcia/${PN}.git"
-# cant use source tarball until job_scheduler is packaged as a crate rather
-# than an external github repository
-EGIT_COMMIT="${PV}"
-SRC_URI="$(cargo_crate_uris)"
+SRC_URI="https://github.com/dani-garcia/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz
+	$(cargo_crate_uris)"
 KEYWORDS="~amd64"
 
 LICENSE="Apache-2.0 0BSD Apache-2.0-with-LLVM-exceptions BSD BSD-2 Boost-1.0 \
@@ -381,18 +377,7 @@ RDEPEND="${DEPEND}"
 
 RESTRICT="mirror"
 
-src_unpack() {
-	git-r3_src_unpack
-
-	mkdir -p "${S}" || die
-
-	pushd "${S}" > /dev/null || die
-	CARGO_HOME="${ECARGO_HOME}" cargo fetch || die
-	CARGO_HOME="${ECARGO_HOME}" cargo vendor "${ECARGO_VENDOR}" || die
-	popd > /dev/null || die
-
-	cargo_gen_config
-}
+export VW_VERSION="${PV}"
 
 src_configure() {
 	myfeatures=(
@@ -400,14 +385,12 @@ src_configure() {
 		$(usex postgres postgresql '')
 		$(usev sqlite)
 	)
-}
 
-src_compile() {
-	cargo_src_compile ${myfeatures:+--features "${myfeatures[*]}"} --no-default-features
+	cargo_src_configure --no-default-features
 }
 
 src_install() {
-	cargo_src_install ${myfeatures:+--features "${myfeatures[*]}"} --no-default-features
+	cargo_src_install
 
 	einstalldocs
 
@@ -431,8 +414,3 @@ src_install() {
 	fowners vaultwarden:vaultwarden /var/lib/vaultwarden/data
 	fperms 700 /var/lib/vaultwarden/data
 }
-
-src_test() {
-	cargo_src_test ${myfeatures:+--features "${myfeatures[*]}"} --no-default-features
-}
-
