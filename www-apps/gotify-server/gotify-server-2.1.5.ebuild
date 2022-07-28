@@ -61,7 +61,7 @@ src_compile() {
 	go run hack/packr/packr.go -- . || die
 
 	# build binary
-	efinfo "building application binary"
+	einfo "building application binary"
 	MY_COMMIT="$(zcat ${DISTDIR}/${P}.tar.gz | git get-tar-commit-id)";
 	MY_DATE=$(date "+%F-%T")
 	go build \
