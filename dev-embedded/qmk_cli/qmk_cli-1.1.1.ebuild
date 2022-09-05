@@ -30,9 +30,10 @@ RDEPEND="
 	dev-python/dotty_dict
 	dev-python/hid
 	dev-python/hjson
-	>=dev-python/jsonschema-3
+	>=dev-python/jsonschema-4
 	>=dev-python/milc-1.4.2
 	dev-python/pygments
+	dev-python/pyserial
 	dev-python/pyusb
 	dev-vcs/git
 	net-misc/wget
