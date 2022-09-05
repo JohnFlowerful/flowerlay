@@ -15,7 +15,7 @@ EGIT_COMMIT="web-v${PV}"
 MY_PATCHV=$(ver_cut 1-2).0
 #MY_PATCHV="${PV}"
 SRC_URI="
-	https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${MY_PATCHV}/patches/v${MY_PATCHV}.patch -> ${P}.patch
+	https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${MY_PATCHV}.patch -> ${P}.patch
 	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-cache.tar.xz
 "
 
@@ -35,11 +35,6 @@ src_unpack() {
 }
 
 src_prepare() {
-	# we're patching in an update to change sha1 to sha512 for this version.
-	# run 'npm update' and diff package-lock.json to get the patch.
-	# only required due to cache misses (integrity check failures) while offline
-	eapply "${FILESDIR}/${P}-sha1_to_sha512.patch"
-
 	# new repo for bitwarden clients includes desktop versions as well...
 	# removing electron will suffice for now
 	eapply "${FILESDIR}/${P}-remove_electron.patch"
