@@ -46,9 +46,9 @@ src_compile() {
 src_install() {
 	dobin peroxide
 	dobin peroxide-cfg
-	dodoc "README.md"
-	dodoc "LICENSE"
-	dodoc "config.exmaple.yaml"
+	dodoc README.md
+	dodoc LICENSE
+	dodoc config.example.yaml
 
 	if use daemon; then
 		systemd_newunit "${FILESDIR}/${PN}.service" "${PN}.service"
