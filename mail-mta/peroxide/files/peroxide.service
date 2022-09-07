@@ -6,7 +6,7 @@ ConditionPathExistsGlob=%S/credentials.json"
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/peroxide -config /etc/peroxide/peroxide.yaml ${PEROXIDE_OPTS}
+ExecStart=/usr/bin/peroxide -config /etc/peroxide.yaml ${PEROXIDE_OPTS}
 User=peroxide
 Group=peroxide
 ExecReload=/bin/kill -HUP $MAINPID

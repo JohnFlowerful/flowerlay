@@ -6,7 +6,7 @@ name="peroxide daemon"
 description="A third-party, open-source ProtonMail IMAP and SMTP bridge"
 
 command="/usr/bin/peroxide"
-command_args="${PEROXIDE_OPTS}"
+command_args="-config /etc/peroxide.yaml ${PEROXIDE_OPTS}"
 
 pidfile="/run/peroxide.pid"
 start_stop_daemon_args="--user ${USER} --pidfile ${pidfile} --make-pidfile --background"
