@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+# Copyright 2022 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="peroxide daemon"
+description="A third-party, open-source ProtonMail IMAP and SMTP bridge"
+
+command="/usr/bin/peroxide"
+command_args="${PEROXIDE_OPTS}"
+
+pidfile="/run/peroxide.pid"
+start_stop_daemon_args="--user ${USER} --pidfile ${pidfile} --make-pidfile --background"
+
+depend() {
+	need net
+}

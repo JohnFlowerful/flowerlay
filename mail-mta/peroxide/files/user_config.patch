@@ -1,0 +1,116 @@
+diff --git a/cmd/peroxide-cfg/main.go b/cmd/peroxide-cfg/main.go
+index a832afa..2a8fca6 100644
+--- a/cmd/peroxide-cfg/main.go
++++ b/cmd/peroxide-cfg/main.go
+@@ -21,12 +21,15 @@ import (
+ 	"flag"
+ 	"fmt"
+ 	"os"
++	"path/filepath"
+ 
+ 	"github.com/ljanyst/peroxide/pkg/bridge"
+ 	"github.com/ljanyst/peroxide/pkg/logging"
+ )
+ 
+-var config = flag.String("config", "/etc/peroxide.conf", "configuration file")
++var configDir, _ = os.UserConfigDir()
++var configFile = filepath.Join(configDir, "peroxide", "peroxide.yaml")
++var config = flag.String("config", configFile, "configuration file")
+ var action = flag.String("action", "", "one of: gen-x509, list-accounts, delete-account, login-account, add-key, remove-key")
+ var x509Org = flag.String("x509-org", "", "organization name to be used in X509 certificate")
+ var x509Cn = flag.String("x509-cn", "", "common name to be used in X509 certificate")
+diff --git a/cmd/peroxide/main.go b/cmd/peroxide/main.go
+index 888a29e..de408f0 100644
+--- a/cmd/peroxide/main.go
++++ b/cmd/peroxide/main.go
+@@ -21,6 +21,7 @@ import (
+ 	"flag"
+ 	"os"
+ 	"os/signal"
++	"path/filepath"
+ 	"syscall"
+ 
+ 	"github.com/ljanyst/peroxide/pkg/bridge"
+@@ -28,7 +29,9 @@ import (
+ 	"github.com/sirupsen/logrus"
+ )
+ 
+-var config = flag.String("config", "/etc/peroxide.conf", "configuration file")
++var configDir, _ = os.UserConfigDir()
++var configFile = filepath.Join(configDir, "peroxide", "peroxide.yaml")
++var config = flag.String("config", configFile, "configuration file")
+ var logLevel = flag.String("log-level", "Warning", "account name")
+ var logFile = flag.String("log-file", "", "output file for diagnostics")
+ 
+diff --git a/config.example.yaml b/config.example.yaml
+index 2582f25..0357d6a 100644
+--- a/config.example.yaml
++++ b/config.example.yaml
+@@ -4,11 +4,11 @@
+ #  "AllowProxy":       "false",
+ #  "CacheEnabled":     "true",
+ #  "CacheCompression": "true",
+-#  "CacheDir":         "/var/cache/peroxide/cache",
+-#  "X509Key":          "/etc/peroxide/key.pem",
+-#  "X509Cert":         "/etc/peroxide/cert.pem",
+-#  "CookieJar":        "/etc/peroxide/cookies.json",
+-#  "CredentialsStore": "/etc/peroxide/credentials.json",
++#  "CacheDir":         "~/.cache/peroxide",
++#  "X509Key":          "~/.config/peroxide/key.pem",
++#  "X509Cert":         "~/.config/peroxide/cert.pem",
++#  "CookieJar":        "~/.config/peroxide/cookies.json",
++#  "CredentialsStore": "~/.config/peroxide/credentials.json",
+ #  "ServerAddress":    "[::0]",
+ #  "BCCSelf":          "false"
+ }
+diff --git a/pkg/config/settings/settings.go b/pkg/config/settings/settings.go
+index e805dc0..5cc4322 100644
+--- a/pkg/config/settings/settings.go
++++ b/pkg/config/settings/settings.go
+@@ -19,7 +19,9 @@
+ package settings
+ 
+ import (
++	"os"
+ 	"path/filepath"
++	"strings"
+ )
+ 
+ // Keys of preferences in JSON file.
+@@ -57,6 +59,8 @@ func New(settingsPath string) *Settings {
+ 
+ 	s.setDefaultValues()
+ 
++	s.checkTildePath()
++
+ 	return s
+ }
+ 
+@@ -82,11 +86,25 @@ func (s *Settings) setDefaultValues() {
+ 	s.setDefault(SMTPPortKey, DefaultSMTPPort)
+ 	s.setDefault(BCCSelf, "false")
+ 
+-	settingsDir := "/etc/peroxide"
+-	s.setDefault(CacheDir, "/var/cache/peroxide/cache")
++	configDir, _ := os.UserConfigDir()
++	cacheDir, _  := os.UserCacheDir()
++	settingsDir := filepath.Join(configDir, "peroxide")
++	s.setDefault(CacheDir, filepath.Join(cacheDir, "peroxide"))
+ 	s.setDefault(X509Key, filepath.Join(settingsDir, "key.pem"))
+ 	s.setDefault(X509Cert, filepath.Join(settingsDir, "cert.pem"))
+ 	s.setDefault(CookieJar, filepath.Join(settingsDir, "cookies.json"))
+ 	s.setDefault(CredentialsStore, filepath.Join(settingsDir, "credentials.json"))
+ 	s.setDefault(ServerAddress, "127.0.0.1")
+ }
++
++func (s *Settings) checkTildePath() {
++	a := []string{CacheDir, X509Key, X509Cert, CookieJar, CredentialsStore}
++	for _, key := range a {
++		path := s.Get(key)
++		if strings.HasPrefix(path, "~/") {
++			dirname, _ := os.UserHomeDir()
++			path = filepath.Join(dirname, path[2:])
++			s.set(key, path)
++		}
++	}
++}
