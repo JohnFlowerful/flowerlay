@@ -1,7 +1,7 @@
 # Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit go-module systemd
 
@@ -31,8 +31,8 @@ src_prepare() {
 		eapply "${FILESDIR}/system_service.patch"
 	fi
 
-	# patch required until new release
-	eapply "${FILESDIR}/api_endpoint.patch"
+	# patch to fix "Login temporarily not permitted" errors from protonmail api
+	eapply "${FILESDIR}/user_agent.patch"
 
 	eapply_user
 }
