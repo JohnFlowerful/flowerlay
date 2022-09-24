@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">erikrose/parsimonious</remote-id>
+	</upstream>
+	<longdescription>
+		Parsimonious aims to be the fastest arbitrary-lookahead parser written
+		in pure Python—and the most usable. It's based on parsing expression
+		grammars (PEGs), which means you feed it a simplified sort of EBNF
+		notation.
+	</longdescription>
+</pkgmetadata>

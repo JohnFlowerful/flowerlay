@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">fuzeman/bencode.py</remote-id>
+	</upstream>
+	<longdescription>
+		Simple bencode parser (for Python 2, Python 3 and PyPy), forked from the
+		bencode package by Thomas Rampelberg.
+	</longdescription>
+</pkgmetadata>
