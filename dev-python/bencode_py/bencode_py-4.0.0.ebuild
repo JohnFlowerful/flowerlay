@@ -19,6 +19,9 @@ LICENSE="BitTorrent-1.1"
 SLOT="0"
 KEYWORDS="amd64"
 
+BDEPEND=">=dev-python/pbr-1.9[${PYTHON_USEDEP}]"
+
 RESTRICT="test"
 
 S="${WORKDIR}/${MY_P}"
+
