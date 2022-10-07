@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name='alsa'>Pull in the suggested <pkg>media-libs/alsa-lib</pkg> 
+			package. roonserver will work without this
+		</flag>
+		<flag name='samba'>Allows Roon to mount network locations via <pkg>net-fs/cifs-utils</pkg>
+			Warning: requires potentially unwanted modifications
+		</flag>
+		<flag name='system-dotnet'>Remove the bundled dotnet core installation
+			and use a system defined one
+		</flag>
+	</use>
+	<longdescription lang="en">
+		Roon elevates your music experience in many dimensions, from rich 
+		metadata to integrated streaming services, and from inspired music 
+		recommendations to high-resolution home streaming.
+	</longdescription>
+</pkgmetadata>

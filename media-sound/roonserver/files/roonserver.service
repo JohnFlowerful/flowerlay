@@ -9,7 +9,7 @@ User=roon
 Environment=ROON_DATAROOT=/var/lib/roon
 Environment=ROON_ID_DIR=/var/lib/roon
 ExecStart=/opt/RoonServer/start.sh
-LimitNOFILE=65536
+LimitNOFILE=8192
 Restart=on-abort
 
 [Install]
