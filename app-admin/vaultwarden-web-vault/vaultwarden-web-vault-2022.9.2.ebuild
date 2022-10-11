@@ -51,7 +51,7 @@ src_configure() {
 
 src_compile() {
 	pushd apps/web
-	npm run build:oss:selfhost:prod
+	npm run build:oss:selfhost:prod || die
 	popd
 }
 

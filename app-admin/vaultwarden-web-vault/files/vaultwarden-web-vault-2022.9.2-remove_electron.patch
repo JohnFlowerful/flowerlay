@@ -12,7 +12,7 @@ index a283b68e5..8c4846d3e 100644
      "build": "concurrently -n Main,Rend -c yellow,cyan \"npm run build:main\" \"npm run build:renderer\"",
      "build:dev": "concurrently -n Main,Rend -c yellow,cyan \"npm run build:main:dev\" \"npm run build:renderer:dev\"",
 diff --git a/package-lock.json b/package-lock.json
-index 666b9fae7..5374bca14 100644
+index d59e4fdcb..1c2bf5f93 100644
 --- a/package-lock.json
 +++ b/package-lock.json
 @@ -119,14 +119,6 @@
