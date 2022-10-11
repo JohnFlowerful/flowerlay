@@ -22,7 +22,7 @@ RDEPEND=">=sys-libs/ncurses-5.9-r2
 	>=app-crypt/sbsigntools-0.6-r1
 	plymouth? ( >=sys-boot/plymouth-0.8.8-r4[gdm(+),libkms,pango] )
 	>=sys-kernel/dracut-050-r2
-	>=sys-boot/efibootmgr-0.5.4-r1
+	>=sys-boot/efibootmgr-18
 	>=sys-apps/debianutils-4.9.1[installkernel(+)]"
 
 # ebuild function overrides
