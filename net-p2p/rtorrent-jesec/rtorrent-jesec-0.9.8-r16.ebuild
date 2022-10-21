@@ -65,6 +65,8 @@ pkg_setup() {
 src_prepare() {
 	cmake_src_prepare
 
+	eapply "${FILESDIR}/ssl_verify_disable_list-${PVR}.patch"
+
 	# fixed upstream:
 	#"${FILESDIR}/${PN}-0.9.7-tinfo.patch" (bug #462788)
 	#"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch"
