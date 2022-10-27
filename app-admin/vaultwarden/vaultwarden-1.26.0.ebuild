@@ -363,17 +363,21 @@ inherit cargo systemd
 DESCRIPTION="Unofficial Bitwarden compatible server written in Rust"
 HOMEPAGE="https://github.com/dani-garcia/vaultwarden"
 
+# a crate is a regular tarball, so simply rename it and let cargo_src_unpack take
+# care of the rest
+BLACKDEX_MULTER_RS_COMMIT="477d16b7fa0f361b5c2a5ba18a5b28bec6d26a8a"
 SRC_URI="
 	https://github.com/dani-garcia/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/BlackDex/multer-rs/archive/${BLACKDEX_MULTER_RS_COMMIT}.tar.gz -> multer-rs-${BLACKDEX_MULTER_RS_COMMIT}.crate
 	$(cargo_crate_uris)
 "
-KEYWORDS="~amd64"
 
 LICENSE="
 	Apache-2.0 0BSD Apache-2.0-with-LLVM-exceptions BSD BSD-2 Boost-1.0
 	GPL-3 ISC MIT MPL-2.0 Unicode-DFS-2016 Unlicense ZLIB
 "
 SLOT="0"
+KEYWORDS="~amd64"
 IUSE="mysql postgres sqlite"
 
 REQUIRED_USE="|| ( mysql postgres sqlite )"
@@ -396,6 +400,13 @@ RDEPEND="${DEPEND}"
 RESTRICT="mirror"
 
 export VW_VERSION="${PV}"
+
+src_prepare() {
+	eapply_user
+
+	# override multer to ensure we can build offline
+	sed -i -r "s|^multer = \{ git.*|multer = { path = \"${ECARGO_VENDOR}/multer-rs-${BLACKDEX_MULTER_RS_COMMIT}\" }|" "${S}/Cargo.toml" || die
+}
 
 src_configure() {
 	myfeatures=(
