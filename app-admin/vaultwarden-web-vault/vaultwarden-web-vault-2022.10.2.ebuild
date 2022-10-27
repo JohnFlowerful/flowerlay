@@ -50,9 +50,9 @@ src_configure() {
 }
 
 src_compile() {
-	pushd apps/web
+	pushd apps/web || die
 	npm run build:oss:selfhost:prod || die
-	popd
+	popd || die
 }
 
 src_install() {
