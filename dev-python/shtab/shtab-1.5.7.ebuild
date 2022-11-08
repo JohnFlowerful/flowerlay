@@ -16,9 +16,9 @@ LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="amd64"
 
+distutils_enable_tests pytest
+
 src_prepare() {
 	sed -i -e 's/--cov=shtab --cov-report=term-missing --cov-report=xml//' setup.cfg || die
 	distutils-r1_src_prepare
 }
-
-distutils_enable_tests pytest

@@ -3,26 +3,36 @@
 
 EAPI=8
 
+DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{8..10} )
 
 inherit distutils-r1
 
 DESCRIPTION="Opinionated Batteries-Included Python 3 CLI Framework."
 HOMEPAGE="https://github.com/clueboard/milc"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+# the pypi archive is missing test files
+#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+SRC_URI="https://github.com/clueboard/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="Clueboard"
 SLOT="0"
 KEYWORDS="amd64"
+IUSE="test"
+RESTRICT="!test? ( test )"
 
-DEPEND="
-	dev-python/appdirs
-	dev-python/argcomplete
-	dev-python/colorama
-	dev-python/halo
-	dev-python/spinners"
-
-RESTRICT="test"
+RDEPEND="
+	dev-python/appdirs[${PYTHON_USEDEP}]
+	dev-python/argcomplete[${PYTHON_USEDEP}]
+	dev-python/colorama[${PYTHON_USEDEP}]
+	dev-python/halo[${PYTHON_USEDEP}]
+	dev-python/spinners[${PYTHON_USEDEP}]
+"
+BDEPEND="
+	test? (
+		dev-python/nose2[${PYTHON_USEDEP}]
+		dev-python/semver[${PYTHON_USEDEP}]
+	)
+"
 
 src_prepare() {
 	for i in setup.{cfg,py}; do
@@ -31,5 +41,10 @@ src_prepare() {
 		sed -i -e 's/dist-name/dist_name/g' "${S}/${i}" || die
 		sed -i -e 's/home-page/home_page/g' "${S}/${i}" || die
 	done
+	sed -i -e 's/license_file/license_files/g' "${S}/setup.cfg" || die
 	default
+}
+
+python_test() {
+	nose2 -v || die "Tests failed with ${EPYTHON}"
 }

@@ -3,6 +3,7 @@
 
 EAPI=8
 
+DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{8..10} )
 
 inherit distutils-r1
@@ -15,12 +16,10 @@ LICENSE="|| ( BSD GPL-3 HIDAPI )"
 SLOT="0"
 KEYWORDS="~amd64"
 
-DEPEND="
-	>=dev-libs/hidapi-0.11.0"
-RDEPEND="
-	${DEPEND}"
+DEPEND=">=dev-libs/hidapi-0.11.0"
+RDEPEND="${DEPEND}"
 
-RESTRICT="test"
+distutils_enable_tests unittest
 
 src_prepare() {
 	# rename the module to avoid conflict with dev-python/hid

@@ -5,6 +5,7 @@ EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{8..10} )
+
 inherit distutils-r1
 
 DESCRIPTION="A program to help users work with QMK"
@@ -24,17 +25,17 @@ RDEPEND="
 	dev-embedded/dfu-programmer
 	dev-embedded/qmk_udev
 	dev-libs/hidapi
-	dev-python/appdirs
-	dev-python/argcomplete
-	dev-python/colorama
-	dev-python/dotty_dict
-	dev-python/hid
-	dev-python/hjson
-	>=dev-python/jsonschema-4
-	>=dev-python/milc-1.4.2
-	dev-python/pygments
-	dev-python/pyserial
-	dev-python/pyusb
+	dev-python/appdirs[${PYTHON_USEDEP}]
+	dev-python/argcomplete[${PYTHON_USEDEP}]
+	dev-python/colorama[${PYTHON_USEDEP}]
+	dev-python/dotty_dict[${PYTHON_USEDEP}]
+	dev-python/hid[${PYTHON_USEDEP}]
+	dev-python/hjson[${PYTHON_USEDEP}]
+	>=dev-python/jsonschema-4[${PYTHON_USEDEP}]
+	>=dev-python/milc-1.4.2[${PYTHON_USEDEP}]
+	dev-python/pygments[${PYTHON_USEDEP}]
+	dev-python/pyserial[${PYTHON_USEDEP}]
+	dev-python/pyusb[${PYTHON_USEDEP}]
 	dev-vcs/git
 	net-misc/wget
 	sys-apps/hwloc
@@ -42,6 +43,7 @@ RDEPEND="
 	sys-devel/crossdev
 "
 
+# no tests provided by upstream
 RESTRICT="test"
 
 src_prepare() {

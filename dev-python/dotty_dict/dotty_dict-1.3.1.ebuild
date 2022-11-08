@@ -10,10 +10,12 @@ inherit distutils-r1
 
 DESCRIPTION="Dictionary wrapper for quick access to deeply nested keys."
 HOMEPAGE="https://github.com/pawelzny/dotty_dict"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+# the pypi archive is missing test files
+#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+SRC_URI="https://github.com/pawelzny/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
 
-RESTRICT="test"
+distutils_enable_tests pytest
