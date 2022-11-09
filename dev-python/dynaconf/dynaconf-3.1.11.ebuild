@@ -16,14 +16,29 @@ SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
+IUSE="ini redis toml vault yaml"
+RESTRICT="!test? ( test )"
 
-BDEPEND="test? ( dev-python/pytest-mock[${PYTHON_USEDEP}] )"
+RDEPEND="
+	ini? ( dev-python/configobj[${PYTHON_USEDEP}] )
+	redis? ( dev-db/redis )
+	toml? ( dev-python/toml[${PYTHON_USEDEP}] )
+	vault? ( dev-python/hvac[${PYTHON_USEDEP}] )
+	yaml? ( dev-python/ruamel-yaml[${PYTHON_USEDEP}] )
+"
+BDEPEND="
+	test? (
+		dev-python/configobj[${PYTHON_USEDEP}]
+		dev-python/pytest-mock[${PYTHON_USEDEP}]
+	)
+"
 
 distutils_enable_tests pytest
 
 python_test() {
 	local EPYTEST_IGNORE=(
 		# requires extra setup and deps
+		tests/test_django.py
 		tests/test_flask.py
 		tests/test_redis.py
 		tests/test_vault.py
