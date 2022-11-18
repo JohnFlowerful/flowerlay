@@ -5,7 +5,7 @@ EAPI=8
 
 inherit systemd
 
-DESCRIPTION="A modern web UI for various torrent clients with a Node.js backend and React frontend."
+DESCRIPTION="A modern web UI for various torrent clients with a Node.js backend and React frontend"
 HOMEPAGE="https://flood.js.org/"
 
 if [[ "${PV}" == 9999 ]]; then
@@ -31,7 +31,7 @@ ACCT_DEPEND="
 "
 DEPEND="${ACCT_DEPEND}"
 RDEPEND="${DEPEND}"
-BDEPEND="=net-libs/nodejs-14*[npm]"
+BDEPEND=">=net-libs/nodejs-12.0.0[npm]"
 
 RESTRICT="mirror build-online? ( network-sandbox )"
 
