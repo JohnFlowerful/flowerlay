@@ -31,7 +31,7 @@ ACCT_DEPEND="
 "
 DEPEND="${ACCT_DEPEND}"
 RDEPEND="${DEPEND}"
-BDEPEND=">=net-libs/nodejs-12.0.0[npm]"
+BDEPEND="=net-libs/nodejs-16*[npm]"
 
 RESTRICT="mirror build-online? ( network-sandbox )"
 
