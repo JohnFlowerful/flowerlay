@@ -28,6 +28,7 @@ RDEPEND="
 	=dev-python/prompt_toolkit-3.0*[${PYTHON_USEDEP}]
 	=dev-python/requests-2.28*[${PYTHON_USEDEP}]
 	=dev-python/shtab-1.5*[${PYTHON_USEDEP}]
+	=dev-python/inotify-0.2*[${PYTHON_USEDEP}]
 "
 BDEPEND="
 	>=dev-python/poetry-core-1.2.0[${PYTHON_USEDEP}]

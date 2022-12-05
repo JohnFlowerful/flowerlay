@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">dsoprea/PyInotify</remote-id>
+	</upstream>
+	<longdescription>
+		An efficient and elegant inotify (Linux filesystem activity monitor)
+		library for Python
+	</longdescription>
+</pkgmetadata>
