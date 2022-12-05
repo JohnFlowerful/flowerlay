@@ -45,24 +45,24 @@ src_configure() {
 	yarn config set disable-self-update-check true || die
 	yarn config set nodedir /usr/include/node || die
 	yarn config set yarn-offline-mirror "${WORKDIR}/yarn_distfiles" || die
-	pushd "${S}/ui" > /dev/null || die
-	# puppeteer a dev dependency used for tests
+	pushd "${S}/ui" || die
+	# puppeteer is a dev dependency used for tests
 	export PUPPETEER_SKIP_DOWNLOAD=true
 	yarn install --frozen-lockfile --offline --no-progress || die
-	popd > /dev/null
+	popd
 }
 
 src_compile() {
 	# build ui and then generate static assets for go
 	einfo "building web assets"
-	pushd "${S}/ui" > /dev/null || die
-	yarn run build
-	popd > /dev/null
+	pushd "${S}/ui" || die
+	yarn run build || die
+	popd || die
 	go run hack/packr/packr.go -- . || die
 
 	# build binary
 	einfo "building application binary"
-	MY_COMMIT="$(zcat ${DISTDIR}/${P}.tar.gz | git get-tar-commit-id)";
+	MY_COMMIT="$(zcat ${DISTDIR}/${P}.tar.gz | git get-tar-commit-id)" || die
 	MY_DATE=$(date "+%F-%T")
 	go build \
 		-o ${PN} \
