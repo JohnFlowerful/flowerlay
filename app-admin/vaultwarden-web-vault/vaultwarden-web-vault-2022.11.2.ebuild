@@ -12,8 +12,8 @@ EGIT_REPO_URI="https://github.com/bitwarden/clients.git"
 EGIT_COMMIT="web-v${PV}"
 
 # vaultwarden patch
-#MY_PATCHV=$(ver_cut 1-2).0
-MY_PATCHV="${PV}"
+MY_PATCHV=$(ver_cut 1-2).1
+#MY_PATCHV="${PV}"
 SRC_URI="
 	https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/patches/v${MY_PATCHV}.patch -> ${P}.patch
 	https://raw.githubusercontent.com/dani-garcia/bw_web_builds/v${PV}/resources/icon-dark.png

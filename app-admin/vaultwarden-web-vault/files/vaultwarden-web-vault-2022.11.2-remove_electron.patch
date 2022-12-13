@@ -12,7 +12,7 @@ index b92347c7c..0eac2da24 100644
      "build-native": "cargo build --manifest-path=./desktop_native/Cargo.toml",
      "build": "concurrently -n Main,Rend -c yellow,cyan \"npm run build:main\" \"npm run build:renderer\"",
 diff --git a/package-lock.json b/package-lock.json
-index c87f29c01..a9fa970de 100644
+index f0797cd2e..7cbae0cc7 100644
 --- a/package-lock.json
 +++ b/package-lock.json
 @@ -114,14 +114,6 @@
