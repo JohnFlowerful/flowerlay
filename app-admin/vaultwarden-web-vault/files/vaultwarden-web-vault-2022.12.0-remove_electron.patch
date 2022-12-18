@@ -1,5 +1,5 @@
 diff --git a/apps/desktop/package.json b/apps/desktop/package.json
-index b92347c7c..0eac2da24 100644
+index 5c947fedd..efbc20aad 100644
 --- a/apps/desktop/package.json
 +++ b/apps/desktop/package.json
 @@ -16,7 +16,7 @@
@@ -12,7 +12,7 @@ index b92347c7c..0eac2da24 100644
      "build-native": "cargo build --manifest-path=./desktop_native/Cargo.toml",
      "build": "concurrently -n Main,Rend -c yellow,cyan \"npm run build:main\" \"npm run build:renderer\"",
 diff --git a/package-lock.json b/package-lock.json
-index f0797cd2e..7cbae0cc7 100644
+index 5b1d4c201..a917bdf46 100644
 --- a/package-lock.json
 +++ b/package-lock.json
 @@ -114,14 +114,6 @@
@@ -33,7 +33,7 @@ index f0797cd2e..7cbae0cc7 100644
 @@ -216,7 +208,6 @@
      "apps/desktop": {
        "name": "@bitwarden/desktop",
-       "version": "2022.10.2",
+       "version": "2022.11.1",
 -      "hasInstallScript": true,
        "license": "GPL-3.0"
      },
