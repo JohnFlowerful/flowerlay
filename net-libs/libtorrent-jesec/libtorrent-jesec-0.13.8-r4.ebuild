@@ -8,8 +8,6 @@ inherit autotools cmake flag-o-matic llvm toolchain-funcs
 MY_PV="${PV}-${PR}"
 MY_PN="${PN/-jesec/}"
 
-LLVM_MAX_SLOT=14
-
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://github.com/jesec/libtorrent"
 
