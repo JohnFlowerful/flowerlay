@@ -8,8 +8,6 @@ inherit cmake flag-o-matic linux-info llvm systemd tmpfiles toolchain-funcs
 MY_PV="${PV}-${PR}"
 MY_PN="${PN/-jesec/}"
 
-LLVM_MAX_SLOT=14
-
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="https://github.com/jesec/rtorrent"
 
