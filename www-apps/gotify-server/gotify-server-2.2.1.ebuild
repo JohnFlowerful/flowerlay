@@ -42,26 +42,31 @@ RESTRICT="mirror"
 S="${WORKDIR}/server-${PV}"
 
 src_configure() {
-	yarn config set disable-self-update-check true || die
-	yarn config set nodedir /usr/include/node || die
-	yarn config set yarn-offline-mirror "${WORKDIR}/yarn_distfiles" || die
-	pushd "${S}/ui" || die
-	# puppeteer is a dev dependency used for tests
-	export PUPPETEER_SKIP_DOWNLOAD=true
-	yarn install --frozen-lockfile --offline --no-progress || die
-	popd
+	ebegin "Installing node_modules"
+	pushd "${S}/ui" > /dev/null || die
+		yarn config set disable-self-update-check true || die
+		yarn config set nodedir /usr/include/node || die
+		yarn config set yarn-offline-mirror "${WORKDIR}/yarn_distfiles" || die
+		# puppeteer is a dev dependency used for tests
+		export PUPPETEER_SKIP_DOWNLOAD=true
+		yarn install --frozen-lockfile --offline --no-progress || die
+		# workaround md4 see https://github.com/webpack/webpack/issues/14560
+		find node_modules/webpack/lib -type f -exec sed -i 's/md4/sha512/g' {} \; || die
+		sed -i 's/crypto.createHash("md4")/crypto.createHash("sha512")/' node_modules/react-scripts/node_modules/babel-loader/lib/cache.js || die
+	popd > /dev/null || die
+	eend $? || die
 }
 
 src_compile() {
 	# build ui and then generate static assets for go
-	einfo "building web assets"
-	pushd "${S}/ui" || die
-	yarn run build || die
-	popd || die
+	einfo "Building web assets"
+	pushd "${S}/ui" > /dev/null || die
+		yarn run build || die
+	popd > /dev/null || die
 	go run hack/packr/packr.go -- . || die
 
 	# build binary
-	einfo "building application binary"
+	einfo "Building application binary"
 	MY_COMMIT="$(zcat ${DISTDIR}/${P}.tar.gz | git get-tar-commit-id)" || die
 	MY_DATE=$(date "+%F-%T")
 	go build \
