@@ -30,8 +30,10 @@ ACCT_DEPEND="
 	acct-user/flood
 "
 DEPEND="${ACCT_DEPEND}"
-RDEPEND="${DEPEND}"
-BDEPEND="=net-libs/nodejs-16*[npm]"
+RDEPEND="
+	${DEPEND}
+	=net-libs/nodejs-16*[npm]
+"
 
 RESTRICT="mirror build-online? ( network-sandbox )"
 
