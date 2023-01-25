@@ -33,6 +33,7 @@ DEPEND="${ACCT_DEPEND}"
 RDEPEND="
 	${DEPEND}
 	=net-libs/nodejs-16*[npm]
+	mediainfo? ( media-video/mediainfo )
 "
 
 RESTRICT="mirror build-online? ( network-sandbox )"

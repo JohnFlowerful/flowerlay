@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">jesec/flood</remote-id>
+	</upstream>
+	<use>
+		<flag name='mediainfo'>Pulls <pkg>media-video/mediainfo</pkg>. Flood's 
+			mediainfo functionality will fail without this package
+		</flag>
+	</use>
+	<longdescription lang="en">
+		Flood is a monitoring service for various torrent clients. It's a Node.js
+		service that communicates with your favorite torrent client and serves a
+		decent web UI for administration.
+	</longdescription>
+</pkgmetadata>
