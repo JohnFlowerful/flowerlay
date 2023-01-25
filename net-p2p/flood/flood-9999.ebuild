@@ -24,6 +24,7 @@ fi
 
 LICENSE="GPL-3"
 SLOT="0"
+IUSE+=" mediainfo"
 
 ACCT_DEPEND="
 	acct-group/flood

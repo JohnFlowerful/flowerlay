@@ -5,6 +5,9 @@
 		<remote-id type="github">jesec/flood</remote-id>
 	</upstream>
 	<use>
+		<flag name="build-online">
+			Disable network-sandbox and resolve Node packages online
+		</flag>
 		<flag name='mediainfo'>Pulls <pkg>media-video/mediainfo</pkg>. Flood's 
 			mediainfo functionality will fail without this package
 		</flag>
