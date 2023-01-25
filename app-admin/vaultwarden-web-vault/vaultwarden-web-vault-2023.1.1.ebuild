@@ -41,6 +41,7 @@ src_prepare() {
 	eapply "${FILESDIR}/${P}-remove_electron.patch"
 
 	# apply vaultwarden patches
+	# see https://github.com/dani-garcia/bw_web_builds/blob/master/scripts/apply_patches.sh
 	BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
 	BW_RESOURCES="${BW_WEB_BUILDS}/resources"
 
