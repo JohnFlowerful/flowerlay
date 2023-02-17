@@ -34,7 +34,7 @@ BDEPEND="
 	test? ( dev-cpp/gtest )"
 COMMON_DEPEND="
 	~net-libs/libtorrent-jesec-0.13.${PV##*.}
-	<net-misc/curl-7.87.0[adns]
+	>=net-misc/curl-7.88.0[adns]
 	sys-libs/ncurses:0=
 	jsonrpc? ( dev-cpp/nlohmann_json )
 	xmlrpc? ( dev-libs/xmlrpc-c[abyss,cxx] )"
