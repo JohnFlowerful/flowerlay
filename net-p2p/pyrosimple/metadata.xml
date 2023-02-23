@@ -8,4 +8,7 @@
 		A overhauled Python 3 fork of the pyrocore tools, for working with the
 		rTorrent client.
 	</longdescription>
+	<use>
+		<flag name="queue">Pull dependencies required to use pyrotorque</flag>
+	</use>
 </pkgmetadata>

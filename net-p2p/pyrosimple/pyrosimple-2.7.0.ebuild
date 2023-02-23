@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=poetry
-PYTHON_COMPAT=( python3_{9..11} )
+PYTHON_COMPAT=( python3_{8..11} )
 
 inherit distutils-r1
 
@@ -15,24 +15,31 @@ SRC_URI="https://github.com/kannibalox/pyrosimple/archive/v${PV}.tar.gz -> ${P}.
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64"
+IUSE="queue"
 
 RDEPEND="
-	=dev-python/APScheduler-3.9*[${PYTHON_USEDEP}]
 	=dev-python/bencode_py-4.0*[${PYTHON_USEDEP}]
-	=dev-python/pyinotify-0.9*[${PYTHON_USEDEP}]
 	=dev-python/jinja-3.1*[${PYTHON_USEDEP}]
 	=dev-python/python-daemon-2.3*[${PYTHON_USEDEP}]
-	=dev-python/dynaconf-3.1*[${PYTHON_USEDEP},toml]
+	$(python_gen_cond_dep '
+		>=dev-python/importlib_resources-5.4.0[${PYTHON_USEDEP}]
+	' python3_8)
 	=dev-python/parsimonious-0.10*[${PYTHON_USEDEP}]
-	=dev-python/prometheus_client-0.15*[${PYTHON_USEDEP}]
-	=dev-python/prompt_toolkit-3.0*[${PYTHON_USEDEP}]
+	=dev-python/prometheus_client-0.16*[${PYTHON_USEDEP}]
+	=dev-python/prompt-toolkit-3.0*[${PYTHON_USEDEP}]
 	=dev-python/requests-2.28*[${PYTHON_USEDEP}]
 	=dev-python/shtab-1.5*[${PYTHON_USEDEP}]
-	=dev-python/inotify-0.2*[${PYTHON_USEDEP}]
+	=dev-python/python-box-7.0*[${PYTHON_USEDEP}]
+	$(python_gen_cond_dep '
+		=dev-python/tomli-2.0*[${PYTHON_USEDEP}]
+	' python3_{8..10})
+	=dev-python/tomli-w-1.0*[${PYTHON_USEDEP}]
+
+	queue? (
+		=dev-python/APScheduler-3.9*[${PYTHON_USEDEP}]
+		=dev-python/inotify-0.2*[${PYTHON_USEDEP}]
+	)
 "
-BDEPEND="
-	>=dev-python/poetry-core-1.2.0[${PYTHON_USEDEP}]
-	test? ( ${RDEPEND} )
-"
+BDEPEND="test? ( ${RDEPEND} )"
 
 distutils_enable_tests pytest
