@@ -1,5 +1,5 @@
 diff --git a/apps/desktop/package.json b/apps/desktop/package.json
-index 2d8d1aa36..a1cd5ce23 100644
+index 36bd9ed9f..f808360c6 100644
 --- a/apps/desktop/package.json
 +++ b/apps/desktop/package.json
 @@ -16,7 +16,7 @@
@@ -12,7 +12,7 @@ index 2d8d1aa36..a1cd5ce23 100644
      "build-native": "cargo build --manifest-path=./desktop_native/Cargo.toml",
      "build": "concurrently -n Main,Rend -c yellow,cyan \"npm run build:main\" \"npm run build:renderer\"",
 diff --git a/package-lock.json b/package-lock.json
-index 22e9db303..64d4f7506 100644
+index 6ed7e2242..34f648e85 100644
 --- a/package-lock.json
 +++ b/package-lock.json
 @@ -121,14 +121,6 @@
@@ -33,7 +33,7 @@ index 22e9db303..64d4f7506 100644
 @@ -227,7 +219,6 @@
      "apps/desktop": {
        "name": "@bitwarden/desktop",
-       "version": "2023.1.2",
+       "version": "2023.2.1",
 -      "hasInstallScript": true,
        "license": "GPL-3.0"
      },
@@ -6120,10 +6120,10 @@ index 22e9db303..64d4f7506 100644
        "version": "2.5.1",
        "resolved": "https://registry.npmjs.org/yazl/-/yazl-2.5.1.tgz",
 diff --git a/package.json b/package.json
-index 45e71b82a..1a8326a3b 100644
+index 639237e19..a9dd41857 100644
 --- a/package.json
 +++ b/package.json
-@@ -84,14 +84,6 @@
+@@ -85,14 +85,6 @@
      "cross-env": "^7.0.3",
      "css-loader": "^6.5.1",
      "del": "^6.0.0",
