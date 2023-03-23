@@ -64,7 +64,7 @@ src_prepare() {
 }
 
 src_configure() {
-	export NPM_CONFIG_NODEDIR="/usr/include/node"
+	export npm_config_nodedir="/usr/include/node"
 	npm clean-install --omit=optional --offline --cache "${WORKDIR}/npm-cache" || die
 }
 
