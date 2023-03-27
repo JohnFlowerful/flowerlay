@@ -8,15 +8,19 @@ inherit git-r3
 DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
-EGIT_REPO_URI="https://github.com/bitwarden/clients.git"
-EGIT_COMMIT="web-v${PV}"
-
 # vaultwarden patch
 #MY_PATCHV=$(ver_cut 1-2).1
-MY_PATCHV="${PV}"
+MY_PV=$(ver_cut 1-3)
+MY_P="${PN}-${MY_PV}"
+MY_PATCHV="${MY_PV}"
+#MY_PATCHV="${PV}"
+
+EGIT_REPO_URI="https://github.com/bitwarden/clients.git"
+EGIT_COMMIT="web-v${MY_PV}"
+
 SRC_URI="
-	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${P}-resources.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-cache.tar.xz
+	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${MY_P}-resources.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${MY_P}-npm-cache.tar.xz
 "
 
 LICENSE="GPL-3"
@@ -30,19 +34,19 @@ BDEPEND="=net-libs/nodejs-16*[npm]"
 RESTRICT="mirror"
 
 src_unpack() {
-	unpack "${P}-resources.tar.gz"
-	unpack "${P}-npm-cache.tar.xz"
+	unpack "${MY_P}-resources.tar.gz"
+	unpack "${MY_P}-npm-cache.tar.xz"
 	git-r3_src_unpack
 }
 
 src_prepare() {
 	# new repo for bitwarden clients includes desktop versions as well...
 	# removing electron will suffice for now
-	eapply "${FILESDIR}/${P}-remove_electron.patch"
+	eapply "${FILESDIR}/${MY_P}-remove_electron.patch"
 
 	# apply vaultwarden patches
 	# see https://github.com/dani-garcia/bw_web_builds/blob/master/scripts/apply_patches.sh
-	BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
+	BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${MY_PV}"
 	BW_RESOURCES="${BW_WEB_BUILDS}/resources"
 
 	cp -vf "${BW_RESOURCES}/logo-dark@2x.png" "${S}/apps/web/src/images/logo-dark@2x.png" || die
