@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">dani-garcia/vaultwarden</remote-id>
+	</upstream>
+	<use>
+		<flag name='system-sqlite'>Use the system SQLite instead of the bundled one</flag>
+	</use>
+	<longdescription lang="en">
+		Unofficial Bitwarden compatible server written in Rust, formerly known as bitwarden_rs 
+	</longdescription>
+</pkgmetadata>
