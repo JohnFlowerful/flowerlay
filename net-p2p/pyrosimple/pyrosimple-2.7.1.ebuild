@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=poetry
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{10..11} )
 
 inherit distutils-r1
 
@@ -17,6 +17,11 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE="queue"
 
+# python-daemon-3.0.1 is recommended but this version isn't in the main gentoo
+# repo: https://packages.gentoo.org/packages/dev-python/python-daemon
+# there are no tests for `rtcontrol's '--detach' flag due to the inherent nature
+# of using the command i.e. it requires rtorrent to be running
+# all other tests are passing however
 RDEPEND="
 	=dev-python/bencode_py-4.0*[${PYTHON_USEDEP}]
 	=dev-python/jinja-3.1*[${PYTHON_USEDEP}]
