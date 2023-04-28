@@ -41,10 +41,11 @@ RDEPEND="
 	=dev-python/tomli-w-1.0*[${PYTHON_USEDEP}]
 
 	queue? (
-		=dev-python/APScheduler-3.9*[${PYTHON_USEDEP}]
+		=dev-python/APScheduler-3*[${PYTHON_USEDEP}]
 		=dev-python/inotify-0.2*[${PYTHON_USEDEP}]
 	)
 "
 BDEPEND="test? ( ${RDEPEND} )"
 
 distutils_enable_tests pytest
+
