@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">multitheftauto/mtasa-blue</remote-id>
+	</upstream>
+	<use>
+		<flag name="baseconfig">Install example config files</flag>
+		<flag name="daemon">Uses <pkg>app-misc/tmux</pkg> to instantize this
+			application
+		</flag>
+		<flag name="sockets">Extends <pkg>games-server/mta-server</pkg>'s connectivity
+			with ml_sockets.so. See https://wiki.multitheftauto.com/wiki/Modules/Sockets
+		</flag>
+	</use>
+	<longdescription lang="en">
+		Multi Theft Auto (MTA) is a software project that adds network play
+		functionality to Rockstar North's Grand Theft Auto game series, in which
+		this functionality is not originally found. It is a unique modification
+		that incorporates an extendable network play element into a proprietary
+		commercial single-player PC game.
+	</longdescription>
+</pkgmetadata>

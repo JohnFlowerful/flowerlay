@@ -1,0 +1,240 @@
+#!/sbin/openrc-run
+# Copyright 1999-2023 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+extra_commands="is_crashed snapshot"
+
+_RC_SVCNAME="${RC_SVCNAME%.*}"
+__IFS=$'\n'
+
+: ${USER:=""}
+
+: ${MTA_SERVER_PATH:="/opt/multitheftauto_linux_x64"}
+: ${MTA_BINARY:="mta-server64"}
+MTA_BINARY_PATH="${MTA_SERVER_PATH}/${MTA_BINARY}"
+: ${MTA_CONF_DIR:="mta"}
+: ${MTA_SNAPSHOT_DIR:="mta_snapshots"}
+: ${MTA_SHUTDOWN_GRACE:="15"}
+
+: ${WEB_PATH:=""}
+: ${LINK_CLIENT_FILES:="false"}
+
+: ${CRASHED_NOTIF_ADDR:=""}
+
+: ${TMUX_TMPDIR:="/tmp"}
+: ${TMUX_SOCKET:="default"}
+
+if ! [[ $(id "$USER" 2> /dev/null) ]] && [[ "$RC_SVCNAME" == "$_RC_SVCNAME."* ]]; then
+	eerror "Ensure service is configured correctly"
+	exit 1
+else
+	MTA_NAME=${RC_SVCNAME#*.}
+	: ${LINK_CLIENT_FILES_DIR:="${MTA_NAME}_http-client-files"}
+
+	PWHOME="$(getent passwd "$USER" | awk -F: '{ print $6 }')"
+	MTA_CONF_PATH="${PWHOME}/${MTA_CONF_DIR}"
+	MTA_SNAPSHOT_PATH="${PWHOME}/${MTA_SNAPSHOT_DIR}"
+
+	TMUX_SOCKET_PATH="${TMUX_TMPDIR}/tmux-$(id -u "$USER" 2> /dev/null)/$TMUX_SOCKET"
+	MTA_PID="/run/$_RC_SVCNAME/$MTA_NAME.pid"
+fi
+
+depend() {
+	need net
+}
+
+start() {
+	if [[ ! -f "$MTA_BINARY_PATH" ]]; then
+		eerror "$MTA_BINARY_PATH not found."
+		exit 1
+	fi
+
+	mta_conf_file="${MTA_CONF_PATH}/mods/deathmatch/mtaserver.conf"
+	if [[ ! -f "${mta_conf_file}" ]]; then
+		eerror "'${mta_conf_file}' not found"
+		exit 1
+	fi
+
+	ebegin "Starting $USER's $MTA_BINARY instance: '$MTA_NAME'"
+
+	# firstly symlink mta-server's lib files into $MTA_CONF_PATH
+	ln -s "${MTA_SERVER_PATH}/x64" "${MTA_CONF_PATH}/"
+
+	env TERM="xterm-256color" \
+		start-stop-daemon \
+			--start \
+			--make-pidfile \
+			--pidfile "$MTA_PID" \
+			--background \
+			--user "$USER" \
+			--env HOME="${PWHOME:-/home/$USER}" \
+			--env TMUX_TMPDIR="$TMUX_TMPDIR" \
+			--name "$MTA_BINARY" \
+			--exec tmux -- -L "$TMUX_SOCKET" new-session -c "${MTA_CONF_PATH}" -x 200 -y 75 -d -n "$MTA_BINARY" -s "$RC_SVCNAME" "${MTA_BINARY_PATH} -D ${MTA_CONF_PATH} ${MTA_SEVER_OPTS}"
+
+	# set the pid
+	sleep 2
+	mta_pids=$(tmux -S "${TMUX_SOCKET_PATH}" list-panes -a -F "#{pane_pid}")
+	readarray -t array <<< $mta_pids
+	declare -p array > /dev/null
+	for pid in ${array[@]}; do
+	 	if [[ $(ps -p "$pid" -o comm=) == "$MTA_BINARY"* ]]; then
+			echo "$pid" > "${MTA_PID}"
+		fi
+	done
+
+	# wait a bit for http-client-files to be created, then symlink to a directory
+	# accessible by the external web server if required
+	sleep 3
+	if [[ "$LINK_CLIENT_FILES" == "true" ]]; then
+		if [[ -d "${WEB_PATH}" ]]; then
+			einfo "Linking $MTA_NAME's http-client-files into public web dir ..."
+			ln -s "${MTA_CONF_PATH}/resource-cache/http-client-files" "${WEB_PATH}/${LINK_CLIENT_FILES_DIR}"
+		else
+			ewarn "Warning: '${WEB_PATH}' does not exist"
+			ewarn "As a result, this $_RC_SVCNAME instance will use the internal web server to serve"
+			ewarn "client files."
+		fi
+	fi
+
+	einfo "$MTA_NAME instance started"
+
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping $USER's $MTA_BINARY instance: '$MTA_NAME'"
+	if [[ $(tmux -S "${TMUX_SOCKET_PATH}" list-panes -a | grep $RC_SVCNAME | wc -l) -gt 1 ]]; then
+		ewarn "Warning: more than one pane found in tmux session '$RC_SVCNAME'"
+		while true; do
+			read -p "Do you want to stop all processes? " yn
+			case $yn in
+				[Yy]* ) break;;
+				[Nn]* ) exit 1;;
+				* ) echo "Please answer yes or no.";;
+			esac
+		done
+	fi
+	tmux_safe_kill_panes $RC_SVCNAME
+	SKIP_MTA=1
+	tmux_safe_kill_panes $RC_SVCNAME
+
+	s=0
+	while ps -p $(cat "${MTA_PID}") -o comm= > /dev/null; do 
+		echo -ne "Stopping instance: '$MTA_NAME'... $s"\\r
+		let "s=s+1"
+		sleep 1
+	done
+
+	cleanup
+
+	einfo "$MTA_NAME instance stopped"
+
+	eend $?
+}
+
+snapshot() {
+	if ! [[ -d "${MTA_SNAPSHOT_PATH}" ]]; then
+		einfo "Creating snapshot directory ..."
+		mkdir -p "${MTA_SNAPSHOT_PATH}"
+	fi
+
+	ebegin "Creating snapshot of $MTA_NAME's conf files"
+
+	local file="${MTA_NAME}_SNAPSHOT_$(date +%F-%H%M%S).tar.gz"
+	if ! [[ -f $file ]]; then
+		tar -pczf "${MTA_SNAPSHOT_PATH}/${file}" -C "${PWHOME}" "${MTA_CONF_DIR}"
+		einfo "Snapshot '${file} created"
+	else
+		eerror "Snapshot file already exists"
+		exit 1
+	fi
+	eend $?
+}
+
+is_crashed() {
+	if service_started; then
+		# a basic pid check should be good enough
+		local my_pid=$(cat "${MTA_PID}")
+		if ! [[ $(ps -p "$my_pid" -o comm=) == "$MTA_BINARY" ]]; then
+			einfo "No matching pid found for '$MTA_NAME'"
+			if ! [[ -z "$CRASHED_NOTIFY_ADDR" ]]; then
+				einfo "Sending email notification to configured addresses"
+				for addr in $CRASHED_NOTIFY_ADDR; do
+					{
+						echo From: "$_RC_SVCNAME"
+						echo To: "$addr"
+						echo Subject: "$_RC_SVCNAME" status
+						echo
+						echo "$_RC_SVCNAME" \""$MTA_NAME"\" running on $(hostname) is no longer listed in the system processes.
+						echo It\'s likely that it has crashed.
+					} | /usr/sbin/sendmail -t
+				done
+			fi
+		else
+			einfo "$_RC_SVCNAME '$MTA_NAME' is running"
+		fi
+	else
+		ewarn "Service is not started"
+	fi
+}
+
+function safe_end_procs {
+	array=$1
+
+	OIFS="$IFS"
+	local IFS=$__IFS
+
+	for pane_set in $array; do
+		pane_id=$(echo "$pane_set" | awk -F " " '{print $1}')
+		pane_proc=$(echo "$pane_set" | awk -F " " '{print tolower($2)}')
+		cmd="C-c"
+		if [[ "$pane_proc" == "vi" ]] || [[ "$pane_proc" == "vim" ]] || [[ "$pane_proc" == "nvim" ]]; then
+			cmd=$(echo 'Escape ":qa!" Enter' || echo 'Escape ":qa" Enter')
+		elif [[ "$pane_proc" == "man" ]] || [[ "$pane_proc" == "less" ]]; then
+			cmd='"q"'
+		elif [[ "$pane_proc" == "bash" ]] || [[ "$pane_proc" == "zsh" ]] || [[ "$pane_proc" == "fish" ]]; then
+			cmd='C-c C-u space "exit" Enter'
+		elif [[ "$pane_proc" == "ssh" ]] || [[ "$pane_proc" == "vagrant" ]]; then
+			cmd='Enter "~."'
+		elif [[ "$pane_proc" == "psql" ]] || [[ "$pane_proc" == "mysql" ]]; then
+			cmd='Enter "\q"'
+		elif [[ "$pane_proc" == "$MTA_BINARY" ]]; then
+			if ! [[ $SKIP_MTA == 1 ]]; then
+				# prefix commands with enter to clear any chars left in console
+				einfo "Sending $MTA_SHUTDOWN_GRACE second shutdown warning to online players ..."
+				cmd='Enter "say server shutting down in '$MTA_SHUTDOWN_GRACE' seconds." Enter'
+				echo $cmd | xargs tmux -S "${TMUX_SOCKET_PATH}" send-keys -t "$pane_id"
+				sleep $MTA_SHUTDOWN_GRACE
+				cmd='Enter "shutdown" Enter'
+			else
+				continue
+			fi
+		fi
+		echo $cmd | xargs tmux -S "${TMUX_SOCKET_PATH}" send-keys -t "$pane_id"
+		einfo "Closed $pane_proc"
+
+	done
+	IFS="$OIFS"
+}
+
+function tmux_safe_kill_panes {
+	session=$1
+
+	current_panes=$(tmux -S "${TMUX_SOCKET_PATH}" list-panes -a -F "#{pane_id} #{pane_current_command} #{session_name}\n" | grep "$session")
+
+	SIFS="$IFS"
+	IFS=$__IFS
+	array=($current_panes)
+	IFS=$SIFS
+	for (( i=0; i<${#array[@]}; i++ )) do
+		safe_end_procs "${array[$i]}"
+		sleep 0.8
+	done
+}
+
+function cleanup {
+	rm -f "${MTA_PID}"
+	rm -f "${MTA_CONF_PATH}/x64"
+	[[ "${LINK_CLIENT_FILES}" == "true" ]] && rm -f "${WEB_PATH}/${LINK_CLIENT_FILES_DIR}"
+}
