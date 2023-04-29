@@ -6,7 +6,7 @@
 	</upstream>
 	<use>
 		<flag name="baseconfig">Install example config files</flag>
-		<flag name="daemon">Uses <pkg>app-misc/tmux</pkg> to instantize this
+		<flag name="daemon">Uses <pkg>app-misc/tmux</pkg> to instantiate this
 			application
 		</flag>
 		<flag name="sockets">Extends <pkg>games-server/mta-server</pkg>'s connectivity

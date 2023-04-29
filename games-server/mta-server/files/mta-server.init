@@ -89,7 +89,7 @@ start() {
 	if [[ "$LINK_CLIENT_FILES" == "true" ]]; then
 		if [[ -d "${WEB_PATH}" ]]; then
 			einfo "Linking $MTA_NAME's http-client-files into public web dir ..."
-			ln -s "${MTA_CONF_PATH}/resource-cache/http-client-files" "${WEB_PATH}/${LINK_CLIENT_FILES_DIR}"
+			ln -s "${MTA_CONF_PATH}/mods/deathmatch/resource-cache/http-client-files" "${WEB_PATH}/${LINK_CLIENT_FILES_DIR}"
 		else
 			ewarn "Warning: '${WEB_PATH}' does not exist"
 			ewarn "As a result, this $_RC_SVCNAME instance will use the internal web server to serve"
