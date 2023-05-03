@@ -137,6 +137,7 @@ snapshot() {
 	if ! [[ -d "${MTA_SNAPSHOT_PATH}" ]]; then
 		einfo "Creating snapshot directory ..."
 		mkdir -p "${MTA_SNAPSHOT_PATH}"
+		chown "$USER":"$USER" "${MTA_SNAPSHOT_PATH}"
 	fi
 
 	ebegin "Creating snapshot of $MTA_NAME's conf files"
