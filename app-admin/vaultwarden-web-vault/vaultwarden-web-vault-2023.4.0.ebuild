@@ -47,20 +47,9 @@ src_prepare() {
 	# apply vaultwarden patches
 	# see https://github.com/dani-garcia/bw_web_builds/blob/master/scripts/apply_patches.sh
 	BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${MY_PV}"
-	BW_RESOURCES="${BW_WEB_BUILDS}/resources"
+	BW_RESOURCES="${BW_WEB_BUILDS}/resources/src"
 
-	cp -vf "${BW_RESOURCES}/logo-dark@2x.png" "${S}/apps/web/src/images/logo-dark@2x.png" || die
-	cp -vf "${BW_RESOURCES}/logo-white@2x.png" "${S}/apps/web/src/images/logo-white@2x.png" || die
-	cp -vf "${BW_RESOURCES}/icon-white.png" "${S}/apps/web/src/images/icon-white.png" || die
-
-	cp -vf "${BW_RESOURCES}/android-chrome-192x192.png" "${S}/apps/web/src/images/icons/android-chrome-192x192.png" || die
-	cp -vf "${BW_RESOURCES}/android-chrome-512x512.png" "${S}/apps/web/src/images/icons/android-chrome-512x512.png" || die
-	cp -vf "${BW_RESOURCES}/apple-touch-icon.png" "${S}/apps/web/src/images/icons/apple-touch-icon.png" || die
-	cp -vf "${BW_RESOURCES}/favicon-16x16.png" "${S}/apps/web/src/images/icons/favicon-16x16.png" || die
-	cp -vf "${BW_RESOURCES}/favicon-32x32.png" "${S}/apps/web/src/images/icons/favicon-32x32.png" || die
-	cp -vf "${BW_RESOURCES}/mstile-150x150.png" "${S}/apps/web/src/images/icons/mstile-150x150.png" || die
-	cp -vf "${BW_RESOURCES}/safari-pinned-tab.svg" "${S}/apps/web/src/images/icons/safari-pinned-tab.svg" || die
-	cp -vf "${BW_RESOURCES}/favicon.ico" "${S}/apps/web/src/favicon.ico" || die
+	cp -vfr "${BW_RESOURCES}/"* "${S}/apps/web/src/" || die
 
 	eapply "${BW_WEB_BUILDS}/patches/v${MY_PATCHV}.patch"
 
