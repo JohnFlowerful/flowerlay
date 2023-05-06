@@ -4,13 +4,15 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{9..11} )
 
-inherit distutils-r1
+inherit distutils-r1 pypi
 
 DESCRIPTION="Automagic shell tab completion for Python CLI applications"
-HOMEPAGE="https://github.com/iterative/shtab"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+HOMEPAGE="
+	https://github.com/iterative/shtab
+	https://pypi.org/project/shtab/
+"
 
 LICENSE="Apache-2.0"
 SLOT="0"
@@ -20,5 +22,6 @@ distutils_enable_tests pytest
 
 src_prepare() {
 	sed -i -e 's/--cov=shtab --cov-report=term-missing --cov-report=xml//' setup.cfg || die
+
 	distutils-r1_src_prepare
 }

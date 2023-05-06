@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">pawelzny/dotty_dict</remote-id>
+		<remote-id type="pypi">dotty-dict</remote-id>
 	</upstream>
 	<longdescription>
 		Dotty Dict is a wrapper around builtin dictionary. Provides quick access 

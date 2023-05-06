@@ -6,11 +6,14 @@ EAPI=8
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{10..11} )
 
-inherit distutils-r1
+inherit distutils-r1 pypi
 
 DESCRIPTION="A program to help users work with QMK"
-HOMEPAGE="https://qmk.fm/"
-SRC_URI="https://github.com/qmk/qmk_cli/archive/${PV}.tar.gz -> ${P}.tar.gz"
+HOMEPAGE="
+	https://qmk.fm/
+	https://github.com/qmk/qmk_cli
+	https://pypi.org/project/qmk/
+"
 
 LICENSE="MIT"
 SLOT="0"

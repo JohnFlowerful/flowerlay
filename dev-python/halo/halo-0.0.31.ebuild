@@ -4,16 +4,21 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit distutils-r1
 
 DESCRIPTION="Beautiful terminal spinners in Python"
-HOMEPAGE="https://github.com/manrajgrover/halo"
+HOMEPAGE="
+	https://github.com/manrajgrover/halo
+	https://pypi.org/project/halo/
+"
 # the pypi archive is missing test files and upstream doesn't tag releases on github...
-#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
 HALO_COMMIT="c5f6ef233d5a3ef6c3db9f44aef03a789cb4a6ce"
-SRC_URI="https://github.com/manrajgrover/${PN}/archive/${HALO_COMMIT}.tar.gz -> ${P}.tar.gz"
+SRC_URI="
+	https://github.com/manrajgrover/${PN}/archive/${HALO_COMMIT}.tar.gz
+		-> ${P}.gh.tar.gz
+"
 
 LICENSE="MIT"
 SLOT="0"

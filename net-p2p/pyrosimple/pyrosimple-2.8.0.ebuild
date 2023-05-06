@@ -9,8 +9,15 @@ PYTHON_COMPAT=( python3_{10..11} )
 inherit distutils-r1
 
 DESCRIPTION="A stripped-down version of the pyrocore tools"
-HOMEPAGE="https://kannibalox.github.io/pyrosimple/"
-SRC_URI="https://github.com/kannibalox/pyrosimple/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+HOMEPAGE="
+	https://kannibalox.github.io/pyrosimple/
+	https://pypi.org/project/pyrosimple/
+"
+# the pypi archive is missing test files
+SRC_URI="
+	https://github.com/kannibalox/pyrosimple/archive/v${PV}.tar.gz
+		-> ${P}.gh.tar.gz
+"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -26,9 +33,6 @@ RDEPEND="
 	=dev-python/bencode_py-4.0*[${PYTHON_USEDEP}]
 	=dev-python/jinja-3.1*[${PYTHON_USEDEP}]
 	=dev-python/python-daemon-2.3*[${PYTHON_USEDEP}]
-	$(python_gen_cond_dep '
-		>=dev-python/importlib_resources-5.4.0[${PYTHON_USEDEP}]
-	' python3_8)
 	=dev-python/parsimonious-0.10*[${PYTHON_USEDEP}]
 	=dev-python/prometheus_client-0.16*[${PYTHON_USEDEP}]
 	=dev-python/prompt-toolkit-3.0*[${PYTHON_USEDEP}]
@@ -37,7 +41,7 @@ RDEPEND="
 	=dev-python/python-box-7.0*[${PYTHON_USEDEP}]
 	$(python_gen_cond_dep '
 		=dev-python/tomli-2.0*[${PYTHON_USEDEP}]
-	' python3_{8..10})
+	' python3_10)
 	=dev-python/tomli-w-1.0*[${PYTHON_USEDEP}]
 
 	queue? (

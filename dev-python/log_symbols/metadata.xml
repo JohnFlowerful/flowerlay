@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">manrajgrover/py-log-symbols</remote-id>
+		<remote-id type="pypi">log-symbols</remote-id>
 	</upstream>
 	<longdescription>
 		Colored symbols for various log levels for Python

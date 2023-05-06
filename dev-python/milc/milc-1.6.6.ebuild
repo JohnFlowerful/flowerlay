@@ -4,15 +4,20 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit distutils-r1
 
 DESCRIPTION="Opinionated Batteries-Included Python 3 CLI Framework."
-HOMEPAGE="https://github.com/clueboard/milc"
+HOMEPAGE="
+	https://github.com/clueboard/milc
+	https://pypi.org/project/milc/
+"
 # the pypi archive is missing test files
-#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
-SRC_URI="https://github.com/clueboard/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="
+	https://github.com/clueboard/${PN}/archive/${PV}.tar.gz
+		-> ${P}.gh.tar.gz
+"
 
 LICENSE="Clueboard"
 SLOT="0"
@@ -42,6 +47,7 @@ src_prepare() {
 		sed -i -e 's/home-page/home_page/g' "${S}/${i}" || die
 	done
 	sed -i -e 's/license_file/license_files/g' "${S}/setup.cfg" || die
+
 	default
 }
 

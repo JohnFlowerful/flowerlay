@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">qmk/qmk_cli</remote-id>
+		<remote-id type="pypi">qmk</remote-id>
 	</upstream>
 	<longdescription>
 		A program to help users work with QMK Firmware.

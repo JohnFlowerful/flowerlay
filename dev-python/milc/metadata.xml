@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">clueboard/milc</remote-id>
+		<remote-id type="pypi">milc</remote-id>
 	</upstream>
 	<longdescription>
 		MILC is a framework for writing CLI applications in Python 3.6+.

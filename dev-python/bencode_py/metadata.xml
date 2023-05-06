@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">fuzeman/bencode.py</remote-id>
+		<remote-id type="pypi">bencode.py</remote-id>
 	</upstream>
 	<longdescription>
 		Simple bencode parser (for Python 2, Python 3 and PyPy), forked from the

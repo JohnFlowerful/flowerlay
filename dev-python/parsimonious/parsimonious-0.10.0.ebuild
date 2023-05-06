@@ -4,15 +4,20 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit distutils-r1
 
 DESCRIPTION="Parsimonious aims to be the fastest arbitrary-lookahead parser written in pure Python"
-HOMEPAGE="https://github.com/erikrose/parsimonious"
+HOMEPAGE="
+	https://github.com/erikrose/parsimonious
+	https://pypi.org/project/parsimonious/
+"
 # the pypi archive is missing test files
-#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
-SRC_URI="https://github.com/erikrose/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="
+	https://github.com/erikrose/${PN}/archive/${PV}.tar.gz
+		-> ${P}.gh.tar.gz
+"
 
 LICENSE="MIT"
 SLOT="0"

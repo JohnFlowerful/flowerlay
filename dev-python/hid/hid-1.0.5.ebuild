@@ -4,13 +4,15 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
-inherit distutils-r1
+inherit distutils-r1 pypi
 
 DESCRIPTION="ctypes bindings for hidapi"
-HOMEPAGE="https://github.com/apmorton/pyhidapi"
-SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
+HOMEPAGE="
+	https://github.com/apmorton/pyhidapi
+	https://pypi.org/project/hid/
+"
 
 LICENSE="MIT"
 SLOT="0"
@@ -23,5 +25,6 @@ RESTRICT="test"
 
 src_prepare() {
 	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die
+
 	default
 }

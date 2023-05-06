@@ -4,14 +4,20 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit distutils-r1
 
 DESCRIPTION="An efficient and elegant inotify library for Python"
-HOMEPAGE="https://github.com/dsoprea/PyInotify"
-#SRC_URI="mirror://pypi/${P:0:1}/${PN}/${P}.tar.gz"
-SRC_URI="https://github.com/dsoprea/PyInotify/archive/${PV}.tar.gz -> ${P}.tar.gz"
+HOMEPAGE="
+	https://github.com/dsoprea/PyInotify
+	https://pypi.org/project/inotify/
+"
+# the pypi archive is missing test files
+SRC_URI="
+	https://github.com/dsoprea/PyInotify/archive/${PV}.tar.gz
+		-> ${P}.gh.tar.gz
+"
 
 LICENSE="GPL-2"
 SLOT="0"

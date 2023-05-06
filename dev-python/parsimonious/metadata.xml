@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">erikrose/parsimonious</remote-id>
+		<remote-id type="pypi">parsimonious</remote-id>
 	</upstream>
 	<longdescription>
 		Parsimonious aims to be the fastest arbitrary-lookahead parser written

@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">flozz/rivalcfg</remote-id>
+		<remote-id type="pypi">rivalcfg</remote-id>
 	</upstream>
 	<longdescription>
 		CLI tool and Python library to configure SteelSeries gaming mice

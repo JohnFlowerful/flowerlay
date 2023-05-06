@@ -3,6 +3,7 @@
 <pkgmetadata>
 	<upstream>
 		<remote-id type="github">kannibalox/pyrosimple</remote-id>
+		<remote-id type="pypi">pyrosimple</remote-id>
 	</upstream>
 	<longdescription lang="en">
 		A overhauled Python 3 fork of the pyrocore tools, for working with the
