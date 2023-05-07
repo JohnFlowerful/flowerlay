@@ -17,8 +17,10 @@ HOMEPAGE="
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="amd64"
-IUSE="chibios"
+KEYWORDS="~amd64"
+IUSE="chibios +udev-rules"
+# no tests provided by upstream
+RESTRICT="test"
 
 RDEPEND="
 	app-arch/unzip
@@ -26,7 +28,6 @@ RDEPEND="
 	app-mobilephone/dfu-util
 	dev-embedded/avrdude
 	dev-embedded/dfu-programmer
-	dev-embedded/qmk_udev
 	dev-libs/hidapi
 	dev-python/appdirs[${PYTHON_USEDEP}]
 	dev-python/argcomplete[${PYTHON_USEDEP}]
@@ -45,17 +46,16 @@ RDEPEND="
 	sys-apps/hwloc
 	chibios? ( sys-devel/clang )
 	sys-devel/crossdev
+	udev-rules? ( dev-embedded/qmk_udev-rules )
 "
 
-# no tests provided by upstream
-RESTRICT="test"
-
 src_prepare() {
+	sed -rz -i  -e 's/,\n.+"wheel"//' "pyproject.toml" || die
+
 	default
-	sed -rz -i 's/,\n.+"wheel"//' "${S}/pyproject.toml" || die
 }
 
 pkg_postinst() {
-	[ ! -x /usr/bin/avr-gcc ] && ewarn "Missing avr-gcc; you need to 'crossdev -s4 avr'"
-	[ ! -x /usr/bin/arm-none-eabi-gcc ] && ewarn "Missing arm-none-eabi-gcc; you need to 'crossdev -s4 arm-none-eabi'"
+	[[ ! -x /usr/bin/avr-gcc ]] && ewarn "Missing avr-gcc; you need to 'crossdev -s4 avr'"
+	[[ ! -x /usr/bin/arm-none-eabi-gcc ]] && ewarn "Missing arm-none-eabi-gcc; you need to 'crossdev -s4 arm-none-eabi'"
 }
