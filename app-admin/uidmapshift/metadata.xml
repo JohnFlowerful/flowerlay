@@ -4,7 +4,4 @@
 	<upstream>
 		<bugs-to>https://code.launchpad.net/~serge-hallyn/+junk/nsexec</bugs-to>
 	</upstream>
-	<longdescription lang="en">
-		A tool to shift uid/gid's from one range to another
-	</longdescription>
 </pkgmetadata>
