@@ -27,8 +27,11 @@ BDEPEND=">=dev-python/pbr-1.9[${PYTHON_USEDEP}]"
 distutils_enable_tests pytest
 
 src_prepare() {
-	sed -i -e 's/author-email/author_email/g' "${S}/setup.cfg" || die
-	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die
-	sed -i -e 's/home-page/home_page/g' "${S}/setup.cfg" || die
-	default
+	# fix deprecation warnings
+	sed -e 's/author-email/author_email/' \
+		-e 's/description-file/description_file/' \
+		-e 's/home-page/home_page/' \
+		-i "setup.cfg" || die
+
+	distutils-r1_src_prepare
 }
