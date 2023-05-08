@@ -2,7 +2,7 @@
 
 # Load config
 set -o allexport
-source "$VAULTWARDEN_CONFIG"
+source "$VW_CONFIG"
 set +o allexport
 
 # Create data dir

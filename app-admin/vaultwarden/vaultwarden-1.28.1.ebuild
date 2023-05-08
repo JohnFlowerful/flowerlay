@@ -391,31 +391,33 @@ LICENSE="
 	0BSD AGPL-3 Apache-2.0 Apache-2.0-with-LLVM-exceptions BSD BSD-2 Boost-1.0
 	GPL-3 ISC MIT MPL-2.0 Unicode-DFS-2016 Unlicense ZLIB
 "
-
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE="mysql postgres sqlite system-sqlite"
+REQUIRED_USE=|| ( mysql postgres sqlite )
+RESTRICT="mirror"
 
-REQUIRED_USE="|| ( mysql postgres sqlite )"
-
-ACCT_DEPEND="
-	acct-group/vaultwarden
-	acct-user/vaultwarden
-"
 DEPEND="
-	${ACCT_DEPEND}
 	dev-libs/openssl:0=
-	dev-lang/rust
 	>=app-admin/vaultwarden-web-vault-2023.2.0
 	mysql? ( virtual/mysql )
 	postgres? ( dev-db/postgresql )
 	sqlite? ( dev-db/sqlite )
 "
-RDEPEND="${DEPEND}"
+RDEPEND="
+	${DEPEND}
+	acct-group/vaultwarden
+	acct-user/vaultwarden
+"
+BDEPEND=">=virtual/rust-1.67.1"
 
-RESTRICT="mirror"
+src_prepare() {
+	if use system-sqlite; then
+		sed -i -e '/^libsqlite3-sys =.*/s|features = \["bundled"\], ||' "Cargo.toml" || die
+	fi
 
-export VW_VERSION="${PV}"
+	default
+}
 
 src_configure() {
 	myfeatures=(
@@ -427,12 +429,10 @@ src_configure() {
 	cargo_src_configure --no-default-features
 }
 
-src_prepare() {
-	eapply_user
+src_compile() {
+	export VW_VERSION="${PV}"
 
-	if use system-sqlite; then
-		sed -i '/^libsqlite3-sys =.*/s|features = \["bundled"\], ||' "${S}/Cargo.toml" || die
-	fi
+	default
 }
 
 src_install() {
@@ -441,22 +441,22 @@ src_install() {
 	einstalldocs
 
 	# Install init.d and conf.d scripts
-	newinitd "${FILESDIR}"/${PN}.init ${PN}
-	newconfd "${FILESDIR}"/${PN}.conf ${PN}
-	systemd_newunit "${FILESDIR}"/${PN}.service ${PN}.service
+	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
+	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
+	systemd_newunit "${FILESDIR}/${PN}.service" "${PN}.service"
 
 	# Install /etc/vaultwarden.env
 	insinto /etc
-	newins .env.template ${PN}.env
-	fowners root:vaultwarden /etc/${PN}.env
-	fperms 640 /etc/${PN}.env
+	newins .env.template "${PN}.env"
+	fowners root:vaultwarden "/etc/${PN}.env"
+	fperms 640 "/etc/${PN}.env"
 
 	# Install launch wrapper
-	exeinto /var/lib/vaultwarden
-	doexe "${FILESDIR}"/${PN}
+	exeinto "/var/lib/${PN}"
+	doexe "${FILESDIR}/${PN}"
 
 	# Keep data dir
-	keepdir /var/lib/vaultwarden/data
-	fowners vaultwarden:vaultwarden /var/lib/vaultwarden/data
-	fperms 700 /var/lib/vaultwarden/data
+	keepdir "/var/lib/${PN}/data"
+	fowners vaultwarden:vaultwarden "/var/lib/${PN}/data"
+	fperms 700 "/var/lib/${PN}/data"
 }

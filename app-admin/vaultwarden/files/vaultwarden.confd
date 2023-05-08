@@ -1,0 +1,6 @@
+# User and group
+VW_USER="vaultwarden"
+VW_GROUP="vaultwarden"
+
+# Environment config file (will be sourced)
+VW_CONFIG="/etc/vaultwarden.env"

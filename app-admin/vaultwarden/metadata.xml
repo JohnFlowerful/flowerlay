@@ -7,7 +7,4 @@
 	<use>
 		<flag name='system-sqlite'>Use the system SQLite instead of the bundled one</flag>
 	</use>
-	<longdescription lang="en">
-		Unofficial Bitwarden compatible server written in Rust, formerly known as bitwarden_rs 
-	</longdescription>
 </pkgmetadata>
