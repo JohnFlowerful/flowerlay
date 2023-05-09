@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python3_{9..11} )
 
 inherit distutils-r1
 
-DESCRIPTION="Parsimonious aims to be the fastest arbitrary-lookahead parser written in pure Python"
+DESCRIPTION="An arbitrary-lookahead parser written in pure Python"
 HOMEPAGE="
 	https://github.com/erikrose/parsimonious
 	https://pypi.org/project/parsimonious/
