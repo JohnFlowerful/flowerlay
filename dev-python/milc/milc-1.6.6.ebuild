@@ -21,7 +21,7 @@ SRC_URI="
 
 LICENSE="Clueboard"
 SLOT="0"
-KEYWORDS="amd64"
+KEYWORDS="~amd64"
 IUSE="test"
 RESTRICT="!test? ( test )"
 
@@ -34,23 +34,23 @@ RDEPEND="
 "
 BDEPEND="
 	test? (
-		dev-python/nose2[${PYTHON_USEDEP}]
-		dev-python/semver[${PYTHON_USEDEP}]
+		>=dev-python/semver-3[${PYTHON_USEDEP}]
 	)
 "
 
+distutils_enable_tests pytest
+
 src_prepare() {
-	for i in setup.{cfg,py}; do
-		sed -i -e 's/author-email/author_email/g' "${S}/${i}" || die
-		sed -i -e 's/description-file/description_file/g' "${S}/${i}" || die
-		sed -i -e 's/dist-name/dist_name/g' "${S}/${i}" || die
-		sed -i -e 's/home-page/home_page/g' "${S}/${i}" || die
-	done
-	sed -i -e 's/license_file/license_files/g' "${S}/setup.cfg" || die
+	# dev-python/semver-3 changes
+	sed -e 's/VersionInfo.isvalid/VersionInfo.is_valid/' -i "tests/test___init__.py" || die
 
-	default
-}
+	# fix deprecation warnings
+	sed -e 's/author-email/author_email/' \
+		-e 's/description-file/description_file/' \
+		-e 's/dist-name/dist_name/' \
+		-e 's/home-page/home_page/' \
+		-e 's/license_file/license_files/' \
+		-i "setup."{cfg,py} || die
 
-python_test() {
-	nose2 -v || die "Tests failed with ${EPYTHON}"
+	distutils-r1_src_prepare
 }
