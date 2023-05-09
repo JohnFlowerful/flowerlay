@@ -21,7 +21,7 @@ KEYWORDS="amd64"
 distutils_enable_tests pytest
 
 src_prepare() {
-	sed -i -e 's/--cov=shtab --cov-report=term-missing --cov-report=xml//' setup.cfg || die
+	sed -e 's/--cov=shtab --cov-report=term-missing --cov-report=xml//' -i setup.cfg || die
 
 	distutils-r1_src_prepare
 }

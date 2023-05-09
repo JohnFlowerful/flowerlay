@@ -5,7 +5,12 @@
 		<remote-id type="github">iterative/shtab</remote-id>
 		<remote-id type="pypi">shtab</remote-id>
 	</upstream>
-	<longdescription>
-		Automagic shell tab completion for Python CLI applications 
+	<longdescription>	
+		What: Automatically generate shell tab completion scripts for Python
+		CLI apps
+		Why: Speed and correctness. Alternatives like argcomplete and pyzshcomplete
+		are slow and have side-effects
+		How: shtab processes an argparse.ArgumentParser object to generate a tab
+		completion script for your shell
 	</longdescription>
 </pkgmetadata>
