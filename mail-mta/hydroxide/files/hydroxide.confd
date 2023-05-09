@@ -1,4 +1,4 @@
-USER=""
+USER="hydroxide"
 
 HYDROXIDE_MODE="serve"
 
