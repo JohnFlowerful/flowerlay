@@ -23,14 +23,21 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64"
 
-# tests will fail because the expected lists are out of order
-RESTRICT="test"
-distutils_enable_tests nose
+distutils_enable_tests pytest
 
 S="${WORKDIR}/PyInotify-${PV}"
 
 src_prepare() {
-	cp --remove-destination `readlink README.rst` "README.rst" || die
+	cp --remove-destination $(readlink README.rst) "README.rst" || die
 
-	default
+	# inotify sends these events in the opposite order
+	# see 'man inotify'
+	sed -e "s/\['IN_ISDIR', 'IN_DELETE'\]/\['IN_DELETE', 'IN_ISDIR'\]/" \
+		-e "s/\['IN_ISDIR', 'IN_CREATE'\]/\['IN_CREATE', 'IN_ISDIR'\]/" \
+		-i "tests/test_inotify.py" || die
+
+	# fix test deprecation warnings
+	sed -e 's/assertEquals/assertEqual/' -i "tests/test_inotify.py" || die
+
+	distutils-r1_src_prepare
 }

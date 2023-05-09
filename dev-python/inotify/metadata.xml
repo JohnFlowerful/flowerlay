@@ -5,8 +5,4 @@
 		<remote-id type="github">dsoprea/PyInotify</remote-id>
 		<remote-id type="pypi">inotify</remote-id>
 	</upstream>
-	<longdescription>
-		An efficient and elegant inotify (Linux filesystem activity monitor)
-		library for Python
-	</longdescription>
 </pkgmetadata>
