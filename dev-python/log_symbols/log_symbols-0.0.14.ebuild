@@ -28,11 +28,13 @@ KEYWORDS="amd64"
 
 DEPEND=">=dev-python/colorama-0.3.9[${PYTHON_USEDEP}]"
 
-distutils_enable_tests nose
+distutils_enable_tests pytest
 
 S="${WORKDIR}/${MY_PN}-${LOG_SYMBOLS_COMMIT}"
 
 src_prepare() {
-	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die
-	default
+	# fix deprecation warnings
+	sed -e 's/description-file/description_file/' -i "setup.cfg" || die
+
+	distutils-r1_src_prepare
 }
