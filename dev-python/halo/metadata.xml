@@ -5,7 +5,4 @@
 		<remote-id type="github">manrajgrover/halo</remote-id>
 		<remote-id type="pypi">halo</remote-id>
 	</upstream>
-	<longdescription>
-		Beautiful spinners for terminal, IPython and Jupyter 
-	</longdescription>
 </pkgmetadata>
