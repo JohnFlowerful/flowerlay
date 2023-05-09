@@ -4,11 +4,7 @@
 	<upstream>
 		<remote-id type="github">ljanyst/peroxide</remote-id>
 	</upstream>
-	<longdescription lang="en">
-		A third-party ProtonMail bridge serving SMTP and IMAP
-	</longdescription>
 	<use>
-		<flag name='daemon'>Pulls service accounts and installs configuration
-			files to run peroxide as a system service</flag>
+		<flag name='daemon'>Pulls service account and installs service files</flag>
 	</use>
 </pkgmetadata>

@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit go-module systemd
+inherit go-module
 
 DESCRIPTION="A third-party ProtonMail bridge serving SMTP and IMAP"
 HOMEPAGE="https://github.com/ljanyst/peroxide"
@@ -15,27 +15,32 @@ SRC_URI="
 
 LICENSE="Apache-2.0 ISC BSD BSD-2 MIT MPL-2.0 Unlicense"
 SLOT="0"
-IUSE="daemon"
 KEYWORDS="~amd64"
-
+IUSE="daemon"
 RESTRICT="mirror"
 
-ACCT_DEPEND="
-	acct-group/peroxide
-	acct-user/peroxide
+RDEPEND="
+	daemon? (
+		acct-group/peroxide
+		acct-user/peroxide
+	)
 "
-RDEPEND="daemon? ( ${ACCT_DEPEND} )"
+
+DOCS=( config.example.yaml README.md )
+
+PATCHES=(
+	"${FILESDIR}/user_config.patch"
+)
 
 src_prepare() {
-	# patch away the default config location for a user oriented one
-	eapply "${FILESDIR}/user_config.patch"
+	default
 
 	if use daemon; then
-		sed -i -r 's|~/.config/peroxide/|/var/lib/peroxide/|' config.example.yaml || die
-		sed -i -r 's|~/.cache/peroxide|/var/lib/peroxide/cache|' config.example.yaml || die
+		sed -r \
+			-e "s|~/.config/peroxide/|/var/lib/${PN}/|" \
+			-e "s|~/.cache/peroxide|/var/lib/${PN}/cache|" \
+			-i "config.example.yaml" || die
 	fi
-
-	eapply_user
 }
 
 src_compile() {
@@ -44,30 +49,18 @@ src_compile() {
 }
 
 src_install() {
-	dobin peroxide
-	dobin peroxide-cfg
-	dodoc README.md
-	dodoc LICENSE
-	dodoc config.example.yaml
+	dobin peroxide peroxide-cfg
 
 	if use daemon; then
-		systemd_newunit "${FILESDIR}/${PN}.service" "${PN}.service"
+		newinitd "${FILESDIR}/${PN}.initd" "${PN}"
+		newconfd "${FILESDIR}/${PN}.confd" "${PN}"
 
 		insinto /etc
-		newins config.example.yaml ${PN}.yaml
+		newins config.example.yaml "${PN}.yaml"
 
-		keepdir "/var/lib/peroxide"
+		keepdir "/var/lib/${PN}"
+		fowners peroxide:peroxide "/var/lib/${PN}"
 	fi
 
-	newinitd "${FILESDIR}/${PN}.init" ${PN}
-	newconfd "${FILESDIR}/${PN}.conf" ${PN}
-
-	systemd_douserunit "${FILESDIR}/${PN}_user.service"
-	systemd_install_serviced "${FILESDIR}/${PN}.service.conf"
-}
-
-pkg_preinst() {
-	if use daemon; then
-		sed -i -r '/USER=/s|".+|"peroxide"|' "${D}/etc/conf.d/${PN}" || die
-	fi
+	einstalldocs
 }
