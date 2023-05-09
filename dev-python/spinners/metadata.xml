@@ -5,7 +5,4 @@
 		<remote-id type="github">manrajgrover/py-spinners</remote-id>
 		<remote-id type="pypi">spinners</remote-id>
 	</upstream>
-	<longdescription>
-		More than 60 spinners for terminal, this is python port of amazing node library cli-spinners.
-	</longdescription>
 </pkgmetadata>
