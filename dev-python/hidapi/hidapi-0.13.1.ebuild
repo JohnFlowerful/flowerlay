@@ -3,12 +3,13 @@
 
 EAPI=8
 
+DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{9..11} )
 
 inherit distutils-r1 pypi
 
-DESCRIPTION="Python wrapper for the HIDAPI"
+DESCRIPTION="A Cython interface to HIDAPI library."
 HOMEPAGE="
 	https://github.com/trezor/cython-hidapi
 	https://pypi.org/project/hidapi/
@@ -22,21 +23,25 @@ DEPEND=">=dev-libs/hidapi-$(ver_cut 1-3)"
 RDEPEND="${DEPEND}"
 BDEPEND="dev-python/cython[${PYTHON_USEDEP}]"
 
-distutils_enable_tests unittest
+distutils_enable_tests pytest
 
 src_prepare() {
 	# rename the module to avoid conflict with dev-python/hid
-	pushd ${S} || die
-		mv hid.pyx hidapi.pyx
-		ln -sf hidraw.pyx hidapi.pyx
-		sed -i -r '/^src = /s|\[.+|["hidapi.pyx", "chid.pxd"]|' "setup.py" || die
-		sed -i -r 's/"hid",/"hidapi",/' "setup.py" || die
-		sed -i -r "s/'hid.pyx'/'hidapi.pyx'/" "setup.py" || die
-	popd || die
+	mv hid.pyx hidapi.pyx || die
+	ln -sf hidapi.pyx hidraw.pyx || die
+	sed -r \
+		-e '/^src = /s|\[.+|["hidapi.pyx", "chid.pxd"]|' \
+		-e 's/"hid",/"hidapi",/' \
+		-e "s/'hid.pyx'/'hidapi.pyx'/" \
+		-i "setup.py" || die
 
-	default
+	distutils-r1_src_prepare
 }
 
 python_configure_all() {
 	DISTUTILS_ARGS=( --with-system-hidapi )
+}
+
+python_test() {
+	epytest tests.py
 }
