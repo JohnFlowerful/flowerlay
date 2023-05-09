@@ -17,14 +17,14 @@ HOMEPAGE="
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
-
-RDEPEND="dev-libs/hidapi"
-
 # no tests provided by upstream
 RESTRICT="test"
 
-src_prepare() {
-	sed -i -e 's/description-file/description_file/g' "${S}/setup.cfg" || die
+RDEPEND="dev-libs/hidapi"
 
-	default
+src_prepare() {
+	# fix deprecation warnings
+	sed -e 's/description-file/description_file/' -i "setup.cfg" || die
+
+	distutils-r1_src_prepare
 }
