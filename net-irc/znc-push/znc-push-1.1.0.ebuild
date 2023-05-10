@@ -3,47 +3,35 @@
 
 EAPI=8
 
-inherit git-r3
+ZNC_DATADIR="${ZNC_DATADIR:-"/var/lib/znc"}"
 
 DESCRIPTION="A ZNC module that will send notifications to multiple push notification services"
 HOMEPAGE="https://github.com/jreese/znc-push"
 
-EGIT_REPO_URI="https://github.com/jreese/znc-push.git"
-EGIT_COMMIT="v${PV}"
+SRC_URI="https://github.com/jreese/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 IUSE="+curl"
 
-RDEPEND="
-	curl? ( net-misc/curl )
-"
-DEPEND="${RDEPEND}
-	>=net-irc/znc-0.090
-"
+BDEPEND=">=net-irc/znc-0.090:="
+RDEPEND="curl? ( net-misc/curl )"
 
-ZNC_DATADIR="${ZNC_DATADIR:-"/var/lib/znc"}"
-
-src_prepare() {
-	eapply "${FILESDIR}"/destdir.patch
-	default
+pkg_pretend() {
+	if ! [[ -d "${EROOT}${ZNC_DATADIR}" ]]; then
+		die "'${EROOT}${ZNC_DATADIR}' does not exist."
+	fi
 }
 
 src_compile() {
-	curl="no"
-	if use curl; then
-		curl="yes"
-	fi
-	emake curl=${curl}
+	emake curl="$(usex curl)" version="${PV}"
 }
 
 src_install() {
-	if [[ -d "${EROOT}${ZNC_DATADIR}" ]]; then
-		elog "Copying module to ${ZNC_DATADIR}/modules"
-		emake DESTDIR="${D}/${ZNC_DATADIR}" install
-		chown -R znc:znc "${D}/${ZNC_DATADIR}/modules/push.so"
-	else
-		ewarn "${ZNC_DATADIR} doesn't exist, aborting."
-	fi
+	insinto "${ZNC_DATADIR}/modules"
+	doins push.so
+	fowners znc:znc "${ZNC_DATADIR}/modules/push.so"
+
+	einstalldocs
 }

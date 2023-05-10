@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-  <upstream>
-    <remote-id type="github">jreese/znc-push</remote-id>
-  </upstream>
-  <use>
-    <flag name="curl">Use <pkg>net-misc/curl</pkg> for http requests.</flag>
-  </use>
+	<upstream>
+		<remote-id type="github">jreese/znc-push</remote-id>
+	</upstream>
+	<use>
+		<flag name="curl">Use <pkg>net-misc/curl</pkg> for http requests.</flag>
+	</use>
 </pkgmetadata>
-
