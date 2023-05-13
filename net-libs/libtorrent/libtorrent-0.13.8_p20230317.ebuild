@@ -1,46 +1,43 @@
 # Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=8
 
-inherit autotools toolchain-funcs git-r3
+inherit autotools toolchain-funcs
 
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
-EGIT_REPO_URI="https://github.com/rakshasa/libtorrent.git"
+
+LIBTORRENT_COMMIT="91f8cf4b0358d9b4480079ca7798fa7d9aec76b5"
+SRC_URI="https://github.com/rakshasa/${PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
-
 # The README says that the library ABI is not yet stable and dependencies on
 # the library should be an explicit, syncronized version until the library
 # has had more time to mature. Until it matures we should not include a soname
 # subslot.
 SLOT="0"
-
+KEYWORDS="~amd64"
 IUSE="debug ssl test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
 	sys-libs/zlib
-	ssl? (
-		dev-libs/openssl:0=
-	)"
-DEPEND="${RDEPEND}
+	ssl? ( dev-libs/openssl:= )
+"
+BDEPEND="
 	virtual/pkgconfig
-	test? ( dev-util/cppunit )"
+	test? ( dev-util/cppunit:= )
+"
+
+PATCHES=(
+	"${FILESDIR}/${PN}-sysroot.patch"
+)
+
+S="${WORKDIR}/${PN}-${LIBTORRENT_COMMIT}"
 
 src_prepare() {
 	default
-	# fixed upstream:
-	#"${FILESDIR}"/lt-base-c11-fixes.patch
-	#"${FILESDIR}"/lt-base-cppunit-pkgconfig.patch
-	#"${FILESDIR}"/lt-open-ssl-1.1.patch
-	#"${FILESDIR}"/lt-ps-fix_horrible_interval_setters_0.13.2.patch
-	#"${FILESDIR}"/lt-ps-log_open_file-reopen_all.patch
-	epatch \
-		"${FILESDIR}"/lt-ps-better-bencode-errors_all.patch \
-		"${FILESDIR}"/lt-ps-honor_system_file_allocate_all.patch
-
 	eautoreconf
 }
 
@@ -59,12 +56,11 @@ src_configure() {
 		$(use_enable debug) \
 		$(use_enable ssl openssl) \
 		${disable_instrumentation} \
-		--with-posix-fallocate \
-		--with-zlib="${EROOT%/}/usr/"
+		--with-posix-fallocate
 }
 
 src_install() {
 	default
 
-	find "${D}" -name '*.la' -delete
+	find "${ED}" -type f -name '*.la' -delete || die
 }
