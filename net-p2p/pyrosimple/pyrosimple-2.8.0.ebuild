@@ -52,4 +52,3 @@ RDEPEND="
 BDEPEND="test? ( ${RDEPEND} )"
 
 distutils_enable_tests pytest
-
