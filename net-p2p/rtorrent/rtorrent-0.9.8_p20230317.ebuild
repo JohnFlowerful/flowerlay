@@ -1,31 +1,43 @@
 # Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=8
 
-inherit autotools linux-info systemd tmpfiles git-r3
+inherit autotools linux-info tmpfiles
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
-EGIT_REPO_URI="https://github.com/rakshasa/rtorrent.git"
+
+RTORRENT_COMMIT="1da0e3476dcabbf74b2e836d6b4c37b4d96bde09"
+SRC_URI="https://github.com/rakshasa/${PN}/archive/${RTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="daemon debug ipv6 pyroscope selinux test xmlrpc"
-RESTRICT="!test? ( test )"
+KEYWORDS="~amd64"
+IUSE="daemon debug pyroscope selinux xmlrpc"
 
-COMMON_DEPEND="~net-libs/libtorrent-9999
+COMMON_DEPEND="
+	~net-libs/libtorrent-0.13.$(ver_cut 3)
 	>=net-misc/curl-7.19.1
 	sys-libs/ncurses:0=
-	xmlrpc? ( dev-libs/xmlrpc-c )"
-RDEPEND="${COMMON_DEPEND}
+	xmlrpc? ( dev-libs/xmlrpc-c )
+"
+RDEPEND="
+	${COMMON_DEPEND}
 	daemon? ( app-misc/tmux )
 	selinux? ( sec-policy/selinux-rtorrent )
 "
-DEPEND="${COMMON_DEPEND}
-	virtual/pkgconfig"
+BDEPEND="
+	${COMMON_DEPEND}
+	virtual/pkgconfig
+"
 
 DOCS=( doc/rtorrent.rc )
+
+# fixed upstream:
+# "${FILESDIR}/${PN}-0.9.8-bgo891995.patch"
+
+S="${WORKDIR}/${PN}-${RTORRENT_COMMIT}"
 
 pkg_setup() {
 	if ! linux_config_exists || ! linux_chkconfig_present IPV6; then
@@ -37,13 +49,6 @@ pkg_setup() {
 }
 
 src_prepare() {
-	default
-
-	# fixed upstream:
-	#"${FILESDIR}/${PN}-0.9.7-tinfo.patch" (bug #462788)
-	#"${FILESDIR}/${PN}-0.9.7-execinfo-configure.patch"
-	#"${FILESDIR}/backport_0.9.7_add_temp_filter-CH.patch"
-
 	if use pyroscope; then
 		# fixed upstream:
 		#"${FILESDIR}/ps-dl-ui-find_all.patch"
@@ -57,34 +62,43 @@ src_prepare() {
 		#"${FILESDIR}/ps-throttle-steps_all.patch"
 		#"${FILESDIR}/ps-view-filter-by_all.patch"
 		#"${FILESDIR}/rt-base-cppunit-pkgconfig.patch"
-		epatch \
-			"${FILESDIR}/ps-import.return_all.patch" \
-			"${FILESDIR}/ps-info-pane-is-default_all.patch" \
-			"${FILESDIR}/ps-info-pane-xb-sizes_all.patch" \
-			"${FILESDIR}/ps-issue-515_all.patch" \
-			"${FILESDIR}/ps-item-stats-human-sizes_all.patch" \
-			"${FILESDIR}/ps-log_messages_all.patch" \
-			"${FILESDIR}/ps-object_std-map-serialization_all.patch" \
-			"${FILESDIR}/ps-silent-catch_all.patch" \
-			"${FILESDIR}/ps-ui_pyroscope_all.patch" \
-			"${FILESDIR}/pyroscope.patch" \
+		PATCHES+=(
+			"${FILESDIR}/ps-import.return_all.patch"
+			"${FILESDIR}/ps-info-pane-is-default_all.patch"
+			"${FILESDIR}/ps-info-pane-xb-sizes_all.patch"
+			"${FILESDIR}/ps-issue-515_all.patch"
+			"${FILESDIR}/ps-item-stats-human-sizes_all.patch"
+			"${FILESDIR}/ps-log_messages_all.patch"
+			"${FILESDIR}/ps-object_std-map-serialization_all.patch"
+			"${FILESDIR}/ps-silent-catch_all.patch"
+			"${FILESDIR}/ps-ui_pyroscope_all.patch"
+			"${FILESDIR}/pyroscope.patch"
 			"${FILESDIR}/ui_pyroscope.patch"
+		)
 
-		cp ${FILESDIR}/{ui_pyroscope.{cc,h},command_pyroscope.cc} src
+		cp "${FILESDIR}/ui_pyroscope."{cc,h} src || die
+		cp "${FILESDIR}/command_pyroscope.cc" src || die
 	fi
 
 	# https://github.com/rakshasa/rtorrent/issues/332
-	cp "${FILESDIR}"/rtorrent.1 "${S}"/doc/ || die
+	cp "${FILESDIR}"/rtorrent.1 doc/ || die
 
+	if [[ ${CHOST} != *-darwin* ]]; then
+		# syslibroot is only for macos, change to sysroot for others
+		sed -e 's/Wl,-syslibroot,/Wl,--sysroot,/' -i "scripts/common.m4" || die
+	fi
+
+	default
 	eautoreconf
 }
 
 src_configure() {
+	default
+
 	# configure needs bash or script bombs out on some null shift, bug #291229
 	CONFIG_SHELL=${BASH} econf \
 		--disable-dependency-tracking \
 		$(use_enable debug) \
-		$(use_enable ipv6) \
 		$(use_with xmlrpc xmlrpc-c)
 }
 
@@ -93,13 +107,14 @@ src_install() {
 	doman doc/rtorrent.1
 
 	if use daemon; then
-		newinitd "${FILESDIR}/rtorrentd.init" rtorrentd
-		newconfd "${FILESDIR}/rtorrentd.conf" rtorrentd
-		newtmpfiles "${FILESDIR}/rt_tmpfiles.conf" ${PN}.conf
-		systemd_newunit "${FILESDIR}/rtorrentd_at.service" "rtorrentd@.service"
+		newinitd "${FILESDIR}/${PN}-r1.initd" "${PN}"
+		newconfd "${FILESDIR}/${PN}-r1.confd" "${PN}"
+		newtmpfiles - "${PN}.conf" <<-EOF
+			d /run/${PN} 0775 root root
+		EOF
 	fi
 }
 
 pkg_postinst() {
-	tmpfiles_process ${PN}.conf
+	tmpfiles_process "${PN}.conf"
 }
