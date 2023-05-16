@@ -3,7 +3,7 @@
 
 EAPI=8
 
-DESCRIPTION="Utility to facilitate the building and installation of EFI secure boot kernels under Gentoo Linux."
+DESCRIPTION="Utility for building and installing EFI secure boot kernels under Gentoo Linux."
 HOMEPAGE="https://github.com/JohnFlowerful/buildkernel"
 SRC_URI="https://github.com/JohnFlowerful/buildkernel/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
@@ -11,30 +11,34 @@ LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE="plymouth"
-
 RESTRICT="mirror"
 
-DEPEND=">=sys-apps/gptfdisk-0.8.8
+DEPEND="
+	>=sys-apps/gptfdisk-0.8.8
 	>=sys-fs/cryptsetup-1.6.2
 	>=app-shells/bash-4.2:*
-	>=virtual/linux-sources-3"
-RDEPEND=">=sys-libs/ncurses-5.9-r2
+	>=virtual/linux-sources-3
+"
+RDEPEND="
+	>=sys-libs/ncurses-5.9-r2
 	>=app-crypt/sbsigntools-0.6-r1
-	plymouth? ( >=sys-boot/plymouth-0.8.8-r4[gdm(+),libkms,pango] )
+	plymouth? ( >=sys-boot/plymouth-22.02.122[pango] )
 	>=sys-kernel/dracut-050-r2
 	>=sys-boot/efibootmgr-18
-	>=sys-apps/debianutils-4.9.1[installkernel(+)]"
+	>=sys-apps/debianutils-4.9.1[installkernel(+)]
+"
 
 # ebuild function overrides
 src_prepare() {
 	# if the plymouth use flag not set, set script variable accordingly
 	if ! use plymouth; then
 		elog "plymouth USE flag not selected - patching script accordingly."
-		sed -i -e 's@USE_PLYMOUTH=true@USE_PLYMOUTH=false@g' "${S}/${PN}" || \
+		sed -e 's@USE_PLYMOUTH=true@USE_PLYMOUTH=false@g' -i "${PN}" || \
 			die "Failed to patch script to reflect omitted plymouth USE flag."
 	fi
 	eapply_user
 }
+
 src_install() {
 	dosbin "${PN}"
 	insinto "/etc"
@@ -42,6 +46,7 @@ src_install() {
 	doman "${PN}.8"
 	doman "${PN}.conf.5"
 }
+
 pkg_preinst() {
 	if [ -e "${ROOT}/etc/${PN}.conf" ]; then
 		# don't overwrite buildkernel.conf, user already has one,
@@ -57,6 +62,7 @@ pkg_preinst() {
 		set_efi_partuuid_if_exactly_one_found_on_usb
 	fi
 }
+
 pkg_postinst() {
 	elog "Be sure to check the CRYPTPARTUUID and EFIPARTUUID variables are"
 	elog "set correctly in /etc/buildkernel.conf, and also ensure that you have an"
@@ -68,9 +74,10 @@ set_luks_partuuid_if_exactly_one_found() {
 	# checks all partitions for LUKS and, if exactly one is found, will set that
 	# for the CRYPTPARTUUID in buildkernel.conf
 	# if no candidate or multiple candidates found, print a warning
-	local BKCONFPATH="$(sed 's#//*#/#g' <<< "${D}/etc/buildkernel.conf")"
-	local REALBKCONFPATH="$(sed 's#//*#/#g' <<< "${ROOT}/etc/buildkernel.conf")"
-	local PARTUUIDDEVDIR="$(sed 's#//*#/#g' <<< "${ROOT}/dev/disk/by-partuuid")"
+	local BKCONFPATH REALBKCONFPATH PARTUUIDDEVDIR
+	BKCONFPATH="$(sed 's#//*#/#g' <<< "${D}/etc/buildkernel.conf")"
+	REALBKCONFPATH="$(sed 's#//*#/#g' <<< "${ROOT}/etc/buildkernel.conf")"
+	PARTUUIDDEVDIR="$(sed 's#//*#/#g' <<< "${ROOT}/dev/disk/by-partuuid")"
 	if ! grep -q '^[[:space:]]*#[[:space:]]*CRYPTPARTUUID=' "${BKCONFPATH}"; then
 		elog "CRYPTPARTUUID is already set in ${BKCONFPATH}, leaving as is"
 		return
@@ -93,7 +100,7 @@ set_luks_partuuid_if_exactly_one_found() {
 		fi
 	done
 	shopt -u nullglob
-	if [ ! -z "${CANDIDATE}" ]; then
+	if [ -n "${CANDIDATE}" ]; then
 		elog " Found exactly one candidate: $(basename "${CANDIDATE}")"
 		elog " (which is $(readlink --canonicalize "${CANDIDATE}"))"
 		elog " Setting this for CRYPTPARTUUID in ${REALBKCONFPATH}"
@@ -103,13 +110,15 @@ set_luks_partuuid_if_exactly_one_found() {
 		ewarn " Please set CRYPTPARTUUID manually in ${REALBKCONFPATH}"
 	fi
 }
+
 set_efi_partuuid_if_exactly_one_found_on_usb() {
 	# checks all partitions on USB devices only; if exactly one EFI system
 	# partition is found, will set that for EFIPARTUUID in buildkernel.conf
-	local BKCONFPATH="$(sed 's#//*#/#g' <<< "${D}/etc/buildkernel.conf")"
-	local REALBKCONFPATH="$(sed 's#//*#/#g' <<< "${ROOT}/etc/buildkernel.conf")"
-	local PARTUUIDDEVDIR="$(sed 's#//*#/#g' <<< "${ROOT}/dev/disk/by-partuuid")"
-	local DISKIDDEVDIR="$(sed 's#//*#/#g' <<< "${ROOT}/dev/disk/by-id")"
+	local BKCONFPATH REALBKCONFPATH PARTUUIDDEVDIR DISKIDDEVDIR
+	BKCONFPATH="$(sed 's#//*#/#g' <<< "${D}/etc/buildkernel.conf")"
+	REALBKCONFPATH="$(sed 's#//*#/#g' <<< "${ROOT}/etc/buildkernel.conf")"
+	PARTUUIDDEVDIR="$(sed 's#//*#/#g' <<< "${ROOT}/dev/disk/by-partuuid")"
+	DISKIDDEVDIR="$(sed 's#//*#/#g' <<< "${ROOT}/dev/disk/by-id")"
 	if ! grep -q '^[[:space:]]*#[[:space:]]*EFIPARTUUID=' "${BKCONFPATH}"; then
 		ewarn "EFIPARTUUID is already set in ${BKCONFPATH}, leaving as is"
 		return
@@ -122,17 +131,20 @@ set_efi_partuuid_if_exactly_one_found_on_usb() {
 	for NEXTID in "${DISKIDDEVDIR}/usb-"*"-part"*[[:digit:]]; do
 		if [ -e "${NEXTID}" ]; then
 			# remember this
-			local NEXTCANONPART="$(readlink --canonicalize "${NEXTID}")" # e.g. /dev/sda3
+			local NEXTCANONPART
+			NEXTCANONPART="$(readlink --canonicalize "${NEXTID}")" # e.g. /dev/sda3
 			ISUSBPART["${NEXTCANONPART}"]="1"
 		fi
 	done
 	shopt -s nullglob
 	for NEXTPART in "${PARTUUIDDEVDIR}"/*; do
 		if [ -e "${NEXTPART}" ]; then
-			local PARTNAME="$(readlink --canonicalize "${NEXTPART}")" # e.g. /dev/sda3
+			local PARTNAME
+			PARTNAME="$(readlink --canonicalize "${NEXTPART}")" # e.g. /dev/sda3
 			if [[ "${ISUSBPART[${PARTNAME}]-0}" == "1" ]]; then
-				local DEVNAME="${PARTNAME%%[[:digit:]]*}"			   # e.g. /dev/sda
-				local PARTNUM="${PARTNAME##*[^[:digit:]]}"			  # e.g. 3
+				local DEVNAME PARTNUM
+				DEVNAME="${PARTNAME%%[[:digit:]]*}"			   # e.g. /dev/sda
+				PARTNUM="${PARTNAME##*[^[:digit:]]}"			  # e.g. 3
 				# stat returns device type in hex only
 				if (sgdisk --info "${PARTNUM}" "${DEVNAME}" | grep -qi 'EFI System'); then
 					if [ -z "${CANDIDATE}" ]; then
@@ -148,7 +160,7 @@ set_efi_partuuid_if_exactly_one_found_on_usb() {
 		fi
 	done
 	shopt -u nullglob
-	if [ ! -z "${CANDIDATE}" ]; then
+	if [ -n "${CANDIDATE}" ]; then
 		elog " Found exactly one candidate: $(basename "${CANDIDATE}")"
 		elog " (which is $(readlink --canonicalize "${CANDIDATE}"))"
 		elog " Setting this for EFIPARTUUID in ${REALBKCONFPATH}"
