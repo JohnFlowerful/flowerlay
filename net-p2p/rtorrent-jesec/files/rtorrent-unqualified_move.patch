@@ -1,0 +1,32 @@
+From 8237b83087e5b4c05e870ffe45f6f0e9ed63f8d0 Mon Sep 17 00:00:00 2001
+From: Kannibal Ox <kannibalox@gmail.com>
+Date: Thu, 19 Jan 2023 11:52:30 -0500
+Subject: [PATCH] Fix unqualified calls to std::move
+
+https://reviews.llvm.org/rG70b1f6de539867353940d3dcb8b25786d5082d63
+---
+ src/option_parser.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/option_parser.cc b/src/option_parser.cc
+index 18ea1b4d..7e742344 100644
+--- a/src/option_parser.cc
++++ b/src/option_parser.cc
+@@ -26,7 +26,7 @@ OptionParser::insert_option(char c, slot_string s) {
+ 
+ void
+ OptionParser::insert_option_list(char c, slot_string_pair s) {
+-  m_container[c].m_slot = [s = move(s)](const auto& arg) {
++  m_container[c].m_slot = [s = std::move(s)](const auto& arg) {
+     return OptionParser::call_option_list(s, arg);
+   };
+   m_container[c].m_useOption = true;
+@@ -34,7 +34,7 @@ OptionParser::insert_option_list(char c, slot_string_pair s) {
+ 
+ void
+ OptionParser::insert_int_pair(char c, slot_int_pair s) {
+-  m_container[c].m_slot = [s = move(s)](const auto& arg) {
++  m_container[c].m_slot = [s = std::move(s)](const auto& arg) {
+     return OptionParser::call_int_pair(s, arg);
+   };
+   m_container[c].m_useOption = true;

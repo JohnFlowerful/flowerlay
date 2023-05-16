@@ -1,0 +1,20 @@
+# the non-root user running rtorrent
+RT_USER=""
+
+# path to rtorrent.rc relative to $HOME
+RT_RC=".rtorrent.rc"
+
+# path to session directory relative to $HOME
+RT_SESSION_DIR=".session"
+
+# path to rtorrent binary
+# default: 'command -v rtorrent'
+RT_BINARY_PATH=""
+
+# additional opts to pass to rtorrent
+# see 'man rtorrent' for more info
+RT_OPTS=""
+
+# only change these if you know what you're doing
+TMUX_TMPDIR="/tmp"
+TMUX_SOCKET="default"

@@ -33,7 +33,7 @@ index 087efce..e333740 100644
 +    std::string line(buffer);
 +    line += msg;
 +    line += '\n';
-+    ::write(log_messages_fd, line.c_str(), line.length());
++    (void)::write(log_messages_fd, line.c_str(), line.length());
 +  }
  }
  

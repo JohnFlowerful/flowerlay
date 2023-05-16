@@ -821,12 +821,12 @@ cmd_string_strip(int where, const torrent::Object::list_type& args) {
       text.erase(text.begin(),
                  std::find_if(text.begin(),
                               text.end(),
-                              std::not1(std::ptr_fun<int, int>(std::isspace))));
+                              std::not_fn(isspace)));
     }
     if (where >= 0) {
       text.erase(std::find_if(text.rbegin(),
                               text.rend(),
-                              std::not1(std::ptr_fun<int, int>(std::isspace)))
+                              std::not_fn(isspace))
                    .base(),
                  text.end());
     }
