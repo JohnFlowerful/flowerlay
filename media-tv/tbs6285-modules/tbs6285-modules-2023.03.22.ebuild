@@ -11,6 +11,7 @@ DESCRIPTION="Kernel Modules for TBS DTV devices"
 HOMEPAGE="https://www.tbsdtv.com/"
 
 EGIT_REPO_URI="https://github.com/tbsdtv/media_build.git"
+EGIT_OVERRIDE_COMMIT_TBSTV_MEDIA_BUILD="f0948b48358dd0d81916ebda9f4f1fefd4483707"
 EGIT_OVERRIDE_BRANCH_TBSTV_MEDIA_BUILD="extra"
 # warning: these archives are snapshots with no versioning
 SRC_URI="
@@ -89,9 +90,9 @@ src_install() {
 
 	# install firmware
 	insinto /lib/firmware
-	pushd "${WORKDIR}/tbs_dvb-firmwares" &> /dev/null || die
+	pushd "${WORKDIR}/tbs_dvb-firmwares" &>/dev/null || die
 		doins "dvb-demod-si2168-b40-01.fw"
 		doins "dvb-demod-si2168-02.fw"
 		doins "dvb-tuner-si2158-a20-01.fw"
-	popd &> /dev/null || die
+	popd &>/dev/null || die
 }
