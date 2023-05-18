@@ -23,7 +23,7 @@ RESTRICT="mirror !test? ( test )"
 # xmlrpc-c whether the abyss use flag is enabled or not... build xmlrpc-c with
 # abyss to work around this issue
 COMMON_DEPEND="
-	=net-libs/libtorrent-jesec-0.13.8-r4
+	~net-libs/libtorrent-jesec-0.13.$(ver_cut 3)
 	>=net-misc/curl-7.88.0[adns]
 	sys-libs/ncurses:0=
 	jsonrpc? ( dev-cpp/nlohmann_json )
