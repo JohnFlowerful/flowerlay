@@ -3,9 +3,11 @@
 
 EAPI=8
 
-inherit go-module systemd
+MY_PN="gotify"
 
-DESCRIPTION="A simple server for sending and receiving messages in real-time per WebSocket. (Includes a sleek web-ui)"
+inherit go-module
+
+DESCRIPTION="A server for sending and receiving messages"
 HOMEPAGE="https://gotify.net/"
 
 SRC_URI="
@@ -16,79 +18,77 @@ SRC_URI="
 
 LICENSE="Apache-2.0 BSD-2 BSD MIT"
 SLOT="0"
-IUSE="mysql postgres sqlite"
-REQUIRED_USE="|| ( mysql postgres sqlite )"
 KEYWORDS="amd64"
+IUSE="mysql postgres sqlite"
+REQUIRED_USE=|| ( mysql postgres sqlite )
+RESTRICT="mirror"
 
-ACCT_DEPEND="
-	acct-group/gotify
-	acct-user/gotify
-"
-DEPEND="${ACCT_DEPEND}"
 BDEPEND="
 	>=dev-lang/go-1.16.0
-	=net-libs/nodejs-16*
+	>=net-libs/nodejs-16
 	sys-apps/yarn
 "
 RDEPEND="
-	${DEPEND}
+	acct-group/gotify
+	acct-user/gotify
 	mysql? ( virtual/mysql )
 	postgres? ( dev-db/postgresql )
 	sqlite? ( dev-db/sqlite )
 "
 
-RESTRICT="mirror"
-
 S="${WORKDIR}/server-${PV}"
 
 src_configure() {
-	ebegin "Installing node_modules"
-	pushd "${S}/ui" > /dev/null || die
+	pushd "ui" &>/dev/null || die
 		yarn config set disable-self-update-check true || die
 		yarn config set nodedir /usr/include/node || die
 		yarn config set yarn-offline-mirror "${WORKDIR}/yarn_distfiles" || die
 		# puppeteer is a dev dependency used for tests
 		export PUPPETEER_SKIP_DOWNLOAD=true
+
 		yarn install --frozen-lockfile --offline --no-progress || die
-		# workaround md4 see https://github.com/webpack/webpack/issues/14560
+
+		# workaround dev-libs/openssl-3 and md4. see https://github.com/webpack/webpack/issues/14560
 		find node_modules/webpack/lib -type f -exec sed -i 's/md4/sha512/g' {} \; || die
-		sed -i 's/crypto.createHash("md4")/crypto.createHash("sha512")/' node_modules/react-scripts/node_modules/babel-loader/lib/cache.js || die
-	popd > /dev/null || die
-	eend $? || die
+		sed -e 's/crypto.createHash("md4")/crypto.createHash("sha512")/' \
+			-i node_modules/react-scripts/node_modules/babel-loader/lib/cache.js || die
+	popd &>/dev/null || die
 }
 
 src_compile() {
 	# build ui and then generate static assets for go
 	einfo "Building web assets"
-	pushd "${S}/ui" > /dev/null || die
+	pushd "ui" &>/dev/null || die
 		yarn run build || die
-	popd > /dev/null || die
-	go run hack/packr/packr.go -- . || die
+	popd &>/dev/null || die
+	ego run hack/packr/packr.go -- .
 
 	# build binary
 	einfo "Building application binary"
-	MY_COMMIT="$(zcat ${DISTDIR}/${P}.tar.gz | git get-tar-commit-id)" || die
+	MY_COMMIT="$(zcat "${DISTDIR}/${P}.tar.gz" | git get-tar-commit-id)" || die
 	MY_DATE=$(date "+%F-%T")
-	go build \
-		-o ${PN} \
-		-trimpath \
-		-ldflags="-X 'main.Version=${PV}' \
-			-X 'main.Commit=${MY_COMMIT}' \
-			-X 'main.BuildDate=${MY_DATE}' \
-			-X 'main.Mode=prod'" || die
+	ego build -o "${PN}" -trimpath -ldflags="\
+		-X main.Version=${PV} \
+		-X main.Commit=${MY_COMMIT} \
+		-X main.BuildDate=${MY_DATE} \
+		-X main.Mode=prod"
+}
+
+src_test() {
+	ego test "./..."
 }
 
 src_install() {
-	dobin ${PN}
-	insinto "/etc/gotify"
+	dobin "${PN}"
+	insinto "/etc/${MY_PN}"
 	newins "config.example.yml" "config.yml"
-	dodoc "LICENSE"
 
-	newinitd "${FILESDIR}"/${PN}.init ${PN}
-	newconfd "${FILESDIR}"/${PN}.conf ${PN}
-	systemd_newunit "${FILESDIR}"/${PN}.service ${PN}.service
+	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
+	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
 
-	keepdir /var/lib/gotify/data
-	fowners gotify:gotify /var/lib/gotify/data
-	fperms 700 /var/lib/gotify/data
+	keepdir "/var/lib/${MY_PN}/data"
+	fowners gotify:gotify "/var/lib/${MY_PN}/data"
+	fperms 700 "/var/lib/${MY_PN}/data"
+
+	einstalldocs
 }
