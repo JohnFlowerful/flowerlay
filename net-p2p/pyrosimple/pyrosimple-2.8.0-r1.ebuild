@@ -34,9 +34,9 @@ RDEPEND="
 	=dev-python/jinja-3.1*[${PYTHON_USEDEP}]
 	=dev-python/python-daemon-2.3*[${PYTHON_USEDEP}]
 	=dev-python/parsimonious-0.10*[${PYTHON_USEDEP}]
-	=dev-python/prometheus_client-0.16*[${PYTHON_USEDEP}]
+	=dev-python/prometheus-client-0.16*[${PYTHON_USEDEP}]
 	=dev-python/prompt-toolkit-3.0*[${PYTHON_USEDEP}]
-	=dev-python/requests-2.28*[${PYTHON_USEDEP}]
+	>=dev-python/requests-2.28[${PYTHON_USEDEP}]
 	=dev-python/shtab-1.5*[${PYTHON_USEDEP}]
 	=dev-python/python-box-7.0*[${PYTHON_USEDEP}]
 	$(python_gen_cond_dep '
