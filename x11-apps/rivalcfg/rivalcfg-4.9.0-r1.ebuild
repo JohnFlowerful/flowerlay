@@ -29,12 +29,15 @@ src_prepare() {
 	sed -e 's/import hid/import hidapi as hid/' -i "${PN}/debug.py" || die
 	sed -e 's/import hid/import hidapi as hid/' -i "${PN}/usbhid.py" || die
 
+	sed -e "/^RULES_FILE_PATH = /s|\".*\"|\"$(get_udevdir)/rules.d/99-steelseries-rival.rules\"|" \
+		-i "${PN}/udev.py" || die
+
 	distutils-r1_src_prepare
 }
 
 python_install() {
 	einfo "Generating udev rules"
-	udev_newrules - "${PN}.conf" <<<"$("${BUILD_DIR}/install/usr/bin/${PN}" --print-udev)"
+	udev_newrules - "99-steelseries-rival.rules" <<<"$("${BUILD_DIR}/install/usr/bin/${PN}" --print-udev)"
 
 	distutils-r1_python_install
 }
