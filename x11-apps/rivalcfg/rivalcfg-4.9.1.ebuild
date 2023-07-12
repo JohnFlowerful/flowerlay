@@ -6,7 +6,7 @@ EAPI=8
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{9..11} )
 
-inherit distutils-r1 pypi
+inherit distutils-r1 pypi udev
 
 DESCRIPTION="CLI tool and Python library to configure SteelSeries gaming mice"
 HOMEPAGE="
@@ -29,9 +29,23 @@ src_prepare() {
 	sed -e 's/import hid/import hidapi as hid/' -i "${PN}/debug.py" || die
 	sed -e 's/import hid/import hidapi as hid/' -i "${PN}/usbhid.py" || die
 
+	sed -e "/^RULES_FILE_PATH = /s|\".*\"|\"$(get_udevdir)/rules.d/99-steelseries-rival.rules\"|" \
+		-i "${PN}/udev.py" || die
+
 	distutils-r1_src_prepare
 }
 
+python_install() {
+	einfo "Generating udev rules"
+	udev_newrules - "99-steelseries-rival.rules" <<<"$("${BUILD_DIR}/install/usr/bin/${PN}" --print-udev)"
+
+	distutils-r1_python_install
+}
+
 pkg_postinst() {
-	einfo "Run rivalcfg --update-udev as root to generate Udev rules"
+	udev_reload
+}
+
+pkg_postrm() {
+	udev_reload
 }
