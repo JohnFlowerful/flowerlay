@@ -24,9 +24,9 @@ REQUIRED_USE=|| ( mysql postgres sqlite )
 RESTRICT="mirror"
 
 BDEPEND="
-	>=dev-lang/go-1.16.0
+	>=dev-lang/go-1.18.0
 	>=net-libs/nodejs-16
-	sys-apps/yarn
+	>=sys-apps/yarn-1.9
 "
 RDEPEND="
 	acct-group/gotify
@@ -56,18 +56,17 @@ src_configure() {
 }
 
 src_compile() {
-	# build ui and then generate static assets for go
+	# build ui
 	einfo "Building web assets"
 	pushd "ui" &>/dev/null || die
 		yarn run build || die
 	popd &>/dev/null || die
-	ego run hack/packr/packr.go -- .
 
 	# build binary
 	einfo "Building application binary"
 	MY_COMMIT="$(zcat "${DISTDIR}/${P}.tar.gz" | git get-tar-commit-id)" || die
 	MY_DATE=$(date "+%F-%T")
-	ego build -o "${PN}" -trimpath -ldflags="\
+	ego build -o "${PN}" -trimpath -ldflags=" \
 		-X main.Version=${PV} \
 		-X main.Commit=${MY_COMMIT} \
 		-X main.BuildDate=${MY_DATE} \
