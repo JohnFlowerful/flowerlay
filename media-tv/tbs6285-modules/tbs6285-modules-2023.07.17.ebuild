@@ -5,13 +5,13 @@
 
 EAPI=8
 
-inherit linux-mod git-r3
+inherit linux-mod-r1 git-r3
 
 DESCRIPTION="Kernel Modules for TBS DTV devices"
 HOMEPAGE="https://www.tbsdtv.com/"
 
 EGIT_REPO_URI="https://github.com/tbsdtv/media_build.git"
-EGIT_OVERRIDE_COMMIT_TBSTV_MEDIA_BUILD="f0948b48358dd0d81916ebda9f4f1fefd4483707"
+EGIT_OVERRIDE_COMMIT_TBSTV_MEDIA_BUILD="ccecdddcc04db37c42e378ae5414dfd6f5f349a9"
 EGIT_OVERRIDE_BRANCH_TBSTV_MEDIA_BUILD="extra"
 # warning: these archives are snapshots with no versioning
 SRC_URI="
@@ -32,22 +32,9 @@ BDEPEND="
 	dev-util/patchutils
 "
 
-# only use these for installation due to the linux-media build system
-# maybe walk a list of modules with make instead?
-MODULE_NAMES="
-	si2157(misc/tbs6285/tuners::v4l)
-	si2168(misc/tbs6285/dvb-frontends::v4l)
-	saa716x_core(misc/tbs6285/pci/saa716x::v4l)
-	saa716x_tbs-dvb(misc/tbs6285/pci/saa716x::v4l)
-	tas2101(misc/tbs6285/dvb-frontends::v4l)
-	dvb-core(misc/tbs6285/dvb-core::v4l)
-	cx24117(misc/tbs6285/dvb-frontends::v4l)
-	mc(misc/tbs6285/mc::v4l)
-"
-
 pkg_setup() {
+	linux-mod-r1_pkg_setup
 	get_version
-	linux-mod_pkg_setup
 }
 
 src_unpack() {
@@ -75,7 +62,6 @@ src_configure() {
 	# when generating a config:
 	# 'Autoselect ancillary drivers' must be selected otherwise CONFIG_I2C_MUX is
 	# not set and the required modules will not be listed
-	# this inherently means the config has unneeded modules
 	cp "${FILESDIR}/tbs6285.config" "v4l/.config" || die
 
 	set_arch_to_kernel
@@ -86,7 +72,8 @@ src_compile() {
 }
 
 src_install() {
-	linux-mod_src_install
+	emake DESTDIR="${ED}" VER="${KV_FULL}" install
+	modules_post_process
 
 	# install firmware
 	insinto /lib/firmware
