@@ -4,8 +4,8 @@
 EAPI=8
 
 # vaultwarden patch
-MY_PATCHV=$(ver_cut 1-2).0
-#MY_PATCHV="${PV}"
+#MY_PATCHV=$(ver_cut 1-2).0
+MY_PATCHV="${PV}"
 
 BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
 BW_RESOURCES="${BW_WEB_BUILDS}/resources/src"
