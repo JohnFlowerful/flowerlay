@@ -17,7 +17,8 @@ LICENSE="ISC BSD MIT"
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE="daemon"
-RESTRICT="mirror"
+# no tests provided
+RESTRICT="mirror test"
 
 RDEPEND="
 	daemon? (
@@ -25,11 +26,6 @@ RDEPEND="
 		acct-user/hydroxide
 	)
 "
-
-# patch to fix "Login temporarily not permitted" errors from protonmail api
-PATCHES=(
-	"${FILESDIR}/user_agent.patch"
-)
 
 src_prepare() {
 	if use daemon; then
