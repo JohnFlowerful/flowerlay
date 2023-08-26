@@ -25,9 +25,14 @@ IUSE="baseconfig daemon sockets"
 KEYWORDS="~amd64"
 RESTRICT="bindist mirror"
 
+# mta-server is built with openssl-1.1 but will run with openssl-3
+# make sure to include 1.1 anyway
 RDEPEND="
-	>=dev-libs/openssl-1.1.1
-	sys-libs/ncurses-compat
+	|| (
+		dev-libs/openssl-compat:1.1.1
+		=dev-libs/openssl-1.1.1*
+	)
+	sys-libs/ncurses-compat:5
 	sys-libs/readline
 "
 
@@ -41,7 +46,7 @@ src_prepare() {
 	# copy the required files from ${DISTDIR} so we can install/modify them later
 	if use sockets; then
 		mkdir x64/modules || die
-		cp "${DISTDIR}/ml_sockets.so" x64/modules || die
+		cp "${DISTDIR}/${MY_P}_ml_sockets.so" x64/modules/ml_sockets.so || die
 	fi
 
 	default
