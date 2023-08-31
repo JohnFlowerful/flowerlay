@@ -37,6 +37,7 @@ src_prepare() {
 
 python_install() {
 	einfo "Generating udev rules"
+	einfo "It is safe to ignore the following udev warning"
 	udev_newrules - "99-steelseries-rival.rules" <<<"$("${BUILD_DIR}/install/usr/bin/${PN}" --print-udev)"
 
 	distutils-r1_python_install
