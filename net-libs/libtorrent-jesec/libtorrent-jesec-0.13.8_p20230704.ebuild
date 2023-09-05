@@ -3,21 +3,16 @@
 
 EAPI=8
 
-inherit cmake flag-o-matic llvm toolchain-funcs
-
-MY_PV="${PV}-${PR}"
 MY_PN="${PN/-jesec/}"
+
+inherit cmake flag-o-matic toolchain-funcs
 
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://github.com/jesec/libtorrent"
 
-if [[ ${MY_PV} = *9999 ]]; then
-	inherit git-r3
-	EGIT_REPO_URI="https://github.com/jesec/libtorrent.git"
-else
-	SRC_URI="https://github.com/jesec/libtorrent/archive/v${MY_PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~amd64"
-fi
+LIBTORRENT_COMMIT="35d844d4d78a671f8840fe6ae973ebb39a0e8f34"
+SRC_URI="https://github.com/jesec/${MY_PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
+KEYWORDS="~amd64"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -30,16 +25,11 @@ RDEPEND="
 	sys-libs/zlib
 "
 BDEPEND="
-	clang? ( sys-devel/clang sys-devel/lld )
+	clang? ( sys-devel/clang )
 	test? ( dev-cpp/gtest )
 "
 
-PATCHES=(
-	# https://github.com/jesec/libtorrent/pull/8
-	"${FILESDIR}/${MY_PN}-deprecated_func.patch"
-)
-
-S="${WORKDIR}/${MY_PN}-${MY_PV}"
+S="${WORKDIR}/${MY_PN}-${LIBTORRENT_COMMIT}"
 
 src_configure() {
 	# show flags set at the beginning
@@ -60,7 +50,7 @@ src_configure() {
 		NM=llvm-nm
 		RANLIB=llvm-ranlib
 	elif ! use clang && ! tc-is-gcc ; then
-		# Force gcc
+		# force gcc
 		have_switched_compiler=yes
 		einfo "Enforcing the use of gcc due to USE=-clang ..."
 		AR=gcc-ar
