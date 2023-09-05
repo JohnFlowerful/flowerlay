@@ -5,12 +5,12 @@ EAPI=8
 
 MY_PN="${PN/-jesec/}"
 
-inherit cmake flag-o-matic linux-info llvm tmpfiles toolchain-funcs
+inherit cmake flag-o-matic linux-info tmpfiles toolchain-funcs
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="https://github.com/jesec/rtorrent"
 
-RTORRENT_COMMIT="88fd968f3d78db55d50def1b973081359c547cb7"
+RTORRENT_COMMIT="199e8f85244c8eb1c30163d51755570ad86139bb"
 SRC_URI="https://github.com/jesec/${MY_PN}/archive/${RTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 KEYWORDS="~amd64"
 
@@ -33,7 +33,6 @@ BDEPEND="
 	${COMMON_DEPEND}
 	clang? (
 		sys-devel/clang
-		sys-devel/lld
 		net-libs/libtorrent-jesec[clang]
 	)
 	test? ( dev-cpp/gtest )
@@ -46,13 +45,6 @@ RDEPEND="
 "
 
 DOCS=( doc/rtorrent.rc )
-
-PATCHES=(
-	# https://github.com/jesec/rtorrent/pull/46
-	"${FILESDIR}/${MY_PN}-deprecated_func.patch"
-	# https://github.com/jesec/rtorrent/pull/59
-	"${FILESDIR}/${MY_PN}-unqualified_move.patch"
-)
 
 S="${WORKDIR}/${MY_PN}-${RTORRENT_COMMIT}"
 
@@ -126,7 +118,7 @@ src_configure() {
 		NM=llvm-nm
 		RANLIB=llvm-ranlib
 	elif ! use clang && ! tc-is-gcc ; then
-		# Force gcc
+		# force gcc
 		have_switched_compiler=yes
 		einfo "Enforcing the use of gcc due to USE=-clang ..."
 		AR=gcc-ar
