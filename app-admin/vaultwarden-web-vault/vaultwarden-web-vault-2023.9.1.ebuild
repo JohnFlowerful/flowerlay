@@ -25,7 +25,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 RESTRICT="mirror"
 
-DEPEND=">=net-libs/nodejs-16[npm]"
+DEPEND=">=net-libs/nodejs-18[npm]"
 BDEPEND="${DEPEND}"
 RDEPEND="${DEPEND}"
 
@@ -43,7 +43,7 @@ S="${WORKDIR}/clients-web-v${PV}"
 
 src_prepare() {
 	# copy vaultwarden assets
-	cp -vfr "${BW_RESOURCES}/"* apps/web/src/  || die
+	cp -vfr "${BW_RESOURCES}/"* apps/web/src/ || die
 
 	default
 }
