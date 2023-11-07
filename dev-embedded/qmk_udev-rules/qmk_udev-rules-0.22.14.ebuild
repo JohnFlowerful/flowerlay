@@ -10,7 +10,10 @@ HOMEPAGE="
 	https://qmk.fm/
 	https://github.com/qmk/qmk_firmware/
 "
-SRC_URI="https://raw.githubusercontent.com/qmk/qmk_firmware/${PV}/util/udev/50-qmk.rules"
+SRC_URI="
+	https://raw.githubusercontent.com/qmk/qmk_firmware/${PV}/util/udev/50-qmk.rules
+		-> ${P}.rules
+"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -19,7 +22,7 @@ KEYWORDS="amd64"
 S="${WORKDIR}"
 
 src_prepare() {
-	cp "${DISTDIR}/50-qmk.rules" . || die
+	cp "${DISTDIR}/${P}.rules" 50-qmk.rules || die
 
 	default
 }
