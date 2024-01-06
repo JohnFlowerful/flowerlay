@@ -11,7 +11,7 @@ if [[ "${PV}" == 9999 ]]; then
 	EGIT_REPO_URI="https://github.com/jesec/${PN}.git"
 	IUSE="+build-online"
 else
-	FLOOD_COMMIT="7aec1e2d9610b1b63bf4ac6d386285d1d43ba7be"
+	FLOOD_COMMIT="748195a21bf5bb32e46c87e96898ae6ad824a07c"
 	SRC_URI="
 		https://github.com/jesec/${PN}/archive/${FLOOD_COMMIT}.tar.gz -> ${P}.tar.gz
 		https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-cache.tar.xz
