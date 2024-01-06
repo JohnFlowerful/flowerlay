@@ -56,7 +56,7 @@ src_install() {
 	insinto "/usr/lib/${PN}"
 	doins -r *
 
-	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
+	newinitd "${FILESDIR}/${PN}-r1.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
 
 	keepdir "/var/lib/${PN}"

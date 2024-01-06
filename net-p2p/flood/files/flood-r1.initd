@@ -5,8 +5,9 @@
 name="flood daemon"
 description="A modern web UI for various torrent clients with a Node.js backend and React frontend."
 
-command=/usr/bin/npm
-command_args="run start --prefix /usr/lib/flood -- --rundir=\"${RUNDIR}\" ${FLOOD_OPTS}"
+export NODE_PATH="/usr/lib/flood"
+command=/usr/bin/node
+command_args="--enable-source-maps --use_strict ${NODE_PATH}/dist/index.js --rundir=\"${RUNDIR}\" ${FLOOD_OPTS}"
 
 pidfile="/run/flood.pid"
 start_stop_daemon_args="--user ${USER} --group ${GROUP} --pidfile ${pidfile} --make-pidfile --background"
