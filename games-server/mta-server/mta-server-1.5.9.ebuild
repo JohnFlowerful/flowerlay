@@ -4,8 +4,7 @@
 EAPI=8
 
 MY_PN="multitheftauto_linux_x64"
-MY_PV="$(ver_cut 1-3)-rc-$(ver_cut 4)"
-MY_P="${MY_PN}-${MY_PV}"
+MY_P="${MY_PN}-${PV}"
 
 inherit tmpfiles
 
@@ -31,7 +30,9 @@ RDEPEND="
 
 DOCS=( LICENSE NOTICE README )
 
-QA_PREBUILT="*"
+INS_DIR="/opt/${MY_PN}"
+QA_PREBUILT="${INS_DIR}/mta-server64 ${INS_DIR}/x64/*"
+QA_EXECSTACK="${INS_DIR}/mta-server64"
 
 S="${WORKDIR}/${MY_P}"
 
@@ -46,8 +47,6 @@ src_prepare() {
 }
 
 src_install() {
-	INS_DIR="/opt/${MY_PN}"
-
 	exeinto "${INS_DIR}"
 	doexe mta-server64
 

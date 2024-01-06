@@ -13,8 +13,10 @@ DESCRIPTION="Server files for a Grand Theft Auto multiplayer mod"
 HOMEPAGE="https://multitheftauto.com/"
 SRC_URI="
 	https://nightly.multitheftauto.com/${MY_P}.tar.gz
-	baseconfig? ( https://linux.multitheftauto.com/dl/baseconfig.tar.gz )
-	sockets? ( https://nightly.multitheftauto.com/files/modules/64/ml_sockets.so )
+	baseconfig? ( https://linux.multitheftauto.com/dl/baseconfig.tar.gz
+		-> ${MY_P}_baseconfig.tar.gz )
+	sockets? ( https://nightly.multitheftauto.com/files/modules/64/ml_sockets.so
+		-> ${MY_P}_ml_sockets.so )
 "
 
 LICENSE="GPL-3"
@@ -23,17 +25,20 @@ IUSE="baseconfig daemon sockets"
 KEYWORDS="~amd64"
 RESTRICT="bindist mirror"
 
+# mta-server is built with openssl-1.1 but will run with openssl-3
+# make sure to include 1.1 anyway
 RDEPEND="
-	=dev-libs/openssl-1.1*
-	sys-libs/ncurses-compat
+	|| (
+		dev-libs/openssl-compat:1.1.1
+		=dev-libs/openssl-1.1.1*
+	)
+	sys-libs/ncurses-compat:5
 	sys-libs/readline
 "
 
 DOCS=( LICENSE NOTICE README )
 
-INS_DIR="/opt/${MY_PN}"
-QA_PREBUILT="${INS_DIR}/mta-server64 ${INS_DIR}/x64/*"
-QA_EXECSTACK="${INS_DIR}/mta-server64"
+QA_PREBUILT="*"
 
 S="${WORKDIR}/${MY_P}"
 
@@ -41,13 +46,15 @@ src_prepare() {
 	# copy the required files from ${DISTDIR} so we can install/modify them later
 	if use sockets; then
 		mkdir x64/modules || die
-		cp "${DISTDIR}/ml_sockets.so" x64/modules || die
+		cp "${DISTDIR}/${MY_P}_ml_sockets.so" x64/modules/ml_sockets.so || die
 	fi
 
 	default
 }
 
 src_install() {
+	INS_DIR="/opt/${MY_PN}"
+
 	exeinto "${INS_DIR}"
 	doexe mta-server64
 
