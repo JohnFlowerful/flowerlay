@@ -11,7 +11,7 @@ DESCRIPTION="Kernel Modules for TBS DTV devices"
 HOMEPAGE="https://www.tbsdtv.com/"
 
 EGIT_REPO_URI="https://github.com/tbsdtv/media_build.git"
-EGIT_OVERRIDE_COMMIT_TBSTV_MEDIA_BUILD="cb372162778cddbd1bf1fafda4db8c8fd16d32b5"
+EGIT_OVERRIDE_COMMIT_TBSTV_MEDIA_BUILD="88764363a3e3d36b3c59a0a2bf2244e262035d47"
 EGIT_OVERRIDE_BRANCH_TBSTV_MEDIA_BUILD="latest"
 # warning: these archives are snapshots with no versioning
 SRC_URI="
