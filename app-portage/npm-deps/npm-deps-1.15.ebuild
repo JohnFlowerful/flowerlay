@@ -22,5 +22,5 @@ RDEPEND="
 "
 
 src_install() {
-	newbin ${PN}.pl ${PN}
+	dobin ${PN}
 }
