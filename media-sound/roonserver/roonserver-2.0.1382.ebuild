@@ -54,8 +54,8 @@ src_install() {
 	cp -r "${S}" "${D}/opt/" || die
 
 	if use system-dotnet; then
-		MY_DOTNET=$(command -v dotnet) || die
-		dosym "${MY_DOTNET}" "/opt/${MY_PN}/RoonDotnet/dotnet" || die
+		local dotnet=$(command -v dotnet) || die
+		dosym "${dotnet}" "/opt/${MY_PN}/RoonDotnet/dotnet" || die
 	fi
 
 	# these symlinks should be created when roon is started for the first time,
