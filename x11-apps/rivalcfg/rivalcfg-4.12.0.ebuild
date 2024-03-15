@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{9..11} )
+PYTHON_COMPAT=( python3_{10..12} )
 
 inherit distutils-r1 pypi udev
 
@@ -37,7 +37,6 @@ src_prepare() {
 
 python_install() {
 	einfo "Generating udev rules"
-	einfo "It is safe to ignore the following udev warning"
 	udev_newrules - "99-steelseries-rival.rules" <<<"$("${BUILD_DIR}/install/usr/bin/${PN}" --print-udev)"
 
 	distutils-r1_python_install
