@@ -3,6 +3,8 @@
 
 EAPI=8
 
+inherit npm
+
 DESCRIPTION="A modern web UI for various torrent clients"
 HOMEPAGE="https://flood.js.org/"
 
@@ -11,10 +13,10 @@ if [[ "${PV}" == 9999 ]]; then
 	EGIT_REPO_URI="https://github.com/jesec/${PN}.git"
 	IUSE="+build-online"
 else
-	FLOOD_COMMIT="7aec1e2d9610b1b63bf4ac6d386285d1d43ba7be"
+	FLOOD_COMMIT=""
 	SRC_URI="
 		https://github.com/jesec/${PN}/archive/${FLOOD_COMMIT}.tar.gz -> ${P}.tar.gz
-		https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-cache.tar.xz
+		https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
 	"
 	IUSE="build-online"
 	KEYWORDS="amd64"
@@ -26,7 +28,8 @@ SLOT="0"
 IUSE+=" mediainfo"
 RESTRICT="build-online? ( network-sandbox ) mirror"
 
-BDEPEND=">=net-libs/nodejs-18[npm]"
+BDEPEND=">=net-libs/nodejs-18
+"
 RDEPEND="
 	${BDEPEND}
 	acct-group/flood
@@ -34,29 +37,24 @@ RDEPEND="
 	mediainfo? ( media-video/mediainfo )
 "
 
+NPM_FLAGS=("--legacy-peer-deps")
+NPM_BUILD_SCRIPT="build"
+
 src_configure() {
-	if ! use build-online; then
-		export npm_config_cache="${WORKDIR}/npm-cache"
-	fi
-
-	npm clean-install --omit=optional || die
-}
-
-src_compile() {
 	if use build-online; then
+		npm clean-install || die
 		# 'npm audit fix' exits with a non-0 when there's breaking changes
 		# play it safe: don't die and don't add '--force'
 		npm audit fix
+	else
+		npm_src_configure
 	fi
-
-	npm run build || die
 }
 
 src_install() {
-	insinto "/usr/lib/${PN}"
-	doins -r *
+	npm_src_install
 
-	newinitd "${FILESDIR}/${PN}-r1.initd" "${PN}"
+	newinitd "${FILESDIR}/${PN}-r2.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
 
 	keepdir "/var/lib/${PN}"
