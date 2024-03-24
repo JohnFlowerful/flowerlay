@@ -44,7 +44,6 @@ src_prepare() {
 src_install() {
 	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
-	systemd_newunit "${FILESDIR}/${PN}.service" "${PN}.service"
 
 	keepdir "/var/lib/roon"
 	fowners roon:roon "/var/lib/roon"
@@ -54,8 +53,8 @@ src_install() {
 	cp -r "${S}" "${D}/opt/" || die
 
 	if use system-dotnet; then
-		MY_DOTNET=$(command -v dotnet) || die
-		dosym "${MY_DOTNET}" "/opt/${MY_PN}/RoonDotnet/dotnet" || die
+		local dotnet=$(command -v dotnet) || die
+		dosym "${dotnet}" "/opt/${MY_PN}/RoonDotnet/dotnet" || die
 	fi
 
 	# these symlinks should be created when roon is started for the first time,
