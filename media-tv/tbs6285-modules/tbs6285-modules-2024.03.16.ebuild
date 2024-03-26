@@ -5,16 +5,16 @@
 
 EAPI=8
 
-inherit linux-mod-r1 git-r3
+inherit linux-mod-r1
 
 DESCRIPTION="Kernel Modules for TBS DTV devices"
 HOMEPAGE="https://www.tbsdtv.com/"
 
-EGIT_REPO_URI="https://github.com/tbsdtv/media_build.git"
-EGIT_OVERRIDE_COMMIT_TBSTV_MEDIA_BUILD="88764363a3e3d36b3c59a0a2bf2244e262035d47"
-EGIT_OVERRIDE_BRANCH_TBSTV_MEDIA_BUILD="latest"
+MEDIA_BUILD_COMMIT="88764363a3e3d36b3c59a0a2bf2244e262035d47"
 # warning: these archives are snapshots with no versioning
 SRC_URI="
+	https://github.com/tbsdtv/media_build/archive/${MEDIA_BUILD_COMMIT}.tar.gz
+		-> tbs_media_build-${MEDIA_BUILD_COMMIT}.tar.gz
 	https://github.com/tbsdtv/media_build/releases/download/latest/linux-media.tar.bz2
 		-> tbs_linux-media-${PV}.tar.bz2
 	https://github.com/tbsdtv/media_build/releases/download/latest/dvb-firmwares.tar.bz2
@@ -38,7 +38,10 @@ pkg_setup() {
 }
 
 src_unpack() {
-	git-r3_src_unpack
+	# avoid the `unpack` helper so we can use --strip-components on tar
+	mkdir -p "${P}" || die
+	tar -C ${P} --strip-components 1 --no-same-owner \
+		-zxf "${DISTDIR}/tbs_media_build-${MEDIA_BUILD_COMMIT}.tar.gz" || die
 
 	pushd "${P}/linux" &>/dev/null || die
 		unpack "tbs_linux-media-${PV}.tar.bz2"
