@@ -20,7 +20,7 @@ KEYWORDS="~amd64"
 
 RDEPEND="
 	${PYTHON_DEPS}
-	>=dev-python/hidapi-0.7.99[${PYTHON_USEDEP}]
+	>=dev-python/hidapi-0.14.0[${PYTHON_USEDEP}]
 "
 
 distutils_enable_tests pytest
@@ -37,7 +37,6 @@ src_prepare() {
 
 python_install() {
 	einfo "Generating udev rules"
-	einfo "It is safe to ignore the following udev warning"
 	udev_newrules - "99-steelseries-rival.rules" <<<"$("${BUILD_DIR}/install/usr/bin/${PN}" --print-udev)"
 
 	distutils-r1_python_install
