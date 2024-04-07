@@ -421,7 +421,7 @@ LICENSE="
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE="mysql postgres sqlite system-sqlite"
-REQUIRED_USE=|| ( mysql postgres sqlite )
+REQUIRED_USE="|| ( mysql postgres sqlite )"
 RESTRICT="mirror"
 
 DEPEND="
