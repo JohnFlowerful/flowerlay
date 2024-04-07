@@ -1,0 +1,41 @@
+diff --git a/qmk_cli/subcommands/console.py b/qmk_cli/subcommands/console.py
+index b162ece..10bace9 100644
+--- a/qmk_cli/subcommands/console.py
++++ b/qmk_cli/subcommands/console.py
+@@ -97,7 +97,7 @@ def import_hid():
+     """Attempts to import the hid module.
+     """
+     try:
+-        import hid
++        import hidraw as hid
+         return hid
+ 
+     except ImportError as e:
+@@ -114,7 +114,8 @@ class MonitorDevice(object):
+         self.hid = import_hid()
+         self.hid_device = hid_device
+         self.numeric = numeric
+-        self.device = self.hid.Device(path=hid_device['path'])
++        self.device = self.hid.device()
++        self.device.open_path(hid_device['path'])
+         self.current_line = ''
+ 
+         cli.log.info('Console Connected: %(color)s%(manufacturer_string)s %(product_string)s{style_reset_all} (%(color)s%(vendor_id)04X:%(product_id)04X:%(index)d{style_reset_all})', hid_device)
+@@ -122,7 +123,7 @@ class MonitorDevice(object):
+     def read(self, size, encoding='ascii', timeout=1):
+         """Read size bytes from the device.
+         """
+-        return self.device.read(size, timeout).decode(encoding)
++        return b''.join([i.to_bytes(size, 'big') for i in self.device.read(size, timeout)]).decode(encoding)
+ 
+     def read_line(self):
+         """Read from the device's console until we get a \n.
+@@ -145,7 +146,7 @@ class MonitorDevice(object):
+ 
+                 cli.echo('%s', '%(ts)s%(color)s%(identifier)s:%(index)d{style_reset_all}: %(text)s' % message)
+ 
+-            except self.hid.HIDException:
++            except Exception:
+                 break
+ 
+ 

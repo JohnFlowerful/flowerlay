@@ -4,7 +4,8 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..11} )
+PYTHON_COMPAT=( python3_{10..12} )
+PYPI_PN="${PN%_*}"
 
 inherit distutils-r1 pypi
 
@@ -33,10 +34,10 @@ RDEPEND="
 	dev-python/argcomplete[${PYTHON_USEDEP}]
 	dev-python/colorama[${PYTHON_USEDEP}]
 	dev-python/dotty_dict[${PYTHON_USEDEP}]
-	dev-python/hid[${PYTHON_USEDEP}]
+	dev-python/hidapi[${PYTHON_USEDEP}]
 	dev-python/hjson[${PYTHON_USEDEP}]
 	>=dev-python/jsonschema-4[${PYTHON_USEDEP}]
-	>=dev-python/milc-1.4.2[${PYTHON_USEDEP}]
+	>=dev-python/milc-1.6.8[${PYTHON_USEDEP}]
 	dev-python/pygments[${PYTHON_USEDEP}]
 	dev-python/pyserial[${PYTHON_USEDEP}]
 	dev-python/pyusb[${PYTHON_USEDEP}]
@@ -48,6 +49,13 @@ RDEPEND="
 	sys-devel/crossdev
 	udev-rules? ( dev-embedded/qmk_udev-rules )
 "
+
+# upstream won't switch to the dev-python/hidapi package nor will they vendor the
+# "unmaintained" module
+# see https://github.com/qmk/qmk_cli/issues/82 for the discussion
+#
+# provide a patch to remove pyhidapi dependency and use dev-python/hidapi instead
+PATCHES=("${FILESDIR}/${P}_linux-hidapi.patch")
 
 src_prepare() {
 	sed -rz -i  -e 's/,\n.+"wheel"//' "pyproject.toml" || die
