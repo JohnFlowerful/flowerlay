@@ -7,7 +7,7 @@ inherit npm
 
 # vaultwarden patch
 #MY_PATCHV=$(ver_cut 1-2).0
-MY_PATCHV="${PV%b}"
+MY_PATCHV="${PV}"
 
 BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
 BW_RESOURCES="${BW_WEB_BUILDS}/resources/src"
@@ -16,9 +16,9 @@ DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 SRC_URI="
-	https://github.com/bitwarden/clients/archive/web-v${PV%b}.tar.gz -> ${PN}-${PV%b}.tar.gz
+	https://github.com/bitwarden/clients/archive/web-v${PV}.tar.gz -> ${P}.tar.gz
 	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${P}-resources.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${PV%b}-npm-deps.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
 "
 
 LICENSE="GPL-3"
@@ -41,7 +41,7 @@ PATCHES=(
 	"${BW_WEB_BUILDS}/patches/v${MY_PATCHV}.patch"
 )
 
-S="${WORKDIR}/clients-web-v${PV%b}"
+S="${WORKDIR}/clients-web-v${PV}"
 
 src_prepare() {
 	# copy vaultwarden assets
