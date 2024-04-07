@@ -16,7 +16,7 @@ else
 	FLOOD_COMMIT=""
 	SRC_URI="
 		https://github.com/jesec/${PN}/archive/${FLOOD_COMMIT}.tar.gz -> ${P}.tar.gz
-		https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
+		!build-online? ( https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz )
 	"
 	IUSE="build-online"
 	KEYWORDS="amd64"
@@ -26,7 +26,8 @@ fi
 LICENSE="GPL-3"
 SLOT="0"
 IUSE+=" mediainfo"
-RESTRICT="build-online? ( network-sandbox ) mirror"
+PROPERTIES="build-online? ( live )"
+RESTRICT="mirror"
 
 BDEPEND=">=net-libs/nodejs-18
 "
@@ -39,6 +40,14 @@ RDEPEND="
 
 NPM_FLAGS=("--legacy-peer-deps")
 NPM_BUILD_SCRIPT="build"
+
+src_unpack() {
+	if use build-online; then
+		unpack ${P}.tar.gz
+	else
+		npm_src_unpack
+	fi
+}
 
 src_configure() {
 	if use build-online; then
