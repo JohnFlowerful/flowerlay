@@ -20,7 +20,7 @@ LICENSE="Apache-2.0 BSD-2 BSD MIT"
 SLOT="0"
 KEYWORDS="amd64"
 IUSE="mysql postgres sqlite"
-REQUIRED_USE=|| ( mysql postgres sqlite )
+REQUIRED_USE="|| ( mysql postgres sqlite )"
 RESTRICT="mirror"
 
 BDEPEND="
