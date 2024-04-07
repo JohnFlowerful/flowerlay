@@ -20,15 +20,12 @@ KEYWORDS="~amd64"
 
 RDEPEND="
 	${PYTHON_DEPS}
-	>=dev-python/hidapi-0.7.99[${PYTHON_USEDEP}]
+	>=dev-python/hidapi-0.14.0[${PYTHON_USEDEP}]
 "
 
 distutils_enable_tests pytest
 
 src_prepare() {
-	sed -e 's/import hid/import hidapi as hid/' -i "${PN}/debug.py" || die
-	sed -e 's/import hid/import hidapi as hid/' -i "${PN}/usbhid.py" || die
-
 	sed -e "/^RULES_FILE_PATH = /s|\".*\"|\"$(get_udevdir)/rules.d/99-steelseries-rival.rules\"|" \
 		-i "${PN}/udev.py" || die
 
