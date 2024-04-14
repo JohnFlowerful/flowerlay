@@ -21,15 +21,14 @@ KEYWORDS="~amd64"
 IUSE="debug ssl test"
 RESTRICT="!test? ( test )"
 
-RDEPEND="
-	sys-libs/zlib
+RDEPEND="sys-libs/zlib
 	ssl? ( dev-libs/openssl:= )
-"
-BDEPEND="
-	virtual/pkgconfig
-	test? ( dev-util/cppunit:= )
-"
+	test? ( dev-util/cppunit:= )"
+DEPEND="${RDEPEND}"
+BDEPEND="virtual/pkgconfig"
 
+# fixed upstream:
+# "${FILESDIR}"/${PN}-0.13.8-configure-clang-16.patch
 PATCHES=(
 	"${FILESDIR}/${PN}-sysroot.patch"
 )
@@ -47,6 +46,7 @@ src_configure() {
 	echo -e "#include <inttypes.h>\nint main(){ int64_t var = 7; __sync_add_and_fetch(&var, 1); return 0;}" > "${T}/sync_add_and_fetch.c" || die
 	$(tc-getCC) ${CFLAGS} -o /dev/null -x c "${T}/sync_add_and_fetch.c" >/dev/null 2>&1
 	if [[ $? -ne 0 ]]; then
+		einfo "Disabling instrumentation"
 		disable_instrumentation="--disable-instrumentation"
 	fi
 
