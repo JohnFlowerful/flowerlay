@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit autotools linux-info tmpfiles
+inherit autotools flag-o-matic linux-info tmpfiles
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
@@ -16,26 +16,21 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE="daemon debug pyroscope selinux xmlrpc"
 
-COMMON_DEPEND="
-	~net-libs/libtorrent-0.13.$(ver_cut 3)
+COMMON_DEPEND="~net-libs/libtorrent-0.13.$(ver_cut 3)
 	>=net-misc/curl-7.19.1
 	sys-libs/ncurses:0=
-	xmlrpc? ( dev-libs/xmlrpc-c )
-"
-RDEPEND="
-	${COMMON_DEPEND}
+	xmlrpc? ( dev-libs/xmlrpc-c )"
+RDEPEND="${COMMON_DEPEND}
 	daemon? ( app-misc/tmux )
-	selinux? ( sec-policy/selinux-rtorrent )
-"
-BDEPEND="
-	${COMMON_DEPEND}
-	virtual/pkgconfig
-"
+	selinux? ( sec-policy/selinux-rtorrent )"
+DEPEND="${COMMON_DEPEND}
+	virtual/pkgconfig"
 
 DOCS=( doc/rtorrent.rc )
 
 # fixed upstream:
 # "${FILESDIR}/${PN}-0.9.8-bgo891995.patch"
+# "${FILESDIR}/${PN}-0.9.8-configure-c99.patch"
 
 S="${WORKDIR}/${PN}-${RTORRENT_COMMIT}"
 
@@ -49,6 +44,8 @@ pkg_setup() {
 }
 
 src_prepare() {
+	default
+
 	if use pyroscope; then
 		# fixed upstream:
 		#"${FILESDIR}/ps-dl-ui-find_all.patch"
@@ -88,16 +85,17 @@ src_prepare() {
 		sed -e 's/Wl,-syslibroot,/Wl,--sysroot,/' -i "scripts/common.m4" || die
 	fi
 
-	default
 	eautoreconf
 }
 
 src_configure() {
-	default
+	# -Werror=odr
+	# https://bugs.gentoo.org/861848
+	# https://github.com/rakshasa/rtorrent/issues/1264
+	filter-lto
 
 	# configure needs bash or script bombs out on some null shift, bug #291229
 	CONFIG_SHELL=${BASH} econf \
-		--disable-dependency-tracking \
 		$(use_enable debug) \
 		$(use_with xmlrpc xmlrpc-c)
 }
