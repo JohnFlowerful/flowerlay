@@ -5,8 +5,6 @@ EAPI=8
 
 MY_PN="RoonServer"
 
-inherit systemd
-
 DESCRIPTION="A music management and listening solution"
 HOMEPAGE="https://roonlabs.com/"
 
@@ -69,11 +67,9 @@ src_install() {
 pkg_postinst() {
 	CIFS_PERM=$(stat -c '%a' /sbin/mount.cifs)
 	CONFD_DIR="/etc/conf.d"
-	UNIT_DIR=$(systemd_get_systemunitdir)
 	if use samba && \
 	! [[ ${CIFS_PERM} =~ ^47[[:digit:]][[:digit:]] ]] && \
-	! [[ $(grep 'USER="root"' "${CONFD_DIR}/${PN}") ]] && \
-	! [[ $(grep "User=root" "${UNIT_DIR}/${PN}.service") ]]; then
+	! [[ $(grep 'USER="root"' "${CONFD_DIR}/${PN}") ]]; then
 		ewarn "Roon uses the superuser command 'mount.cifs' to access network locations."
 		ewarn "While this ebuild restricts Roon to a regular user account, it is still possible"
 		ewarn "to allow Roon to use 'mount.cifs' with setuid: 'chmod u+s /sbin/mount.cifs'."
