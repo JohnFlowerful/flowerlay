@@ -13,14 +13,12 @@ if [[ "${PV}" == 9999 ]]; then
 	EGIT_REPO_URI="https://github.com/jesec/${PN}.git"
 	IUSE="+build-online"
 else
-	FLOOD_COMMIT=""
 	SRC_URI="
-		https://github.com/jesec/${PN}/archive/${FLOOD_COMMIT}.tar.gz -> ${P}.tar.gz
+		https://github.com/jesec/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
 		!build-online? ( https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz )
 	"
 	IUSE="build-online"
 	KEYWORDS="amd64"
-	S="${WORKDIR}/${PN}-${FLOOD_COMMIT}"
 fi
 
 LICENSE="GPL-3"
