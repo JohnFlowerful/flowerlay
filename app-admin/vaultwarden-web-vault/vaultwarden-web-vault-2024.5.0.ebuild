@@ -10,15 +10,15 @@ inherit npm
 MY_PATCHV="${PV}"
 
 BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
-BW_RESOURCES="${BW_WEB_BUILDS}/resources/src"
+BW_RESOURCES="${BW_WEB_BUILDS}/resources"
 
 DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 SRC_URI="
-	https://github.com/bitwarden/clients/archive/web-v${PV}.tar.gz -> ${PN}-${PV}.tar.gz
+	https://github.com/bitwarden/clients/archive/web-v${PV}.tar.gz -> ${P}.tar.gz
 	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${P}-resources.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${PV}-npm-deps.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
 "
 
 LICENSE="GPL-3"
@@ -45,7 +45,15 @@ S="${WORKDIR}/clients-web-v${PV}"
 
 src_prepare() {
 	# copy vaultwarden assets
-	cp -fr "${BW_RESOURCES}/"* apps/web/src/ || die
+	cp -fr "${BW_RESOURCES}/src/"* apps/web/src/ || die
+
+	# replace embedded logos
+	replace_embedded_svg_icon \
+		${BW_RESOURCES}/vaultwarden-admin-console-logo.svg \
+		apps/web/src/app/admin-console/icons/admin-console-logo.ts
+	replace_embedded_svg_icon \
+		${BW_RESOURCES}/vaultwarden-password-manager-logo.svg \
+		apps/web/src/app/layouts/password-manager-logo.ts
 
 	default
 }
@@ -55,4 +63,17 @@ src_install() {
 	doins -r apps/web/build/*
 
 	einstalldocs
+}
+
+# https://github.com/dani-garcia/bw_web_builds/blob/master/scripts/apply_patches.sh#L4-L14
+function replace_embedded_svg_icon() {
+if [ ! -f $1 ]; then echo "$1 does not exist"; exit -1; fi
+if [ ! -f $2 ]; then echo "$2 does not exist"; exit -1; fi
+
+echo "'$1' -> '$2'"
+
+first='`$'
+last='^`'
+sed -i "/$first/,/$last/{ /$first/{p; r $1
+}; /$last/p; d }" $2
 }
