@@ -90,6 +90,18 @@ export NPM_DEPS_DIR=${NPM_DEPS_DIR:="${WORKDIR}/npm-deps"}
 # Setting to a non-null value will run `npm-deps fixup-lockfile` during the
 # src_configure phase
 
+# @ECLASS_VARIABLE: NPM_BUILD_SCRIPT
+# @DEFAULT_UNSET
+# @REQUIRED
+# @DESCRIPTION:
+# The build script to run when `npm run` is called. A list can usually be found
+# in the package.json file
+
+# @ECLASS_VARIABLE: NPM_WORKSPACE
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# The workspace to build and install
+
 # @ECLASS_VARIABLE: NPM_FLAGS
 # @DEFAULT_UNSET
 # @DESCRIPTION:
@@ -113,18 +125,6 @@ export NPM_DEPS_DIR=${NPM_DEPS_DIR:="${WORKDIR}/npm-deps"}
 # @DESCRIPTION:
 # An array variable containing flags to use during `npm rebuild`
 
-# @ECLASS_VARIABLE: NPM_BUILD_SCRIPT
-# @DEFAULT_UNSET
-# @REQUIRED
-# @DESCRIPTION:
-# The build script to run when `npm run` is called. A list can usually be found
-# in the package.json file
-
-# @ECLASS_VARIABLE: NPM_WORKSPACE
-# @DEFAULT_UNSET
-# @DESCRIPTION:
-# The workspace to build and install
-
 # @ECLASS_VARIABLE: NPM_BUILD_FLAGS
 # @DEFAULT_UNSET
 # @DESCRIPTION:
@@ -145,6 +145,9 @@ export NPM_DEPS_DIR=${NPM_DEPS_DIR:="${WORKDIR}/npm-deps"}
 # @DESCRIPTION:
 # Setting to a non-null value will disable `npm prune` in the src_install function
 
+# @ECLASS_VARIABLE: NPM_CACHE_DIR
+# @INTERNAL
+# @DESCRIPTION:
 # Set the default npm-cache directory for this script and `npm-deps`
 export NPM_CACHE_DIR="${WORKDIR}/npm-cache"
 
@@ -161,7 +164,7 @@ npm_src_unpack() {
 
 	default
 
-	# verify with `npm-deps``
+	# verify with `npm-deps`
 	if [[ -d ${NPM_DEPS_DIR} ]]; then
 		if [[ -e "${S}/${NPM_DEPS_LOCKFILE}" ]]; then
 			ebegin "Verifying unpacked tarballs"
@@ -215,7 +218,7 @@ npm_src_configure() {
 	npm rebuild "${NPM_REBUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"
 }
 
-# @FUNCTION: _npm_src_compile
+# @FUNCTION: npm_src_compile
 # @DESCRIPTION:
 # Runs the `npm run` build with all the provided flags
 npm_src_compile() {
