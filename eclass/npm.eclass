@@ -252,7 +252,7 @@ npm_src_install() {
 		local dest="$DEST_DIR/$(dirname "$file")"
 		mkdir -p "$dest"
 		cp "${NPM_WORKSPACE-.}/$file" "$dest"
-	done < <(jq --raw-output '.[0].files | map(.path) | join("\n")' <<< "$(npm_config_cache="$HOME/.npm" npm pack --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
+	done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(npm_config_cache="$HOME/.npm" npm pack --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
 
 	# support both the case when NODE_WRAPPER_OPT is an array and an 
 	# IFS-separated string
