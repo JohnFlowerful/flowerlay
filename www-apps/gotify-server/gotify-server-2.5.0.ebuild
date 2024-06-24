@@ -12,8 +12,8 @@ HOMEPAGE="https://gotify.net/"
 
 SRC_URI="
 	https://github.com/gotify/server/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.xz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-yarn_distfiles.tar.xz
+	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${P}-yarn_distfiles.tar.gz
 "
 
 LICENSE="Apache-2.0 BSD-2 BSD MIT"
@@ -24,7 +24,7 @@ REQUIRED_USE="|| ( mysql postgres sqlite )"
 RESTRICT="mirror"
 
 BDEPEND="
-	>=dev-lang/go-1.18.0
+	>=dev-lang/go-1.22.4
 	>=net-libs/nodejs-16
 	>=sys-apps/yarn-1.9
 "
@@ -64,12 +64,12 @@ src_compile() {
 
 	# build binary
 	einfo "Building application binary"
-	MY_COMMIT="$(zcat "${DISTDIR}/${P}.tar.gz" | git get-tar-commit-id)" || die
-	MY_DATE=$(date "+%F-%T")
+	local my_commit="$(zcat "${DISTDIR}/${P}.tar.gz" | git get-tar-commit-id)" || die
+	local my_date=$(date "+%F-%T")
 	ego build -o "${PN}" -trimpath -ldflags=" \
 		-X main.Version=${PV} \
-		-X main.Commit=${MY_COMMIT} \
-		-X main.BuildDate=${MY_DATE} \
+		-X main.Commit=${my_commit} \
+		-X main.BuildDate=${my_date} \
 		-X main.Mode=prod"
 }
 
