@@ -37,7 +37,7 @@ RDEPEND="
 	>=dev-python/prometheus-client-0.16[${PYTHON_USEDEP}]
 	=dev-python/prompt-toolkit-3.0*[${PYTHON_USEDEP}]
 	>=dev-python/requests-2.28[${PYTHON_USEDEP}]
-	=dev-python/shtab-1.5*[${PYTHON_USEDEP}]
+	>=dev-python/shtab-1.5.5[${PYTHON_USEDEP}]
 	>=dev-python/python-box-7.0[${PYTHON_USEDEP}]
 	$(python_gen_cond_dep '
 		=dev-python/tomli-2.0*[${PYTHON_USEDEP}]
