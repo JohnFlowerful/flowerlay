@@ -10,7 +10,7 @@ HOMEPAGE="https://github.com/emersion/hydroxide"
 
 SRC_URI="
 	https://github.com/emersion/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.xz
+	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.gz
 "
 
 LICENSE="ISC BSD MIT"
@@ -26,11 +26,6 @@ RDEPEND="
 		acct-user/hydroxide
 	)
 "
-
-# patch to fix "Login temporarily not permitted" errors from protonmail api
-PATCHES=(
-	"${FILESDIR}/user_agent.patch"
-)
 
 src_prepare() {
 	if use daemon; then
