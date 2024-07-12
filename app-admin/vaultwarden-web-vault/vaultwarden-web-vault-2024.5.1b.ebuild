@@ -5,9 +5,11 @@ EAPI=8
 
 inherit npm
 
+MY_PV=${PV%b}
+
 # vaultwarden patch
-#MY_PATCHV=$(ver_cut 1-2).0
-MY_PATCHV="${PV}"
+MY_PATCHV=$(ver_cut 1-2).0
+#MY_PATCHV="${PV}"
 
 BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
 BW_RESOURCES="${BW_WEB_BUILDS}/resources"
@@ -16,9 +18,9 @@ DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 SRC_URI="
-	https://github.com/bitwarden/clients/archive/web-v${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/bitwarden/clients/archive/web-v${MY_PV}.tar.gz -> ${PN}-${MY_PV}.tar.gz
 	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${P}-resources.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${MY_PATCHV}-npm-deps.tar.gz
 "
 
 LICENSE="GPL-3"
@@ -41,7 +43,7 @@ PATCHES=(
 	"${BW_WEB_BUILDS}/patches/v${MY_PATCHV}.patch"
 )
 
-S="${WORKDIR}/clients-web-v${PV}"
+S="${WORKDIR}/clients-web-v${MY_PV}"
 
 src_prepare() {
 	# copy vaultwarden assets
@@ -66,7 +68,7 @@ src_install() {
 }
 
 # https://github.com/dani-garcia/bw_web_builds/blob/master/scripts/apply_patches.sh#L4-L14
-function replace_embedded_svg_icon() {
+replace_embedded_svg_icon() {
 if [ ! -f $1 ]; then echo "$1 does not exist"; exit -1; fi
 if [ ! -f $2 ]; then echo "$2 does not exist"; exit -1; fi
 
