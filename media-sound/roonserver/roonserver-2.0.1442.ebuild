@@ -72,7 +72,7 @@ pkg_postinst() {
 	! [[ $(grep 'USER="root"' "${CONFD_DIR}/${PN}") ]]; then
 		ewarn "Roon uses the superuser command 'mount.cifs' to access network locations."
 		ewarn "While this ebuild restricts Roon to a regular user account, it is still possible"
-		ewarn "to allow Roon to use 'mount.cifs' with setuid: 'chmod u+s /sbin/mount.cifs'."
+		ewarn "to allow Roon to use 'mount.cifs' with setuid."
 		ewarn "Otherwise running Roon as root is required to access network locations."
 	fi
 }
