@@ -57,7 +57,7 @@ src_prepare() {
 
 	# remove non-free code. it wasn't used as per
 	# https://github.com/dani-garcia/bw_web_builds/issues/162#issuecomment-2123417759
-	rm -rf ./bitwarden_license/
+	rm -rf ./bitwarden_license/ || die
 
 	default
 }
