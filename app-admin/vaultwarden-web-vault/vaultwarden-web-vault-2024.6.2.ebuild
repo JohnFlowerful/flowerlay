@@ -6,8 +6,8 @@ EAPI=8
 inherit npm
 
 # vaultwarden patch
-MY_PATCHV=$(ver_cut 1-2).0
-#MY_PATCHV="${PV}"
+#MY_PATCHV=$(ver_cut 1-2).0
+MY_PATCHV="${PV}"
 
 BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
 BW_RESOURCES="${BW_WEB_BUILDS}/resources"
@@ -18,7 +18,7 @@ HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 SRC_URI="
 	https://github.com/bitwarden/clients/archive/web-v${PV}.tar.gz -> ${P}.tar.gz
 	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${P}-resources.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${MY_PATCHV}-npm-deps.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
 "
 
 LICENSE="GPL-3"
@@ -54,6 +54,10 @@ src_prepare() {
 	replace_embedded_svg_icon \
 		${BW_RESOURCES}/vaultwarden-password-manager-logo.svg \
 		apps/web/src/app/layouts/password-manager-logo.ts
+
+	# remove non-free code. it wasn't used as per
+	# https://github.com/dani-garcia/bw_web_builds/issues/162#issuecomment-2123417759
+	rm -rf ./bitwarden_license/
 
 	default
 }
