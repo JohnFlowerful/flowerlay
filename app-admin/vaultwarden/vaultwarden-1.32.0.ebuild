@@ -16,15 +16,15 @@ CRATES="
 	argon2@0.5.3
 	async-channel@1.9.0
 	async-channel@2.3.1
-	async-compression@0.4.11
-	async-executor@1.12.0
+	async-compression@0.4.12
+	async-executor@1.13.0
 	async-global-executor@2.4.1
 	async-io@1.13.0
 	async-io@2.3.3
 	async-lock@2.8.0
 	async-lock@3.4.0
 	async-process@1.8.1
-	async-signal@0.2.8
+	async-signal@0.2.9
 	async-std@1.12.0
 	async-stream-impl@0.3.5
 	async-stream@0.3.5
@@ -49,13 +49,13 @@ CRATES="
 	brotli-decompressor@4.0.1
 	brotli@6.0.0
 	bumpalo@3.16.0
-	bytemuck@1.16.1
+	bytemuck@1.16.3
 	byteorder@1.5.0
-	bytes@1.6.0
-	cached@0.52.0
-	cached_proc_macro@0.22.0
+	bytes@1.7.1
+	cached@0.53.1
+	cached_proc_macro@0.23.0
 	cached_proc_macro_types@0.1.1
-	cc@1.0.106
+	cc@1.1.8
 	cfg-if@1.0.0
 	chrono-tz-build@0.3.0
 	chrono-tz@0.9.0
@@ -71,9 +71,9 @@ CRATES="
 	cron@0.12.1
 	crossbeam-utils@0.8.20
 	crypto-common@0.1.6
-	darling@0.20.9
-	darling_core@0.20.9
-	darling_macro@0.20.9
+	darling@0.20.10
+	darling_core@0.20.10
+	darling_macro@0.20.10
 	dashmap@5.5.3
 	dashmap@6.0.1
 	data-encoding@2.6.0
@@ -82,17 +82,17 @@ CRATES="
 	devise@0.4.1
 	devise_codegen@0.4.1
 	devise_core@0.4.1
-	diesel@2.2.1
-	diesel_derives@2.2.1
+	diesel@2.2.2
+	diesel_derives@2.2.2
 	diesel_logger@0.3.0
 	diesel_migrations@2.2.0
 	diesel_table_macro_syntax@0.2.0
 	digest@0.10.7
 	dotenvy@0.15.7
-	dsl_auto_type@0.1.1
+	dsl_auto_type@0.1.2
 	either@1.13.0
 	email-encoding@0.3.0
-	email_address@0.2.5
+	email_address@0.2.9
 	encoding_rs@0.8.34
 	enum-as-inner@0.6.0
 	equivalent@1.0.1
@@ -106,7 +106,7 @@ CRATES="
 	fastrand@2.1.0
 	fern@0.6.2
 	figment@0.10.19
-	flate2@1.0.30
+	flate2@1.0.31
 	fnv@1.0.7
 	foreign-types-shared@0.1.1
 	foreign-types@0.3.2
@@ -133,7 +133,7 @@ CRATES="
 	h2@0.3.26
 	h2@0.4.5
 	half@1.8.3
-	handlebars@5.1.2
+	handlebars@6.0.0
 	hashbrown@0.14.5
 	heck@0.4.1
 	heck@0.5.0
@@ -148,7 +148,7 @@ CRATES="
 	html5gum@0.5.7
 	http-body-util@0.1.2
 	http-body@0.4.6
-	http-body@1.0.0
+	http-body@1.0.1
 	http@0.2.12
 	http@1.1.0
 	httparse@1.9.4
@@ -156,16 +156,16 @@ CRATES="
 	hyper-rustls@0.27.2
 	hyper-tls@0.5.0
 	hyper-tls@0.6.0
-	hyper-util@0.1.6
-	hyper@0.14.29
-	hyper@1.4.0
+	hyper-util@0.1.7
+	hyper@0.14.30
+	hyper@1.4.1
 	iana-time-zone-haiku@0.1.2
 	iana-time-zone@0.1.60
 	ident_case@1.0.1
 	idna@0.3.0
 	idna@0.4.0
 	idna@0.5.0
-	indexmap@2.2.6
+	indexmap@2.3.0
 	inlinable_string@0.1.15
 	instant@0.1.13
 	io-lifetimes@1.0.11
@@ -183,7 +183,7 @@ CRATES="
 	libc@0.2.155
 	libm@0.2.8
 	libmimalloc-sys@0.1.39
-	libsqlite3-sys@0.28.0
+	libsqlite3-sys@0.29.0
 	linked-hash-map@0.5.6
 	linux-raw-sys@0.3.8
 	linux-raw-sys@0.4.14
@@ -200,7 +200,7 @@ CRATES="
 	mime@0.3.17
 	minimal-lexical@0.2.1
 	miniz_oxide@0.7.4
-	mio@0.8.11
+	mio@1.0.1
 	multer@3.1.0
 	mysqlclient-sys@0.4.0
 	native-tls@0.2.12
@@ -215,13 +215,13 @@ CRATES="
 	num-traits@0.2.19
 	num_cpus@1.16.0
 	num_threads@0.1.7
-	object@0.36.1
+	object@0.36.3
 	once_cell@1.19.0
 	openssl-macros@0.1.1
 	openssl-probe@0.1.5
 	openssl-src@300.3.1+3.3.1
-	openssl-sys@0.9.102
-	openssl@0.10.64
+	openssl-sys@0.9.103
+	openssl@0.10.66
 	overload@0.1.1
 	parking@2.2.0
 	parking_lot@0.12.3
@@ -250,9 +250,9 @@ CRATES="
 	pkg-config@0.3.30
 	polling@2.8.0
 	polling@3.7.2
-	portable-atomic@1.6.0
+	portable-atomic@1.7.0
 	powerfmt@0.2.0
-	ppv-lite86@0.2.17
+	ppv-lite86@0.2.20
 	pq-sys@0.6.1
 	proc-macro2-diagnostics@0.10.1
 	proc-macro2@1.0.86
@@ -262,20 +262,20 @@ CRATES="
 	quanta@0.12.3
 	quick-error@1.2.3
 	quote@1.0.36
-	quoted_printable@0.5.0
+	quoted_printable@0.5.1
 	r2d2@0.8.10
 	rand@0.8.5
 	rand_chacha@0.3.1
 	rand_core@0.6.4
-	raw-cpuid@11.0.2
-	redox_syscall@0.5.2
+	raw-cpuid@11.1.0
+	redox_syscall@0.5.3
 	ref-cast-impl@1.0.23
 	ref-cast@1.0.23
 	regex-automata@0.1.10
 	regex-automata@0.4.7
 	regex-syntax@0.6.29
 	regex-syntax@0.8.4
-	regex@1.10.5
+	regex@1.10.6
 	reopen@1.0.3
 	reqwest@0.11.27
 	reqwest@0.12.5
@@ -293,12 +293,12 @@ CRATES="
 	rustix@0.37.27
 	rustix@0.38.34
 	rustls-pemfile@1.0.4
-	rustls-pemfile@2.1.2
-	rustls-pki-types@1.7.0
+	rustls-pemfile@2.1.3
+	rustls-pki-types@1.8.0
 	rustls-webpki@0.101.7
-	rustls-webpki@0.102.5
+	rustls-webpki@0.102.6
 	rustls@0.21.12
-	rustls@0.23.11
+	rustls@0.23.12
 	rustversion@1.0.17
 	ryu@1.0.18
 	same-file@1.0.6
@@ -307,14 +307,14 @@ CRATES="
 	scoped-tls@1.0.1
 	scopeguard@1.2.0
 	sct@0.7.1
-	security-framework-sys@2.11.0
-	security-framework@2.11.0
+	security-framework-sys@2.11.1
+	security-framework@2.11.1
 	semver@1.0.23
 	serde@1.0.204
 	serde_cbor@0.11.2
 	serde_derive@1.0.204
-	serde_json@1.0.120
-	serde_spanned@0.6.6
+	serde_json@1.0.122
+	serde_spanned@0.6.7
 	serde_urlencoded@0.7.1
 	sha1@0.10.6
 	sha2@0.10.8
@@ -334,15 +334,15 @@ CRATES="
 	state@0.6.0
 	strsim@0.11.1
 	subtle@2.6.1
-	syn@2.0.70
+	syn@2.0.72
 	sync_wrapper@0.1.2
 	sync_wrapper@1.0.1
 	syslog@6.1.1
 	system-configuration-sys@0.5.0
 	system-configuration@0.5.1
-	tempfile@3.10.1
-	thiserror-impl@1.0.61
-	thiserror@1.0.61
+	tempfile@3.12.0
+	thiserror-impl@1.0.63
+	thiserror@1.0.63
 	thread_local@1.1.8
 	threadpool@1.8.1
 	time-core@0.1.2
@@ -350,18 +350,18 @@ CRATES="
 	time@0.3.36
 	tinyvec@1.8.0
 	tinyvec_macros@0.1.1
-	tokio-macros@2.3.0
+	tokio-macros@2.4.0
 	tokio-native-tls@0.3.1
 	tokio-rustls@0.24.1
 	tokio-rustls@0.26.0
-	tokio-socks@0.5.1
+	tokio-socks@0.5.2
 	tokio-stream@0.1.15
 	tokio-tungstenite@0.21.0
 	tokio-util@0.7.11
-	tokio@1.38.0
-	toml@0.8.14
-	toml_datetime@0.6.6
-	toml_edit@0.22.15
+	tokio@1.39.2
+	toml@0.8.19
+	toml_datetime@0.6.8
+	toml_edit@0.22.20
 	totp-lite@2.0.1
 	tower-layer@0.3.2
 	tower-service@0.3.2
@@ -384,11 +384,11 @@ CRATES="
 	untrusted@0.9.0
 	url@2.5.2
 	utf-8@0.7.6
-	uuid@1.9.1
+	uuid@1.10.0
 	valuable@0.1.0
 	value-bag@1.9.0
 	vcpkg@0.2.15
-	version_check@0.9.4
+	version_check@0.9.5
 	waker-fn@1.2.0
 	walkdir@2.5.0
 	want@0.3.1
@@ -401,16 +401,18 @@ CRATES="
 	wasm-bindgen@0.2.92
 	wasm-streams@0.4.0
 	web-sys@0.3.69
+	web-time@1.1.0
 	webauthn-rs@0.3.2
-	which@6.0.1
+	which@6.0.2
 	widestring@1.1.0
 	winapi-i686-pc-windows-gnu@0.4.0
-	winapi-util@0.1.8
+	winapi-util@0.1.9
 	winapi-x86_64-pc-windows-gnu@0.4.0
 	winapi@0.3.9
 	windows-core@0.52.0
 	windows-sys@0.48.0
 	windows-sys@0.52.0
+	windows-sys@0.59.0
 	windows-targets@0.48.5
 	windows-targets@0.52.6
 	windows@0.48.0
@@ -430,7 +432,7 @@ CRATES="
 	windows_x86_64_gnullvm@0.52.6
 	windows_x86_64_msvc@0.48.5
 	windows_x86_64_msvc@0.52.6
-	winnow@0.6.13
+	winnow@0.6.18
 	winreg@0.50.0
 	winreg@0.52.0
 	winsafe@0.0.19
@@ -465,14 +467,14 @@ DEPEND="
 	mysql? ( virtual/mysql )
 	postgres? ( dev-db/postgresql )
 	sqlite? ( dev-db/sqlite:3 )
-	web-vault? ( >=app-admin/vaultwarden-web-vault-2024.5.1b )
+	web-vault? ( >=app-admin/vaultwarden-web-vault-2024.6.2b )
 "
 RDEPEND="
 	${DEPEND}
 	acct-group/vaultwarden
 	acct-user/vaultwarden
 "
-BDEPEND=">=virtual/rust-1.78.0"
+BDEPEND=">=virtual/rust-1.79.0"
 
 pre_build_checks() {
 	local CHECKREQS_DISK_BUILD=2G
