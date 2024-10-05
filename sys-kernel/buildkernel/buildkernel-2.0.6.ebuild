@@ -26,6 +26,7 @@ RDEPEND="
 	>=sys-kernel/dracut-050-r2
 	>=sys-boot/efibootmgr-18
 	>=sys-apps/debianutils-4.9.1[installkernel(+)]
+	sys-kernel/installkernel[-dracut]
 "
 
 # ebuild function overrides
