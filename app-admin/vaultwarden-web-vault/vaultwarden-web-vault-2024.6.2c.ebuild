@@ -5,9 +5,11 @@ EAPI=8
 
 inherit npm
 
+MY_PV=${PV%c}
+
 # vaultwarden patch
 #MY_PATCHV=$(ver_cut 1-2).0
-MY_PATCHV="${PV}"
+MY_PATCHV="${MY_PV}"
 
 BW_WEB_BUILDS="${WORKDIR}/bw_web_builds-${PV}"
 BW_RESOURCES="${BW_WEB_BUILDS}/resources"
@@ -16,9 +18,9 @@ DESCRIPTION="Web vault builds for vaultwarden"
 HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 
 SRC_URI="
-	https://github.com/bitwarden/clients/archive/web-v${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/bitwarden/clients/archive/web-v${MY_PV}.tar.gz -> ${PN}-${MY_PV}.tar.gz
 	https://github.com/dani-garcia/bw_web_builds/archive/v${PV}.tar.gz -> ${P}-resources.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${MY_PV}-npm-deps.tar.gz
 "
 
 LICENSE="GPL-3"
@@ -41,7 +43,7 @@ PATCHES=(
 	"${BW_WEB_BUILDS}/patches/v${MY_PATCHV}.patch"
 )
 
-S="${WORKDIR}/clients-web-v${PV}"
+S="${WORKDIR}/clients-web-v${MY_PV}"
 
 src_prepare() {
 	# copy vaultwarden assets
@@ -50,10 +52,10 @@ src_prepare() {
 	# replace embedded logos
 	replace_embedded_svg_icon \
 		${BW_RESOURCES}/vaultwarden-admin-console-logo.svg \
-		apps/web/src/app/admin-console/icons/admin-console-logo.ts
+		apps/web/src/app/admin-console/icons/admin-console-logo.ts || die
 	replace_embedded_svg_icon \
 		${BW_RESOURCES}/vaultwarden-password-manager-logo.svg \
-		apps/web/src/app/layouts/password-manager-logo.ts
+		apps/web/src/app/layouts/password-manager-logo.ts || die
 
 	# remove non-free code. it wasn't used as per
 	# https://github.com/dani-garcia/bw_web_builds/issues/162#issuecomment-2123417759
