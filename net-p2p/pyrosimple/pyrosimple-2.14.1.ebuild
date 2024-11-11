@@ -31,7 +31,7 @@ IUSE="queue"
 # all other tests are passing however
 RDEPEND="
 	=dev-python/bencode_py-4.0*[${PYTHON_USEDEP}]
-	=dev-python/jinja-3.1*[${PYTHON_USEDEP}]
+	=dev-python/jinja2-3.1*[${PYTHON_USEDEP}]
 	=dev-python/python-daemon-2.3*[${PYTHON_USEDEP}]
 	=dev-python/parsimonious-0.10*[${PYTHON_USEDEP}]
 	>=dev-python/prometheus-client-0.16[${PYTHON_USEDEP}]
