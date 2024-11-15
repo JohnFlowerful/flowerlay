@@ -458,6 +458,8 @@ CRATES="
 	zerovec@0.10.4
 "
 
+RUST_MIN_VER="1.79.0"
+
 inherit cargo check-reqs
 
 DESCRIPTION="Unofficial Bitwarden compatible server written in Rust"
@@ -489,7 +491,6 @@ RDEPEND="
 	acct-group/vaultwarden
 	acct-user/vaultwarden
 "
-BDEPEND=">=virtual/rust-1.79.0"
 
 pre_build_checks() {
 	local CHECKREQS_DISK_BUILD=2G
@@ -507,6 +508,7 @@ pkg_pretend() {
 
 pkg_setup() {
 	pre_build_checks
+	rust_pkg_setup
 }
 
 src_prepare() {
