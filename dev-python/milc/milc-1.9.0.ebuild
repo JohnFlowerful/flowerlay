@@ -39,18 +39,3 @@ BDEPEND="
 "
 
 distutils_enable_tests pytest
-
-src_prepare() {
-	# dev-python/semver-3 changes
-	sed -e 's/VersionInfo.isvalid/VersionInfo.is_valid/' -i "tests/test___init__.py" || die
-
-	# fix deprecation warnings
-	sed -e 's/author-email/author_email/' \
-		-e 's/description-file/description_file/' \
-		-e 's/dist-name/dist_name/' \
-		-e 's/home-page/home_page/' \
-		-e 's/license_file/license_files/' \
-		-i "setup."{cfg,py} || die
-
-	distutils-r1_src_prepare
-}
