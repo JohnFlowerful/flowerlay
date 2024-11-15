@@ -37,7 +37,7 @@ RDEPEND="
 	dev-python/hidapi[${PYTHON_USEDEP}]
 	dev-python/hjson[${PYTHON_USEDEP}]
 	>=dev-python/jsonschema-4[${PYTHON_USEDEP}]
-	>=dev-python/milc-1.6.8[${PYTHON_USEDEP}]
+	>=dev-python/milc-1.9.0[${PYTHON_USEDEP}]
 	dev-python/pygments[${PYTHON_USEDEP}]
 	dev-python/pyserial[${PYTHON_USEDEP}]
 	dev-python/pyusb[${PYTHON_USEDEP}]
