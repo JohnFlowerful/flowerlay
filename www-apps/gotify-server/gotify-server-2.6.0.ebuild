@@ -10,10 +10,12 @@ inherit go-module
 DESCRIPTION="A server for sending and receiving messages"
 HOMEPAGE="https://gotify.net/"
 
+# reuse old dep tarball
+yarn_deps_ver="2.5.0"
 SRC_URI="
 	https://github.com/gotify/server/archive/v${PV}.tar.gz -> ${P}.tar.gz
 	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-yarn_distfiles.tar.gz
+	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${yarn_deps_ver}-yarn_distfiles.tar.gz
 "
 
 LICENSE="Apache-2.0 BSD-2 BSD MIT"
@@ -46,12 +48,12 @@ src_configure() {
 		# puppeteer is a dev dependency used for tests
 		export PUPPETEER_SKIP_DOWNLOAD=true
 
-		yarn install --frozen-lockfile --offline --no-progress || die
+		yarn install --frozen-lockfile --no-progress --verbose || die
 
 		# workaround dev-libs/openssl-3 and md4. see https://github.com/webpack/webpack/issues/14560
 		find node_modules/webpack/lib -type f -exec sed -i 's/md4/sha512/g' {} \; || die
 		sed -e 's/crypto.createHash("md4")/crypto.createHash("sha512")/' \
-			-i node_modules/react-scripts/node_modules/babel-loader/lib/cache.js || die
+			-i node_modules/ret-scripts/node_modules/babel-loader/lib/cache.js || die
 	popd &>/dev/null || die
 }
 
