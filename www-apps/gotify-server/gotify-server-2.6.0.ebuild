@@ -48,7 +48,7 @@ src_configure() {
 		# puppeteer is a dev dependency used for tests
 		export PUPPETEER_SKIP_DOWNLOAD=true
 
-		yarn install --frozen-lockfile --no-progress --verbose || die
+		yarn install --frozen-lockfile --offline --no-progress || die
 
 		# workaround dev-libs/openssl-3 and md4. see https://github.com/webpack/webpack/issues/14560
 		find node_modules/webpack/lib -type f -exec sed -i 's/md4/sha512/g' {} \; || die
