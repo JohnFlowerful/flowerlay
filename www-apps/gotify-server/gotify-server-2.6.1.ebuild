@@ -53,7 +53,7 @@ src_configure() {
 		# workaround dev-libs/openssl-3 and md4. see https://github.com/webpack/webpack/issues/14560
 		find node_modules/webpack/lib -type f -exec sed -i 's/md4/sha512/g' {} \; || die
 		sed -e 's/crypto.createHash("md4")/crypto.createHash("sha512")/' \
-			-i node_modules/ret-scripts/node_modules/babel-loader/lib/cache.js || die
+			-i node_modules/react-scripts/node_modules/babel-loader/lib/cache.js || die
 	popd &>/dev/null || die
 }
 
