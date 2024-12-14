@@ -24,20 +24,15 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE="queue"
 
-# python-daemon-3.0.1 is recommended but this version isn't in the main gentoo
-# repo: https://packages.gentoo.org/packages/dev-python/python-daemon
-# there are no tests for `rtcontrol's '--detach' flag due to the inherent nature
-# of using the command i.e. it requires rtorrent to be running
-# all other tests are passing however
 RDEPEND="
 	=dev-python/bencode_py-4.0*[${PYTHON_USEDEP}]
 	=dev-python/jinja2-3.1*[${PYTHON_USEDEP}]
-	=dev-python/python-daemon-2.3*[${PYTHON_USEDEP}]
+	>=dev-python/python-daemon-3.0.1[${PYTHON_USEDEP}]
 	=dev-python/parsimonious-0.10*[${PYTHON_USEDEP}]
 	>=dev-python/prometheus-client-0.16[${PYTHON_USEDEP}]
 	=dev-python/prompt-toolkit-3.0*[${PYTHON_USEDEP}]
 	>=dev-python/requests-2.28[${PYTHON_USEDEP}]
-	>=dev-python/shtab-1.5.5[${PYTHON_USEDEP}]
+	>=dev-python/shtab-1.5[${PYTHON_USEDEP}]
 	>=dev-python/python-box-7.0[${PYTHON_USEDEP}]
 	$(python_gen_cond_dep '
 		=dev-python/tomli-2.0*[${PYTHON_USEDEP}]
