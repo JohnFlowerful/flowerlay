@@ -42,10 +42,10 @@ RDEPEND="
 	$(python_gen_cond_dep '
 		=dev-python/tomli-2.0*[${PYTHON_USEDEP}]
 	' python3_10)
-	=dev-python/tomli-w-1.0*[${PYTHON_USEDEP}]
+	=dev-python/tomli-w-1*[${PYTHON_USEDEP}]
 
 	queue? (
-		=dev-python/APScheduler-3*[${PYTHON_USEDEP}]
+		=dev-python/apscheduler-3*[${PYTHON_USEDEP}]
 		=dev-python/inotify-0.2*[${PYTHON_USEDEP}]
 	)
 "
