@@ -19,10 +19,12 @@ SRC_URI="
 		-> ${MY_P}_ml_sockets.so )
 "
 
+S="${WORKDIR}/${MY_P}"
+
 LICENSE="GPL-3"
 SLOT="0"
-IUSE="baseconfig daemon sockets"
 KEYWORDS="~amd64"
+IUSE="baseconfig daemon sockets"
 RESTRICT="bindist mirror"
 
 # mta-server is built with openssl-1.1 but will run with openssl-3
@@ -39,8 +41,6 @@ RDEPEND="
 DOCS=( LICENSE NOTICE README )
 
 QA_PREBUILT="*"
-
-S="${WORKDIR}/${MY_P}"
 
 src_prepare() {
 	# copy the required files from ${DISTDIR} so we can install/modify them later

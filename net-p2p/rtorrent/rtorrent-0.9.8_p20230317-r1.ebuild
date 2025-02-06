@@ -11,6 +11,8 @@ HOMEPAGE="http://libtorrent.rakshasa.no/"
 RTORRENT_COMMIT="1da0e3476dcabbf74b2e836d6b4c37b4d96bde09"
 SRC_URI="https://github.com/rakshasa/${PN}/archive/${RTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
+S="${WORKDIR}/${PN}-${RTORRENT_COMMIT}"
+
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64"
@@ -31,8 +33,6 @@ DOCS=( doc/rtorrent.rc )
 # fixed upstream:
 # "${FILESDIR}/${PN}-0.9.8-bgo891995.patch"
 # "${FILESDIR}/${PN}-0.9.8-configure-c99.patch"
-
-S="${WORKDIR}/${PN}-${RTORRENT_COMMIT}"
 
 pkg_setup() {
 	if ! linux_config_exists || ! linux_chkconfig_present IPV6; then

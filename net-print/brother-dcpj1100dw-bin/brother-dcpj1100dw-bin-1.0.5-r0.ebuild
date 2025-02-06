@@ -13,6 +13,9 @@ HOMEPAGE="https://support.brother.com/g/b/producttop.aspx?c=nz&lang=en&prod=dcpj
 
 SRC_URI="https://download.brother.com/welcome/dlf103810/${MODEL}pdrv-${MY_PV}.i386.rpm"
 
+DEST="/opt/brother/Printers/${MODEL}"
+S="${WORKDIR}${DEST}"
+
 LICENSE="Brother"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -26,9 +29,6 @@ RDEPEND="
 	app-text/ghostscript-gpl
 	app-text/a2ps
 "
-
-DEST="/opt/brother/Printers/${MODEL}"
-S="${WORKDIR}${DEST}"
 
 pkg_pretend() {
 	if ! has_multilib_profile; then

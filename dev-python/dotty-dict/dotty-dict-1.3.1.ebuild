@@ -4,7 +4,9 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=poetry
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
+
+MY_PN=${PN//-/_}
 
 inherit distutils-r1
 
@@ -15,7 +17,7 @@ HOMEPAGE="
 "
 # the pypi archive is missing test files
 SRC_URI="
-	https://github.com/pawelzny/${PN}/archive/v${PV}.tar.gz
+	https://github.com/pawelzny/${MY_PN}/archive/v${PV}.tar.gz
 		-> ${P}.gh.tar.gz
 "
 

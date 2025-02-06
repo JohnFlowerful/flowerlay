@@ -12,10 +12,12 @@ HOMEPAGE="https://github.com/jesec/libtorrent"
 
 LIBTORRENT_COMMIT="35d844d4d78a671f8840fe6ae973ebb39a0e8f34"
 SRC_URI="https://github.com/jesec/${MY_PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
-KEYWORDS="~amd64"
+
+S="${WORKDIR}/${MY_PN}-${LIBTORRENT_COMMIT}"
 
 LICENSE="GPL-2"
 SLOT="0"
+KEYWORDS="~amd64"
 IUSE="clang debug lto test"
 RESTRICT="mirror !test? ( test )"
 
@@ -25,11 +27,9 @@ RDEPEND="
 	sys-libs/zlib
 "
 BDEPEND="
-	clang? ( sys-devel/clang )
+	clang? ( llvm-core/clang )
 	test? ( dev-cpp/gtest )
 "
-
-S="${WORKDIR}/${MY_PN}-${LIBTORRENT_COMMIT}"
 
 src_configure() {
 	# show flags set at the beginning

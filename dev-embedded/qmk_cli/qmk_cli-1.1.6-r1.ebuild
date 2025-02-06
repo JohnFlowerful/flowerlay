@@ -33,7 +33,7 @@ RDEPEND="
 	dev-python/appdirs[${PYTHON_USEDEP}]
 	dev-python/argcomplete[${PYTHON_USEDEP}]
 	dev-python/colorama[${PYTHON_USEDEP}]
-	dev-python/dotty_dict[${PYTHON_USEDEP}]
+	dev-python/dotty-dict[${PYTHON_USEDEP}]
 	dev-python/hidapi[${PYTHON_USEDEP}]
 	dev-python/hjson[${PYTHON_USEDEP}]
 	>=dev-python/jsonschema-4[${PYTHON_USEDEP}]
@@ -45,7 +45,7 @@ RDEPEND="
 	dev-vcs/git
 	net-misc/wget
 	sys-apps/hwloc
-	chibios? ( sys-devel/clang )
+	chibios? ( llvm-core/clang )
 	sys-devel/crossdev
 	udev-rules? ( dev-embedded/qmk_udev-rules )
 "

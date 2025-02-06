@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 MY_PN="${PN}-py"
 
@@ -22,10 +22,10 @@ SRC_URI="
 		-> ${P}.gh.tar.gz
 "
 
+S="${WORKDIR}/${MY_PN}-${HJSON_PY_COMMIT}"
+
 LICENSE="AFL-2.1 MIT"
 SLOT="0"
 KEYWORDS="amd64"
 
 distutils_enable_tests pytest
-
-S="${WORKDIR}/${MY_PN}-${HJSON_PY_COMMIT}"

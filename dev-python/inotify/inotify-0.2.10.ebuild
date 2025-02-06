@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit distutils-r1
 
@@ -19,13 +19,13 @@ SRC_URI="
 		-> ${P}.gh.tar.gz
 "
 
+S="${WORKDIR}/PyInotify-${PV}"
+
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64"
 
 distutils_enable_tests pytest
-
-S="${WORKDIR}/PyInotify-${PV}"
 
 src_prepare() {
 	cp --remove-destination $(readlink README.rst) "README.rst" || die

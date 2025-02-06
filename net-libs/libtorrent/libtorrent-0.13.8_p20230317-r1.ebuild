@@ -11,6 +11,8 @@ HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 LIBTORRENT_COMMIT="91f8cf4b0358d9b4480079ca7798fa7d9aec76b5"
 SRC_URI="https://github.com/rakshasa/${PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
+S="${WORKDIR}/${PN}-${LIBTORRENT_COMMIT}"
+
 LICENSE="GPL-2"
 # The README says that the library ABI is not yet stable and dependencies on
 # the library should be an explicit, syncronized version until the library
@@ -32,8 +34,6 @@ BDEPEND="virtual/pkgconfig"
 PATCHES=(
 	"${FILESDIR}/${PN}-sysroot.patch"
 )
-
-S="${WORKDIR}/${PN}-${LIBTORRENT_COMMIT}"
 
 src_prepare() {
 	default

@@ -23,6 +23,8 @@ SRC_URI="
 	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${MY_PV}-npm-deps.tar.gz
 "
 
+S="${WORKDIR}/clients-web-v${MY_PV}"
+
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64"
@@ -42,8 +44,6 @@ PATCHES=(
 	# see https://github.com/dani-garcia/bw_web_builds/blob/master/scripts/apply_patches.sh
 	"${BW_WEB_BUILDS}/patches/v${MY_PATCHV}.patch"
 )
-
-S="${WORKDIR}/clients-web-v${MY_PV}"
 
 src_prepare() {
 	# copy vaultwarden assets

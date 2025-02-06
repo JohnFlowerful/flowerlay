@@ -15,11 +15,11 @@ SRC_URI="
 		-> ${P}.rules
 "
 
+S="${WORKDIR}"
+
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64"
-
-S="${WORKDIR}"
 
 src_prepare() {
 	cp "${DISTDIR}/${P}.rules" 50-qmk.rules || die

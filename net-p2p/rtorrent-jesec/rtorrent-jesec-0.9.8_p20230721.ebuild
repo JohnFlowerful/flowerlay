@@ -12,10 +12,12 @@ HOMEPAGE="https://github.com/jesec/rtorrent"
 
 RTORRENT_COMMIT="199e8f85244c8eb1c30163d51755570ad86139bb"
 SRC_URI="https://github.com/jesec/${MY_PN}/archive/${RTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
-KEYWORDS="~amd64"
+
+S="${WORKDIR}/${MY_PN}-${RTORRENT_COMMIT}"
 
 LICENSE="GPL-2"
 SLOT="0"
+KEYWORDS="~amd64"
 IUSE="clang daemon debug jsonrpc lto pyroscope selinux test xmlrpc"
 RESTRICT="mirror !test? ( test )"
 
@@ -32,7 +34,7 @@ COMMON_DEPEND="
 BDEPEND="
 	${COMMON_DEPEND}
 	clang? (
-		sys-devel/clang
+		llvm-core/clang
 		net-libs/libtorrent-jesec[clang]
 	)
 	test? ( dev-cpp/gtest )
@@ -45,8 +47,6 @@ RDEPEND="
 "
 
 DOCS=( doc/rtorrent.rc )
-
-S="${WORKDIR}/${MY_PN}-${RTORRENT_COMMIT}"
 
 pkg_setup() {
 	if ! linux_config_exists || ! linux_chkconfig_present IPV6; then

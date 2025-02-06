@@ -10,10 +10,12 @@ HOMEPAGE="https://roonlabs.com/"
 
 SRC_URI="https://download.roonlabs.com/builds/${MY_PN}_linuxx64_$(ver_cut 1)00$(ver_cut 2)0$(ver_cut 3).tar.bz2"
 
+S="${WORKDIR}/${MY_PN}"
+
 LICENSE="Roon"
 SLOT="0"
-IUSE="alsa samba system-dotnet"
 KEYWORDS="~amd64"
+IUSE="alsa samba system-dotnet"
 RESTRICT="bindist mirror strip"
 
 RDEPEND="
@@ -27,8 +29,6 @@ RDEPEND="
 	samba? ( net-fs/cifs-utils )
 	system-dotnet? ( dev-dotnet/dotnet-sdk-bin:6.0 )
 "
-
-S="${WORKDIR}/${MY_PN}"
 
 src_prepare() {
 	# bundled files appear to be a standard dotnet core distribution

@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit distutils-r1
 
@@ -20,12 +20,14 @@ SRC_URI="
 		-> ${P}.gh.tar.gz
 "
 
+S="${WORKDIR}/${PN}-${HALO_COMMIT}"
+
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
 
 RDEPEND="
-	>=dev-python/log_symbols-0.0.14[${PYTHON_USEDEP}]
+	>=dev-python/log-symbols-0.0.14[${PYTHON_USEDEP}]
 	>=dev-python/six-1.12.0[${PYTHON_USEDEP}]
 	>=dev-python/spinners-0.0.24[${PYTHON_USEDEP}]
 	>=dev-python/termcolor-2.2.0[${PYTHON_USEDEP}]
@@ -33,8 +35,6 @@ RDEPEND="
 BDEPEND="test? ( dev-python/ipywidgets[${PYTHON_USEDEP}] )"
 
 distutils_enable_tests pytest
-
-S="${WORKDIR}/${PN}-${HALO_COMMIT}"
 
 src_prepare() {
 	# remove colorama

@@ -4,9 +4,9 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
-MY_PN=${PN//_/.}
+MY_PN=${PN//-/.}
 PYPI_NO_NORMALIZE=1
 PYPI_PN="${MY_PN}"
 

@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 MY_PN="py-${PN//_/-}"
 
@@ -22,6 +22,8 @@ SRC_URI="
 		-> ${P}.gh.tar.gz
 "
 
+S="${WORKDIR}/${MY_PN}-${LOG_SYMBOLS_COMMIT}"
+
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
@@ -29,8 +31,6 @@ KEYWORDS="amd64"
 DEPEND=">=dev-python/colorama-0.3.9[${PYTHON_USEDEP}]"
 
 distutils_enable_tests pytest
-
-S="${WORKDIR}/${MY_PN}-${LOG_SYMBOLS_COMMIT}"
 
 src_prepare() {
 	# fix deprecation warnings

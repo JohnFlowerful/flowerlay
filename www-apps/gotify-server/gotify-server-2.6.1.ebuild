@@ -18,6 +18,8 @@ SRC_URI="
 	https://dandelion.ilypetals.net/dist/nodejs/${PN}-${yarn_deps_ver}-yarn_distfiles.tar.gz
 "
 
+S="${WORKDIR}/server-${PV}"
+
 LICENSE="Apache-2.0 BSD-2 BSD MIT"
 SLOT="0"
 KEYWORDS="amd64"
@@ -37,8 +39,6 @@ RDEPEND="
 	postgres? ( dev-db/postgresql )
 	sqlite? ( dev-db/sqlite )
 "
-
-S="${WORKDIR}/server-${PV}"
 
 src_configure() {
 	pushd "ui" &>/dev/null || die
