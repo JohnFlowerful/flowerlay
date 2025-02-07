@@ -1,0 +1,3 @@
+move dev-python/bencode_py dev-python/bencode-py
+move dev-python/dotty_dict dev-python/dotty-dict
+move dev-python/log_symbols dev-python/log-symbols
