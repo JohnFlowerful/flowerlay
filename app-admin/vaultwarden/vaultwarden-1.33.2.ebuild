@@ -10,7 +10,7 @@ declare -A GIT_CRATES=(
 	[yubico]='https://github.com/BlackDex/yubico-rs;00df14811f58155c0f02e3ab10f1570ed3e115c6;yubico-rs-%commit%'
 )
 
-RUST_MIN_VER="1.83.0"
+RUST_MIN_VER="1.84.1"
 
 inherit cargo check-reqs
 
@@ -49,7 +49,7 @@ pre_build_checks() {
 	local CHECKREQS_DISK_BUILD=2G
 	local CHECKREQS_MEMORY=1G
 	if use lto; then
-		CHECKREQS_MEMORY=3G
+		CHECKREQS_MEMORY=6G
 	fi
 
 	check-reqs_${EBUILD_PHASE_FUNC}
