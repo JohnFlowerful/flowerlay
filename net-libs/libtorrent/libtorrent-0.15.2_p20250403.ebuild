@@ -8,7 +8,7 @@ inherit autotools toolchain-funcs
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 
-LIBTORRENT_COMMIT="91f8cf4b0358d9b4480079ca7798fa7d9aec76b5"
+LIBTORRENT_COMMIT="82a3f10e9d211222e720f579806e7a07e1a67b71"
 SRC_URI="https://github.com/rakshasa/${PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
 S="${WORKDIR}/${PN}-${LIBTORRENT_COMMIT}"
@@ -23,27 +23,37 @@ KEYWORDS="~amd64"
 IUSE="debug ssl test"
 RESTRICT="!test? ( test )"
 
-RDEPEND="sys-libs/zlib
+RDEPEND="
+	sys-libs/zlib
 	ssl? ( dev-libs/openssl:= )
-	test? ( dev-util/cppunit:= )"
+"
 DEPEND="${RDEPEND}"
-BDEPEND="virtual/pkgconfig"
+BDEPEND="
+	virtual/pkgconfig
+	test? ( dev-util/cppunit )
+"
 
 # fixed upstream:
 # "${FILESDIR}"/${PN}-0.13.8-configure-clang-16.patch
 PATCHES=(
-	"${FILESDIR}/${PN}-sysroot.patch"
+	# patch out the tests that require network
+	"${FILESDIR}"/${PN}-0.14.0-tests-address.patch
 )
 
 src_prepare() {
 	default
+	if [[ ${CHOST} != *-darwin* ]]; then
+		# syslibroot is only for macos, change to sysroot for others
+		sed -i 's/Wl,-syslibroot,/Wl,--sysroot,/' "${S}/scripts/common.m4" || die
+	fi
 	eautoreconf
 }
 
 src_configure() {
 	# bug 518582
 	local disable_instrumentation
-	echo -e "#include <inttypes.h>\nint main(){ int64_t var = 7; __sync_add_and_fetch(&var, 1); return 0;}" > "${T}/sync_add_and_fetch.c" || die
+	echo -e "#include <inttypes.h>\nint main(){ int64_t var = 7; __sync_add_and_fetch(&var, 1); return 0;}" \
+		> "${T}/sync_add_and_fetch.c" || die
 	$(tc-getCC) ${CFLAGS} -o /dev/null -x c "${T}/sync_add_and_fetch.c" >/dev/null 2>&1
 	if [[ $? -ne 0 ]]; then
 		einfo "Disabling instrumentation"
