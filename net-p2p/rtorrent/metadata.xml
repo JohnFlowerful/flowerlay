@@ -5,9 +5,9 @@
 		<remote-id type="github">rakshasa/rtorrent</remote-id>
 	</upstream>
 	<use>
-		<flag name='daemon'>Uses <pkg>app-misc/tmux</pkg> to daemonize this
-			application
+		<flag name="lua">Add optional Lua scripting capabilities</flag>
+		<flag name="tinyxml2">
+		Use vendor tinyxml2 instead of xmlrpc-c. This allows significant reduction in overhead (experimental)
 		</flag>
-		<flag name='pyroscope'>Applies pyroscope patches</flag>
 	</use>
 </pkgmetadata>
