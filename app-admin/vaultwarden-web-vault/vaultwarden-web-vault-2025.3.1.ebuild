@@ -30,7 +30,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 RESTRICT="mirror"
 
-DEPEND=">=net-libs/nodejs-18"
+DEPEND=">=net-libs/nodejs-20"
 BDEPEND="${DEPEND}"
 RDEPEND="${DEPEND}"
 
@@ -56,10 +56,20 @@ src_prepare() {
 	replace_embedded_svg_icon \
 		${BW_RESOURCES}/vaultwarden-password-manager-logo.svg \
 		apps/web/src/app/layouts/password-manager-logo.ts || die
+	replace_embedded_svg_icon \
+		${BW_RESOURCES}/src/images/logo.svg \
+		./libs/auth/src/angular/icons/bitwarden-logo.icon.ts
+	replace_embedded_svg_icon \
+		${BW_RESOURCES}/vaultwarden-icon.svg \
+		./libs/auth/src/angular/icons/bitwarden-shield.icon.ts
 
 	# remove non-free code. it wasn't used as per
 	# https://github.com/dani-garcia/bw_web_builds/issues/162#issuecomment-2123417759
 	rm -rf ./bitwarden_license/ || die
+
+	if [[ -d "./apps/web/src/app/tools/access-intelligence/" ]]; then
+		rm -rf ./apps/web/src/app/tools/access-intelligence/
+	fi
 
 	default
 }
