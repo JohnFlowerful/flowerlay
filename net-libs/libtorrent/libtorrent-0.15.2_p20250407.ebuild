@@ -8,7 +8,7 @@ inherit autotools toolchain-funcs
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 
-LIBTORRENT_COMMIT="82a3f10e9d211222e720f579806e7a07e1a67b71"
+LIBTORRENT_COMMIT="34d99300b4fae98ccdfba616d4a8fc3e6fdfea24"
 SRC_URI="https://github.com/rakshasa/${PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
 S="${WORKDIR}/${PN}-${LIBTORRENT_COMMIT}"
