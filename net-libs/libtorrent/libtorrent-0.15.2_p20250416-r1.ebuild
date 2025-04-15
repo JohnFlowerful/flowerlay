@@ -20,12 +20,12 @@ LICENSE="GPL-2"
 # subslot.
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="debug ssl test"
+IUSE="debug test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
 	sys-libs/zlib
-	ssl? ( dev-libs/openssl:= )
+	dev-libs/openssl:=
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
@@ -62,7 +62,6 @@ src_configure() {
 	CONFIG_SHELL=${BASH} econf \
 		--enable-aligned \
 		$(use_enable debug) \
-		$(use_enable ssl openssl) \
 		${disable_instrumentation} \
 		--with-posix-fallocate
 }
