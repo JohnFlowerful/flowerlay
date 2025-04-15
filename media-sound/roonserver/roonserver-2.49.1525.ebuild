@@ -8,7 +8,7 @@ MY_PN="RoonServer"
 DESCRIPTION="A music management and listening solution"
 HOMEPAGE="https://roonlabs.com/"
 
-SRC_URI="https://download.roonlabs.com/builds/${MY_PN}_linuxx64_$(ver_cut 1)00$(ver_cut 2)0$(ver_cut 3).tar.bz2"
+SRC_URI="https://download.roonlabs.com/builds/${MY_PN}_linuxx64_$(ver_cut 1)0$(ver_cut 2)0$(ver_cut 3).tar.bz2"
 
 S="${WORKDIR}/${MY_PN}"
 
