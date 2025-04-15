@@ -8,7 +8,7 @@ inherit autotools linux-info tmpfiles
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 
-RTORRENT_COMMIT="2ab7460cbca4a0e8d5c33e71610de2e620eecc8c"
+RTORRENT_COMMIT="dd221ac66a7cdb2f7cf3ebc2a44084a6b0ead171"
 SRC_URI="https://github.com/rakshasa/${PN}/archive/${RTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
 
 S="${WORKDIR}/${PN}-${RTORRENT_COMMIT}"
