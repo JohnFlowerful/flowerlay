@@ -8,10 +8,7 @@ inherit autotools linux-info tmpfiles
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 
-RTORRENT_COMMIT="dd221ac66a7cdb2f7cf3ebc2a44084a6b0ead171"
-SRC_URI="https://github.com/rakshasa/${PN}/archive/${RTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
-
-S="${WORKDIR}/${PN}-${RTORRENT_COMMIT}"
+SRC_URI="https://github.com/rakshasa/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -21,7 +18,7 @@ RESTRICT="!test? ( test )"
 REQUIRED_USE="tinyxml2? ( !xmlrpc )"
 
 DEPEND="
-	=net-libs/libtorrent-$(ver_cut 1).$(ver_cut 2).$(ver_cut 3)*
+	~net-libs/libtorrent-${PV}
 	net-misc/curl
 	sys-libs/ncurses:0=
 	lua? ( >=dev-lang/lua-5.4:= )
