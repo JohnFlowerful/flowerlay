@@ -8,10 +8,7 @@ inherit autotools toolchain-funcs
 DESCRIPTION="BitTorrent library written in C++ for *nix"
 HOMEPAGE="https://rakshasa.github.io/rtorrent/"
 
-LIBTORRENT_COMMIT="68afa5d4f03c1c6900b7864a01d1789224178b3d"
-SRC_URI="https://github.com/rakshasa/${PN}/archive/${LIBTORRENT_COMMIT}.tar.gz -> ${P}.tar.gz"
-
-S="${WORKDIR}/${PN}-${LIBTORRENT_COMMIT}"
+SRC_URI="https://github.com/rakshasa/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-2"
 # The README says that the library ABI is not yet stable and dependencies on
