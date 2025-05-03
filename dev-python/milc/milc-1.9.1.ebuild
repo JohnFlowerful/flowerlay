@@ -26,11 +26,12 @@ IUSE="test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
-	dev-python/appdirs[${PYTHON_USEDEP}]
 	dev-python/argcomplete[${PYTHON_USEDEP}]
 	dev-python/colorama[${PYTHON_USEDEP}]
 	dev-python/halo[${PYTHON_USEDEP}]
+	dev-python/platformdirs[${PYTHON_USEDEP}]
 	dev-python/spinners[${PYTHON_USEDEP}]
+	dev-python/types-colorama[${PYTHON_USEDEP}]
 "
 BDEPEND="
 	test? (
