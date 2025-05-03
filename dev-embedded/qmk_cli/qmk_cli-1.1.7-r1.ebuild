@@ -30,7 +30,6 @@ RDEPEND="
 	dev-embedded/avrdude
 	dev-embedded/dfu-programmer
 	dev-libs/hidapi
-	dev-python/appdirs[${PYTHON_USEDEP}]
 	dev-python/argcomplete[${PYTHON_USEDEP}]
 	dev-python/colorama[${PYTHON_USEDEP}]
 	dev-python/dotty-dict[${PYTHON_USEDEP}]
