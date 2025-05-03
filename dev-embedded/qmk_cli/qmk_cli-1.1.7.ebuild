@@ -4,7 +4,7 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 PYPI_PN="${PN%_*}"
 
 inherit distutils-r1 pypi
@@ -37,7 +37,7 @@ RDEPEND="
 	dev-python/hidapi[${PYTHON_USEDEP}]
 	dev-python/hjson[${PYTHON_USEDEP}]
 	>=dev-python/jsonschema-4[${PYTHON_USEDEP}]
-	>=dev-python/milc-1.6.8[${PYTHON_USEDEP}]
+	>=dev-python/milc-1.9.0[${PYTHON_USEDEP}]
 	dev-python/pygments[${PYTHON_USEDEP}]
 	dev-python/pyserial[${PYTHON_USEDEP}]
 	dev-python/pyusb[${PYTHON_USEDEP}]
@@ -55,7 +55,7 @@ RDEPEND="
 # see https://github.com/qmk/qmk_cli/issues/82 for the discussion
 #
 # provide a patch to remove pyhidapi dependency and use dev-python/hidapi instead
-PATCHES=("${FILESDIR}/${P}_linux-hidapi.patch")
+PATCHES=("${FILESDIR}/${PN}-1.1.5_linux-hidapi.patch")
 
 src_prepare() {
 	sed -rz -i  -e 's/,\n.+"wheel"//' "pyproject.toml" || die
