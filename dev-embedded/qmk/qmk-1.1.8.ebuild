@@ -3,11 +3,13 @@
 
 EAPI=8
 
+# qmk_firmware version in which the udev rules file was last modified
+QMK_FIRMWARE_VER="0.27.3"
+
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{10..13} )
-PYPI_PN="${PN%_*}"
 
-inherit distutils-r1 pypi
+inherit distutils-r1 optfeature pypi udev
 
 DESCRIPTION="A program to help users work with QMK"
 HOMEPAGE="
@@ -15,11 +17,15 @@ HOMEPAGE="
 	https://github.com/qmk/qmk_cli
 	https://pypi.org/project/qmk/
 "
+SRC_URI="
+	$(pypi_sdist_url)
+	https://raw.githubusercontent.com/qmk/qmk_firmware/${QMK_FIRMWARE_VER}/util/udev/50-qmk.rules
+		-> ${PN}-udev-${QMK_FIRMWARE_VER}.rules
+"
 
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="chibios +udev-rules"
 # no tests provided by upstream
 RESTRICT="test"
 
@@ -44,9 +50,7 @@ RDEPEND="
 	dev-vcs/git
 	net-misc/wget
 	sys-apps/hwloc
-	chibios? ( llvm-core/clang )
 	sys-devel/crossdev
-	udev-rules? ( dev-embedded/qmk_udev-rules )
 "
 
 # upstream won't switch to the dev-python/hidapi package nor will they vendor the
@@ -57,12 +61,27 @@ RDEPEND="
 PATCHES=("${FILESDIR}/${PN}-1.1.5_linux-hidapi.patch")
 
 src_prepare() {
-	sed -rz -i  -e 's/,\n.+"wheel"//' "pyproject.toml" || die
+	sed -rz -e 's/,\n.+"wheel"//' -i "pyproject.toml" || die
 
-	default
+	distutils-r1_src_prepare
+}
+
+src_install() {
+	udev_newrules "${DISTDIR}/${PN}-udev-${QMK_FIRMWARE_VER}.rules" 50-qmk.rules
+
+	distutils-r1_src_install
 }
 
 pkg_postinst() {
+	optfeature_header
+	optfeature "ChibiOS build support" llvm-core/clang
+
 	[[ ! -x /usr/bin/avr-gcc ]] && ewarn "Missing avr-gcc; you need to 'crossdev -s4 avr'"
 	[[ ! -x /usr/bin/arm-none-eabi-gcc ]] && ewarn "Missing arm-none-eabi-gcc; you need to 'crossdev -s4 arm-none-eabi'"
+
+	udev_reload
+}
+
+pkg_postrm() {
+	udev_reload
 }

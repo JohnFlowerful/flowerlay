@@ -5,8 +5,4 @@
 		<remote-id type="github">qmk/qmk_cli</remote-id>
 		<remote-id type="pypi">qmk</remote-id>
 	</upstream>
-	<use>
-		<flag name="chibios">Pulls <pkg>llvm-core/clang</pkg> for building chibios binaries.</flag>
-		<flag name="udev-rules">Install udev rules via <pkg>dev-embedded/qmk_udev-rules</pkg></flag>
-	</use>
 </pkgmetadata>
