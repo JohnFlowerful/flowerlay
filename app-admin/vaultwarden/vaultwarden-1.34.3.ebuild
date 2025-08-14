@@ -6,11 +6,7 @@ EAPI=8
 CRATES="
 "
 
-declare -A GIT_CRATES=(
-	[yubico]='https://github.com/BlackDex/yubico-rs;00df14811f58155c0f02e3ab10f1570ed3e115c6;yubico-rs-%commit%'
-)
-
-RUST_MIN_VER="1.84.1"
+RUST_MIN_VER="1.86.0"
 
 inherit cargo check-reqs
 
@@ -19,13 +15,16 @@ HOMEPAGE="https://github.com/dani-garcia/vaultwarden"
 
 SRC_URI="
 	https://github.com/dani-garcia/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/rust/${PN}-${PV}-crates.tar.xz
+	https://dandelion.ilypetals.net/dist/rust/${P}-crates.tar.xz
 	${CARGO_CRATE_URIS}
 "
 
 LICENSE="AGPL-3"
 # Dependent crate licenses
-LICENSE+=" 0BSD Apache-2.0 BSD ISC MIT MPL-2.0 Unicode-3.0"
+LICENSE+="
+	0BSD Apache-2.0 BSD CC0-1.0 CDLA-Permissive-2.0 ISC MIT MPL-2.0
+	Unicode-3.0 ZLIB
+"
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE="+lto mysql postgres +sqlite +system-sqlite thinlto +web-vault"
@@ -33,11 +32,11 @@ REQUIRED_USE="|| ( mysql postgres sqlite )"
 RESTRICT="mirror"
 
 DEPEND="
-	dev-libs/openssl:0=
-	mysql? ( virtual/mysql )
-	postgres? ( dev-db/postgresql )
+	dev-libs/openssl:=
+	mysql? ( dev-db/mysql-connector-c:= )
+	postgres? ( dev-db/postgresql:* )
 	sqlite? ( dev-db/sqlite:3 )
-	web-vault? ( >=app-admin/vaultwarden-web-vault-2025.1.1 )
+	web-vault? ( >=app-admin/vaultwarden-web-vault-2025.7.0 )
 "
 RDEPEND="
 	${DEPEND}
@@ -46,7 +45,7 @@ RDEPEND="
 "
 
 pre_build_checks() {
-	local CHECKREQS_DISK_BUILD=2G
+	local CHECKREQS_DISK_BUILD=3G
 	local CHECKREQS_MEMORY=1G
 	if use lto; then
 		CHECKREQS_MEMORY=6G
@@ -73,16 +72,6 @@ src_prepare() {
 	sed -r "s/^# (WEB_VAULT_ENABLED)=.*/\1=$(usex web-vault true false)/" \
 		-i .env.template || die
 
-	# source: cargo.eclass
-	local crate commit crate_uri crate_dir host
-	for crate in "${!GIT_CRATES[@]}"; do
-		IFS=';' read -r crate_uri commit crate_dir host <<< "${GIT_CRATES[${crate}]}"
-		: "${crate_dir:=${crate}-%commit%}"
-		sed -r "s|^${crate} = \{ git.*|${crate} = { path = \"${WORKDIR}/${crate_dir//%commit%/${commit}}\" }|" \
-			-i  "Cargo.toml" || die
-	done
-	cargo_update_crates
-
 	default
 }
 
@@ -105,7 +94,7 @@ src_compile() {
 		export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
 	fi
 	if ! use lto && ! use thinlto; then
-		# this was the behaviour of vaultwarden <= 1.30.1
+		# this was the behavior of vaultwarden <= 1.30.1
 		export CARGO_PROFILE_RELEASE_LTO=off
 		export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
 	fi
