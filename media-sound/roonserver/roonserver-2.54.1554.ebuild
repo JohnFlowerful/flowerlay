@@ -24,7 +24,6 @@ RDEPEND="
 	dev-libs/icu
 	dev-util/lttng-ust
 	media-video/ffmpeg
-	>=sys-libs/glibc-2.14
 	alsa? ( media-libs/alsa-lib )
 	samba? ( net-fs/cifs-utils )
 	system-dotnet? ( dev-dotnet/dotnet-sdk-bin:6.0 )
