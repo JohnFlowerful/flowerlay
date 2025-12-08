@@ -49,6 +49,9 @@ DOCS=( "${S}"/{README,Changelog}.md )
 src_unpack() {
 	default
 
+	# move reused vendor files to the correct directory
+	mv "${WORKDIR}"/${MY_P}/vendor ${MY_PN}-${MY_COMMIT} || die
+
 	if [[ -d "${WORKDIR}"/vendor ]]; then # if we ship the dependencies
 		mv "${WORKDIR}"/vendor "${S}"/vendor || die # move them into the tree
 	fi
