@@ -11,6 +11,7 @@ inherit tmpfiles
 
 DESCRIPTION="Server files for a Grand Theft Auto multiplayer mod"
 HOMEPAGE="https://multitheftauto.com/"
+# the nightly website only has about 2 months rentention for each version
 SRC_URI="
 	https://nightly.multitheftauto.com/${MY_P}.tar.gz
 	baseconfig? ( https://linux.multitheftauto.com/dl/baseconfig.tar.gz
