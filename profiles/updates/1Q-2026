@@ -1,1 +1,2 @@
 move app-portage/npm-deps app-portage/node-deps
+move app-admin/vaultwarden-web-vault www-apps/vaultwarden-web
