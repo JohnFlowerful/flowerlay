@@ -1,4 +1,4 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -64,11 +64,10 @@ src_install() {
 }
 
 pkg_postinst() {
-	CIFS_PERM=$(stat -c '%a' /sbin/mount.cifs)
-	CONFD_DIR="/etc/conf.d"
+	local cifs_perm=$(stat -c '%a' /sbin/mount.cifs)
 	if use samba && \
-	! [[ ${CIFS_PERM} =~ ^47[[:digit:]][[:digit:]] ]] && \
-	! [[ $(grep 'USER="root"' "${CONFD_DIR}/${PN}") ]]; then
+	! [[ ${cifs_perm} =~ ^47[[:digit:]][[:digit:]] ]] && \
+	! [[ $(grep 'USER="root"' "${ROOT}/etc/conf.d/${PN}") ]]; then
 		ewarn "Roon uses the superuser command 'mount.cifs' to access network locations."
 		ewarn "While this ebuild restricts Roon to a regular user account, it is still possible"
 		ewarn "to allow Roon to use 'mount.cifs' with setuid."
