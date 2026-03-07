@@ -25,7 +25,6 @@ RESTRICT="mirror"
 DEPEND=">=net-libs/nodejs-22"
 BDEPEND="${DEPEND}"
 RDEPEND="${DEPEND}"
-PDEPEND="net-misc/aria2"
 
 NPM_FLAGS=("--legacy-peer-deps")
 # silence harmless ENOTCACHED warning (with a hammer)
