@@ -7,7 +7,7 @@ inherit cmake desktop go-env go-module systemd xdg-utils
 
 MY_PN="${PN/-mail/}"
 MY_P="${MY_PN}-${PV}"
-MY_COMMIT="11ecdd91ccafb67618d46584d19d4d70f592925f"
+MY_COMMIT="495d5f0d9e88a6e75bfd496fc6234a51b61de7f1"
 
 DESCRIPTION="Serves Proton Mail to IMAP/SMTP clients"
 HOMEPAGE="https://proton.me/mail/bridge https://github.com/mnixry/proton-bridge/"
