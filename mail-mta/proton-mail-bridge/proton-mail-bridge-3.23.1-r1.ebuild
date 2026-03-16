@@ -26,6 +26,7 @@ RESTRICT="test"
 
 RDEPEND="
 	app-crypt/libsecret
+	dev-libs/libfido2
 	gui? (
 		>=dev-libs/protobuf-21.12:=
 		dev-libs/re2:=
