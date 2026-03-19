@@ -65,6 +65,12 @@ src_prepare() {
 
 	sed -r -e '/^print OUT "\\t\/sbin\/depmod -a/d' -i "v4l/scripts/make_makefile.pl" || die
 
+	pushd v4l &>/dev/null || die
+		emake prepare VER="${KV_FULL}"
+	popd &>/dev/null || die
+
+	# some files are symlinks
+
 	default
 }
 
