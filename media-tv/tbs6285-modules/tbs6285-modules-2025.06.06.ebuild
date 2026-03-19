@@ -33,6 +33,12 @@ BDEPEND="
 	dev-util/patchutils
 "
 
+PATCHES=(
+	"${FILESDIR}"/${PV}-EXTRA_CFLAGS.patch
+	"${FILESDIR}"/${PV}-timer_delete.patch
+)
+
+
 pkg_setup() {
 	linux-mod-r1_pkg_setup
 	get_version

@@ -1,0 +1,1424 @@
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/common/saa7146/saa7146_fops.c tbs6285-modules-2025.06.06/linux/drivers/media/common/saa7146/saa7146_fops.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/common/saa7146/saa7146_fops.c	2026-03-19 23:07:39.665381121 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/common/saa7146/saa7146_fops.c	2026-03-19 23:08:25.535699279 +1300
+@@ -148,7 +148,7 @@
+ 			printk("vdma%d.num_line_byte: 0x%08x\n", 1,saa7146_read(dev,NUM_LINE_BYTE1));
+ */
+ 		}
+-		del_timer(&q->timeout);
++		timer_delete(&q->timeout);
+ 	}
+ }
+ 
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/common/saa7146/saa7146_vbi.c tbs6285-modules-2025.06.06/linux/drivers/media/common/saa7146/saa7146_vbi.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/common/saa7146/saa7146_vbi.c	2026-03-19 23:07:39.665381121 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/common/saa7146/saa7146_vbi.c	2026-03-19 23:08:25.536011632 +1300
+@@ -322,8 +322,8 @@
+ 	/* shut down dma 3 transfers */
+ 	saa7146_write(dev, MC1, MASK_20);
+ 
+-	del_timer(&vv->vbi_dmaq.timeout);
+-	del_timer(&vv->vbi_read_timeout);
++	timer_delete(&vv->vbi_dmaq.timeout);
++	timer_delete(&vv->vbi_read_timeout);
+ 
+ 	spin_unlock_irqrestore(&dev->slock, flags);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/common/saa7146/saa7146_video.c tbs6285-modules-2025.06.06/linux/drivers/media/common/saa7146/saa7146_video.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/common/saa7146/saa7146_video.c	2026-03-19 23:07:39.665381121 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/common/saa7146/saa7146_video.c	2026-03-19 23:08:25.536092673 +1300
+@@ -669,7 +669,7 @@
+ 	struct saa7146_dev *dev = vb2_get_drv_priv(q);
+ 	struct saa7146_dmaqueue *dq = &dev->vv_data->video_dmaq;
+ 
+-	del_timer(&dq->timeout);
++	timer_delete(&dq->timeout);
+ 	video_end(dev);
+ 	return_buffers(q, VB2_BUF_STATE_ERROR);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/dvb-core/dmxdev.c tbs6285-modules-2025.06.06/linux/drivers/media/dvb-core/dmxdev.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/dvb-core/dmxdev.c	2026-03-19 23:07:39.665693404 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/dvb-core/dmxdev.c	2026-03-19 23:08:25.538633164 +1300
+@@ -366,7 +366,7 @@
+ {
+ 	struct dmx_sct_filter_params *para = &dmxdevfilter->params.sec;
+ 
+-	del_timer(&dmxdevfilter->timer);
++	timer_delete(&dmxdevfilter->timer);
+ 	if (para->timeout) {
+ 		dmxdevfilter->timer.expires =
+ 		    jiffies + 1 + (HZ / 2 + HZ * para->timeout) / 1000;
+@@ -392,7 +392,7 @@
+ 		spin_unlock(&dmxdevfilter->dev->lock);
+ 		return 0;
+ 	}
+-	del_timer(&dmxdevfilter->timer);
++	timer_delete(&dmxdevfilter->timer);
+ 	dprintk("section callback %*ph\n", 6, buffer1);
+ 	if (dvb_vb2_is_streaming(&dmxdevfilter->vb2_ctx)) {
+ 		ret = dvb_vb2_fill_buffer(&dmxdevfilter->vb2_ctx,
+@@ -483,7 +483,7 @@
+ 
+ 	switch (dmxdevfilter->type) {
+ 	case DMXDEV_TYPE_SEC:
+-		del_timer(&dmxdevfilter->timer);
++		timer_delete(&dmxdevfilter->timer);
+ 		dmxdevfilter->feed.sec->stop_filtering(dmxdevfilter->feed.sec);
+ 		break;
+ 	case DMXDEV_TYPE_PES:
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/i2c/tc358743.c tbs6285-modules-2025.06.06/linux/drivers/media/i2c/tc358743.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/i2c/tc358743.c	2026-03-19 23:07:39.669725273 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/i2c/tc358743.c	2026-03-19 23:08:25.592101769 +1300
+@@ -2174,7 +2174,7 @@
+ 	struct tc358743_state *state = to_state(sd);
+ 
+ 	if (!state->i2c_client->irq) {
+-		del_timer_sync(&state->timer);
++		timer_delete_sync(&state->timer);
+ 		flush_work(&state->work_i2c_poll);
+ 	}
+ 	cancel_delayed_work_sync(&state->delayed_work_enable_hotplug);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/i2c/tvaudio.c tbs6285-modules-2025.06.06/linux/drivers/media/i2c/tvaudio.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/i2c/tvaudio.c	2026-03-19 23:07:39.669725273 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/i2c/tvaudio.c	2026-03-19 23:08:25.593430255 +1300
+@@ -1787,7 +1787,7 @@
+ 	struct CHIPSTATE *chip = to_state(sd);
+ 
+ 	chip->radio = 1;
+-	/* del_timer(&chip->wt); */
++	/* timer_delete(&chip->wt); */
+ 	return 0;
+ }
+ 
+@@ -2071,7 +2071,7 @@
+ 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
+ 	struct CHIPSTATE *chip = to_state(sd);
+ 
+-	del_timer_sync(&chip->wt);
++	timer_delete_sync(&chip->wt);
+ 	if (chip->thread) {
+ 		/* shutdown async thread */
+ 		kthread_stop(chip->thread);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/bt8xx/bttv-driver.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/bt8xx/bttv-driver.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/bt8xx/bttv-driver.c	2026-03-19 23:07:39.671789928 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/bt8xx/bttv-driver.c	2026-03-19 23:08:25.599814682 +1300
+@@ -3494,7 +3494,7 @@
+ 
+ 	/* free resources */
+ 	free_irq(btv->c.pci->irq,btv);
+-	del_timer_sync(&btv->timeout);
++	timer_delete_sync(&btv->timeout);
+ 	iounmap(btv->bt848_mmio);
+ 	release_mem_region(pci_resource_start(btv->c.pci,0),
+ 			   pci_resource_len(btv->c.pci,0));
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/bt8xx/bttv-input.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/bt8xx/bttv-input.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/bt8xx/bttv-input.c	2026-03-19 23:07:39.671789928 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/bt8xx/bttv-input.c	2026-03-19 23:08:25.600436359 +1300
+@@ -305,12 +305,12 @@
+ static void bttv_ir_stop(struct bttv *btv)
+ {
+ 	if (btv->remote->polling)
+-		del_timer_sync(&btv->remote->timer);
++		timer_delete_sync(&btv->remote->timer);
+ 
+ 	if (btv->remote->rc5_gpio) {
+ 		u32 gpio;
+ 
+-		del_timer_sync(&btv->remote->timer);
++		timer_delete_sync(&btv->remote->timer);
+ 
+ 		gpio = bttv_gpio_read(&btv->c);
+ 		bttv_gpio_write(&btv->c, gpio & ~(1 << 4));
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/bt8xx/bttv-risc.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/bt8xx/bttv-risc.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/bt8xx/bttv-risc.c	2026-03-19 23:07:39.671789928 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/bt8xx/bttv-risc.c	2026-03-19 23:08:25.600529711 +1300
+@@ -377,7 +377,7 @@
+ 	if (btv->curr.frame_irq || btv->loop_irq || btv->cvbi)
+ 		mod_timer(&btv->timeout, jiffies + BTTV_TIMEOUT);
+ 	else
+-		del_timer(&btv->timeout);
++		timer_delete(&btv->timeout);
+ }
+ 
+ static int bttv_set_capture_control(struct bttv *btv, int start_capture)
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/ivtv/ivtv-irq.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/ivtv/ivtv-irq.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/ivtv/ivtv-irq.c	2026-03-19 23:07:39.673722822 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/ivtv/ivtv-irq.c	2026-03-19 23:08:25.612228302 +1300
+@@ -532,7 +532,7 @@
+ 
+ 	IVTV_DEBUG_HI_IRQ("DEC DMA READ\n");
+ 
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	if (!test_bit(IVTV_F_I_UDMA, &itv->i_flags) && itv->cur_dma_stream < 0)
+ 		return;
+@@ -597,7 +597,7 @@
+ 	ivtv_api_get_data(&itv->enc_mbox, IVTV_MBOX_DMA_END, 2, data);
+ 	IVTV_DEBUG_HI_IRQ("ENC DMA COMPLETE %x %d (%d)\n", data[0], data[1], itv->cur_dma_stream);
+ 
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	if (itv->cur_dma_stream < 0)
+ 		return;
+@@ -670,7 +670,7 @@
+ 	u32 data[CX2341X_MBOX_MAX_DATA];
+ 	u32 status;
+ 
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	ivtv_api_get_data(&itv->enc_mbox, IVTV_MBOX_DMA_END, 2, data);
+ 	status = read_reg(IVTV_REG_DMASTATUS);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/ivtv/ivtv-streams.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/ivtv/ivtv-streams.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/ivtv/ivtv-streams.c	2026-03-19 23:07:39.673722822 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/ivtv/ivtv-streams.c	2026-03-19 23:08:25.612558696 +1300
+@@ -889,7 +889,7 @@
+ 
+ 	/* Set the following Interrupt mask bits for capture */
+ 	ivtv_set_irq_mask(itv, IVTV_IRQ_MASK_CAPTURE);
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	/* event notification (off) */
+ 	if (test_and_clear_bit(IVTV_F_I_DIG_RST, &itv->i_flags)) {
+@@ -954,7 +954,7 @@
+ 	ivtv_vapi(itv, CX2341X_DEC_SET_EVENT_NOTIFICATION, 4, 0, 0, IVTV_IRQ_DEC_AUD_MODE_CHG, -1);
+ 
+ 	ivtv_set_irq_mask(itv, IVTV_IRQ_MASK_DECODE);
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	clear_bit(IVTV_F_S_NEEDS_DATA, &s->s_flags);
+ 	clear_bit(IVTV_F_S_STREAMING, &s->s_flags);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c	2026-03-19 23:07:39.674383360 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c	2026-03-19 23:08:25.614155145 +1300
+@@ -697,7 +697,7 @@
+ 	netup_unidvb_dma_enable(dma, 0);
+ 	msleep(50);
+ 	cancel_work_sync(&dma->work);
+-	del_timer_sync(&dma->timeout);
++	timer_delete_sync(&dma->timeout);
+ }
+ 
+ static int netup_unidvb_dma_setup(struct netup_unidvb_dev *ndev)
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-core.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-core.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-core.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-core.c	2026-03-19 23:08:25.616524094 +1300
+@@ -322,7 +322,7 @@
+ 		/* nothing to do -- just stop DMA */
+ 		core_dbg("buffer_next %p\n", NULL);
+ 		saa7134_set_dmabits(dev);
+-		del_timer(&q->timeout);
++		timer_delete(&q->timeout);
+ 	}
+ }
+ 
+@@ -364,7 +364,7 @@
+ 		tmp = NULL;
+ 	}
+ 	spin_unlock_irqrestore(&dev->slock, flags);
+-	saa7134_buffer_timeout(&q->timeout); /* also calls del_timer(&q->timeout) */
++	saa7134_buffer_timeout(&q->timeout); /* also calls timer_delete(&q->timeout) */
+ }
+ EXPORT_SYMBOL_GPL(saa7134_stop_streaming);
+ 
+@@ -1390,9 +1390,9 @@
+ 	/* Disable timeout timers - if we have active buffers, we will
+ 	   fill them on resume*/
+ 
+-	del_timer(&dev->video_q.timeout);
+-	del_timer(&dev->vbi_q.timeout);
+-	del_timer(&dev->ts_q.timeout);
++	timer_delete(&dev->video_q.timeout);
++	timer_delete(&dev->vbi_q.timeout);
++	timer_delete(&dev->ts_q.timeout);
+ 
+ 	if (dev->remote && dev->remote->dev->users)
+ 		saa7134_ir_close(dev->remote->dev);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-input.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-input.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-input.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-input.c	2026-03-19 23:08:25.617294783 +1300
+@@ -496,7 +496,7 @@
+ 	struct saa7134_card_ir *ir = dev->remote;
+ 
+ 	if (ir->polling)
+-		del_timer_sync(&ir->timer);
++		timer_delete_sync(&ir->timer);
+ 
+ 	ir->running = false;
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-ts.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-ts.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-ts.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-ts.c	2026-03-19 23:08:25.617436344 +1300
+@@ -300,7 +300,7 @@
+ 
+ int saa7134_ts_fini(struct saa7134_dev *dev)
+ {
+-	del_timer_sync(&dev->ts_q.timeout);
++	timer_delete_sync(&dev->ts_q.timeout);
+ 	saa7134_pgtable_free(dev->pci, &dev->ts_q.pt);
+ 	return 0;
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-vbi.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-vbi.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-vbi.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-vbi.c	2026-03-19 23:08:25.617668857 +1300
+@@ -185,7 +185,7 @@
+ int saa7134_vbi_fini(struct saa7134_dev *dev)
+ {
+ 	/* nothing */
+-	del_timer_sync(&dev->vbi_q.timeout);
++	timer_delete_sync(&dev->vbi_q.timeout);
+ 	return 0;
+ }
+ 
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-video.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-video.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa7134/saa7134-video.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa7134/saa7134-video.c	2026-03-19 23:08:25.617719928 +1300
+@@ -1743,7 +1743,7 @@
+ 
+ void saa7134_video_fini(struct saa7134_dev *dev)
+ {
+-	del_timer_sync(&dev->video_q.timeout);
++	timer_delete_sync(&dev->video_q.timeout);
+ 	/* free stuff */
+ 	saa7134_pgtable_free(dev->pci, &dev->video_q.pt);
+ 	saa7134_pgtable_free(dev->pci, &dev->vbi_q.pt);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa716x/saa716x_ff_ir.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa716x/saa716x_ff_ir.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/saa716x/saa716x_ff_ir.c	2026-03-19 23:07:39.675030327 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/saa716x/saa716x_ff_ir.c	2026-03-19 23:08:25.620579792 +1300
+@@ -115,7 +115,7 @@
+ 	}
+ 
+ 	if (timer_pending(&ir->keyup_timer)) {
+-		del_timer(&ir->keyup_timer);
++		timer_delete(&ir->keyup_timer);
+ 		if (ir->last_key != keycode || toggle != ir->last_toggle) {
+ 			ir->delay_timer_finished = false;
+ 			input_event(ir->input_dev, EV_KEY, ir->last_key, 0);
+@@ -259,7 +259,7 @@
+ 
+ 	saa716x->ir_priv = NULL;
+ 	tasklet_kill(&ir->tasklet);
+-	del_timer_sync(&ir->keyup_timer);
++	timer_delete_sync(&ir->keyup_timer);
+ 	input_unregister_device(ir->input_dev);
+ 	kfree(ir);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/tw686x/tw686x-core.c tbs6285-modules-2025.06.06/linux/drivers/media/pci/tw686x/tw686x-core.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/pci/tw686x/tw686x-core.c	2026-03-19 23:07:39.677019921 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/pci/tw686x/tw686x-core.c	2026-03-19 23:08:25.634047745 +1300
+@@ -373,7 +373,7 @@
+ 
+ 	tw686x_video_free(dev);
+ 	tw686x_audio_free(dev);
+-	del_timer_sync(&dev->dma_delay_timer);
++	timer_delete_sync(&dev->dma_delay_timer);
+ 
+ 	pci_iounmap(pci_dev, dev->mmio);
+ 	pci_release_regions(pci_dev);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c tbs6285-modules-2025.06.06/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c	2026-03-19 23:07:39.681472025 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c	2026-03-19 23:08:25.668269128 +1300
+@@ -929,7 +929,7 @@
+ 	if (dev->num_inst == 1) {
+ 		if (s5p_mfc_power_off() < 0)
+ 			mfc_err("power off failed\n");
+-		del_timer_sync(&dev->watchdog_timer);
++		timer_delete_sync(&dev->watchdog_timer);
+ 	}
+ err_ctrls_setup:
+ 	s5p_mfc_dec_ctrls_delete(ctx);
+@@ -978,7 +978,7 @@
+ 		if (dev->num_inst == 0) {
+ 			mfc_debug(2, "Last instance\n");
+ 			s5p_mfc_deinit_hw(dev);
+-			del_timer_sync(&dev->watchdog_timer);
++			timer_delete_sync(&dev->watchdog_timer);
+ 			s5p_mfc_clock_off();
+ 			if (s5p_mfc_power_off() < 0)
+ 				mfc_err("Power off failed\n");
+@@ -1454,7 +1454,7 @@
+ 	}
+ 	mutex_unlock(&dev->mfc_mutex);
+ 
+-	del_timer_sync(&dev->watchdog_timer);
++	timer_delete_sync(&dev->watchdog_timer);
+ 	flush_work(&dev->watchdog_work);
+ 
+ 	video_unregister_device(dev->vfd_enc);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c tbs6285-modules-2025.06.06/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c	2026-03-19 23:07:39.681909780 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c	2026-03-19 23:08:25.671111912 +1300
+@@ -352,7 +352,7 @@
+ 		dev_dbg(fei->dev, "%s:%d global_feed_count=%d\n"
+ 			, __func__, __LINE__, fei->global_feed_count);
+ 
+-		del_timer(&fei->timer);
++		timer_delete(&fei->timer);
+ 	}
+ 
+ 	mutex_unlock(&fei->lock);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/radio/radio-cadet.c tbs6285-modules-2025.06.06/linux/drivers/media/radio/radio-cadet.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/radio/radio-cadet.c	2026-03-19 23:07:39.683898714 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/radio/radio-cadet.c	2026-03-19 23:08:25.686093102 +1300
+@@ -471,7 +471,7 @@
+ 
+ 	mutex_lock(&dev->lock);
+ 	if (v4l2_fh_is_singular_file(file) && dev->rdsstat) {
+-		del_timer_sync(&dev->readtimer);
++		timer_delete_sync(&dev->readtimer);
+ 		dev->rdsstat = 0;
+ 	}
+ 	v4l2_fh_release(file);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/radio/wl128x/fmdrv_common.c tbs6285-modules-2025.06.06/linux/drivers/media/radio/wl128x/fmdrv_common.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/radio/wl128x/fmdrv_common.c	2026-03-19 23:07:39.684309659 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/radio/wl128x/fmdrv_common.c	2026-03-19 23:08:25.689354492 +1300
+@@ -504,7 +504,7 @@
+ 	struct fm_event_msg_hdr *fm_evt_hdr;
+ 	unsigned long flags;
+ 
+-	del_timer(&fmdev->irq_info.timer);
++	timer_delete(&fmdev->irq_info.timer);
+ 
+ 	spin_lock_irqsave(&fmdev->resp_skb_lock, flags);
+ 	*skb = fmdev->resp_skb;
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/ene_ir.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/ene_ir.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/ene_ir.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/ene_ir.c	2026-03-19 23:08:25.690198732 +1300
+@@ -1108,7 +1108,7 @@
+ 	unsigned long flags;
+ 
+ 	rc_unregister_device(dev->rdev);
+-	del_timer_sync(&dev->tx_sim_timer);
++	timer_delete_sync(&dev->tx_sim_timer);
+ 	spin_lock_irqsave(&dev->hw_lock, flags);
+ 	ene_rx_disable(dev);
+ 	ene_rx_restore_hw_buffer(dev);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/igorplugusb.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/igorplugusb.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/igorplugusb.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/igorplugusb.c	2026-03-19 23:08:25.690630487 +1300
+@@ -223,7 +223,7 @@
+ 	return 0;
+ fail:
+ 	usb_poison_urb(ir->urb);
+-	del_timer(&ir->timer);
++	timer_delete(&ir->timer);
+ 	usb_unpoison_urb(ir->urb);
+ 	usb_free_urb(ir->urb);
+ 	rc_free_device(ir->rc);
+@@ -238,7 +238,7 @@
+ 
+ 	rc_unregister_device(ir->rc);
+ 	usb_poison_urb(ir->urb);
+-	del_timer_sync(&ir->timer);
++	timer_delete_sync(&ir->timer);
+ 	usb_set_intfdata(intf, NULL);
+ 	usb_unpoison_urb(ir->urb);
+ 	usb_free_urb(ir->urb);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/img-ir/img-ir-hw.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/img-ir/img-ir-hw.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/img-ir/img-ir-hw.c	2026-03-19 23:07:39.684877126 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/img-ir/img-ir-hw.c	2026-03-19 23:08:25.695749849 +1300
+@@ -556,8 +556,8 @@
+ 	 * acquires the lock and we don't want to deadlock waiting for it.
+ 	 */
+ 	spin_unlock_irq(&priv->lock);
+-	del_timer_sync(&hw->end_timer);
+-	del_timer_sync(&hw->suspend_timer);
++	timer_delete_sync(&hw->end_timer);
++	timer_delete_sync(&hw->suspend_timer);
+ 	spin_lock_irq(&priv->lock);
+ 
+ 	hw->stopping = false;
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/img-ir/img-ir-raw.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/img-ir/img-ir-raw.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/img-ir/img-ir-raw.c	2026-03-19 23:07:39.684877126 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/img-ir/img-ir-raw.c	2026-03-19 23:08:25.696102674 +1300
+@@ -147,5 +147,5 @@
+ 
+ 	rc_unregister_device(rdev);
+ 
+-	del_timer_sync(&raw->timer);
++	timer_delete_sync(&raw->timer);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/imon.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/imon.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/imon.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/imon.c	2026-03-19 23:08:25.690778769 +1300
+@@ -2532,7 +2532,7 @@
+ 		ictx->dev_present_intf1 = false;
+ 		usb_kill_urb(ictx->rx_urb_intf1);
+ 		if (ictx->display_type == IMON_DISPLAY_TYPE_VGA) {
+-			del_timer_sync(&ictx->ttimer);
++			timer_delete_sync(&ictx->ttimer);
+ 			input_unregister_device(ictx->touch);
+ 		}
+ 		usb_put_dev(ictx->usbdev_intf1);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/ir-mce_kbd-decoder.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/ir-mce_kbd-decoder.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/ir-mce_kbd-decoder.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/ir-mce_kbd-decoder.c	2026-03-19 23:08:25.691443697 +1300
+@@ -324,7 +324,7 @@
+ 					msecs_to_jiffies(100);
+ 				mod_timer(&data->rx_timeout, jiffies + delay);
+ 			} else {
+-				del_timer(&data->rx_timeout);
++				timer_delete(&data->rx_timeout);
+ 			}
+ 			/* Pass data to keyboard buffer parser */
+ 			ir_mce_kbd_process_keyboard_data(dev, scancode);
+@@ -372,7 +372,7 @@
+ {
+ 	struct mce_kbd_dec *mce_kbd = &dev->raw->mce_kbd;
+ 
+-	del_timer_sync(&mce_kbd->rx_timeout);
++	timer_delete_sync(&mce_kbd->rx_timeout);
+ 
+ 	return 0;
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/rc-ir-raw.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/rc-ir-raw.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/rc-ir-raw.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/rc-ir-raw.c	2026-03-19 23:08:25.693804055 +1300
+@@ -662,7 +662,7 @@
+ 		return;
+ 
+ 	kthread_stop(dev->raw->thread);
+-	del_timer_sync(&dev->raw->edge_handle);
++	timer_delete_sync(&dev->raw->edge_handle);
+ 
+ 	mutex_lock(&ir_raw_handler_lock);
+ 	list_del(&dev->raw->list);
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/rc-main.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/rc-main.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/rc-main.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/rc-main.c	2026-03-19 23:08:25.694051648 +1300
+@@ -640,7 +640,7 @@
+ 		return;
+ 
+ 	dev_dbg(&dev->dev, "keyup key 0x%04x\n", dev->last_keycode);
+-	del_timer(&dev->timer_repeat);
++	timer_delete(&dev->timer_repeat);
+ 	input_report_key(dev->input_dev, dev->last_keycode, 0);
+ 	led_trigger_event(led_feedback, LED_OFF);
+ 	if (sync)
+@@ -2022,8 +2022,8 @@
+ 	if (dev->driver_type == RC_DRIVER_IR_RAW)
+ 		ir_raw_event_unregister(dev);
+ 
+-	del_timer_sync(&dev->timer_keyup);
+-	del_timer_sync(&dev->timer_repeat);
++	timer_delete_sync(&dev->timer_keyup);
++	timer_delete_sync(&dev->timer_repeat);
+ 
+ 	mutex_lock(&dev->lock);
+ 	if (dev->users && dev->close)
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/serial_ir.c tbs6285-modules-2025.06.06/linux/drivers/media/rc/serial_ir.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/rc/serial_ir.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/rc/serial_ir.c	2026-03-19 23:08:25.694721987 +1300
+@@ -799,7 +799,7 @@
+ 
+ static void __exit serial_ir_exit_module(void)
+ {
+-	del_timer_sync(&serial_ir.timeout_timer);
++	timer_delete_sync(&serial_ir.timeout_timer);
+ 	serial_ir_exit();
+ }
+ 
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/au0828/au0828-dvb.c tbs6285-modules-2025.06.06/linux/drivers/media/usb/au0828/au0828-dvb.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/au0828/au0828-dvb.c	2026-03-19 23:07:39.688273687 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/usb/au0828/au0828-dvb.c	2026-03-19 23:08:25.714747068 +1300
+@@ -143,7 +143,7 @@
+ 		 */
+ 		dprintk(1, "%s cancelling bulk timeout\n", __func__);
+ 		dev->bulk_timeout_running = 0;
+-		del_timer(&dev->bulk_timeout);
++		timer_delete(&dev->bulk_timeout);
+ 	}
+ 
+ 	/* Feed the transport payload into the kernel demux */
+@@ -168,7 +168,7 @@
+ 
+ 	if (dev->bulk_timeout_running == 1) {
+ 		dev->bulk_timeout_running = 0;
+-		del_timer(&dev->bulk_timeout);
++		timer_delete(&dev->bulk_timeout);
+ 	}
+ 
+ 	dev->urb_streaming = false;
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/au0828/au0828-video.c tbs6285-modules-2025.06.06/linux/drivers/media/usb/au0828/au0828-video.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/au0828/au0828-video.c	2026-03-19 23:07:39.688273687 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/usb/au0828/au0828-video.c	2026-03-19 23:08:25.715050702 +1300
+@@ -860,7 +860,7 @@
+ 	}
+ 
+ 	dev->vid_timeout_running = 0;
+-	del_timer_sync(&dev->vid_timeout);
++	timer_delete_sync(&dev->vid_timeout);
+ 
+ 	spin_lock_irqsave(&dev->slock, flags);
+ 	if (dev->isoc_ctl.buf != NULL) {
+@@ -908,7 +908,7 @@
+ 	spin_unlock_irqrestore(&dev->slock, flags);
+ 
+ 	dev->vbi_timeout_running = 0;
+-	del_timer_sync(&dev->vbi_timeout);
++	timer_delete_sync(&dev->vbi_timeout);
+ }
+ 
+ static const struct vb2_ops au0828_video_qops = {
+@@ -1045,12 +1045,12 @@
+ 	if (vdev->vfl_type == VFL_TYPE_VIDEO && dev->vid_timeout_running) {
+ 		/* Cancel timeout thread in case they didn't call streamoff */
+ 		dev->vid_timeout_running = 0;
+-		del_timer_sync(&dev->vid_timeout);
++		timer_delete_sync(&dev->vid_timeout);
+ 	} else if (vdev->vfl_type == VFL_TYPE_VBI &&
+ 			dev->vbi_timeout_running) {
+ 		/* Cancel timeout thread in case they didn't call streamoff */
+ 		dev->vbi_timeout_running = 0;
+-		del_timer_sync(&dev->vbi_timeout);
++		timer_delete_sync(&dev->vbi_timeout);
+ 	}
+ 
+ 	if (test_bit(DEV_DISCONNECTED, &dev->dev_state))
+@@ -1699,9 +1699,9 @@
+ 	}
+ 
+ 	if (dev->vid_timeout_running)
+-		del_timer_sync(&dev->vid_timeout);
++		timer_delete_sync(&dev->vid_timeout);
+ 	if (dev->vbi_timeout_running)
+-		del_timer_sync(&dev->vbi_timeout);
++		timer_delete_sync(&dev->vbi_timeout);
+ }
+ 
+ void au0828_v4l2_resume(struct au0828_dev *dev)
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/pvrusb2/pvrusb2-encoder.c tbs6285-modules-2025.06.06/linux/drivers/media/usb/pvrusb2/pvrusb2-encoder.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/pvrusb2/pvrusb2-encoder.c	2026-03-19 23:07:39.690808998 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/usb/pvrusb2/pvrusb2-encoder.c	2026-03-19 23:08:25.747401442 +1300
+@@ -257,7 +257,7 @@
+ 			ret = -EBUSY;
+ 		}
+ 		if (ret) {
+-			del_timer_sync(&hdw->encoder_run_timer);
++			timer_delete_sync(&hdw->encoder_run_timer);
+ 			hdw->state_encoder_ok = 0;
+ 			pvr2_trace(PVR2_TRACE_STBITS,
+ 				   "State bit %s <-- %s",
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c tbs6285-modules-2025.06.06/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c	2026-03-19 23:07:39.690808998 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c	2026-03-19 23:08:25.747506653 +1300
+@@ -1527,7 +1527,7 @@
+ 
+ 	/* Encoder is about to be reset so note that as far as we're
+ 	   concerned now, the encoder has never been run. */
+-	del_timer_sync(&hdw->encoder_run_timer);
++	timer_delete_sync(&hdw->encoder_run_timer);
+ 	if (hdw->state_encoder_runok) {
+ 		hdw->state_encoder_runok = 0;
+ 		trace_stbit("state_encoder_runok",hdw->state_encoder_runok);
+@@ -3722,7 +3722,7 @@
+ 	hdw->cmd_debug_state = 5;
+ 
+ 	/* Stop timer */
+-	del_timer_sync(&timer.timer);
++	timer_delete_sync(&timer.timer);
+ 
+ 	hdw->cmd_debug_state = 6;
+ 	status = 0;
+@@ -4246,7 +4246,7 @@
+ 		hdw->state_encoder_waitok = 0;
+ 		trace_stbit("state_encoder_waitok",hdw->state_encoder_waitok);
+ 		/* paranoia - solve race if timer just completed */
+-		del_timer_sync(&hdw->encoder_wait_timer);
++		timer_delete_sync(&hdw->encoder_wait_timer);
+ 	} else {
+ 		if (!hdw->state_pathway_ok ||
+ 		    (hdw->pathway_state != PVR2_PATHWAY_ANALOG) ||
+@@ -4259,7 +4259,7 @@
+ 			   anything has happened that might have disturbed
+ 			   the encoder.  This should be a rare case. */
+ 			if (timer_pending(&hdw->encoder_wait_timer)) {
+-				del_timer_sync(&hdw->encoder_wait_timer);
++				timer_delete_sync(&hdw->encoder_wait_timer);
+ 			}
+ 			if (hdw->state_encoder_waitok) {
+ 				/* Must clear the state - therefore we did
+@@ -4397,7 +4397,7 @@
+ 	if (hdw->state_encoder_run) {
+ 		if (!state_check_disable_encoder_run(hdw)) return 0;
+ 		if (hdw->state_encoder_ok) {
+-			del_timer_sync(&hdw->encoder_run_timer);
++			timer_delete_sync(&hdw->encoder_run_timer);
+ 			if (pvr2_encoder_stop(hdw) < 0) return !0;
+ 		}
+ 		hdw->state_encoder_run = 0;
+@@ -4477,11 +4477,11 @@
+ 		hdw->state_decoder_quiescent = 0;
+ 		hdw->state_decoder_run = 0;
+ 		/* paranoia - solve race if timer(s) just completed */
+-		del_timer_sync(&hdw->quiescent_timer);
++		timer_delete_sync(&hdw->quiescent_timer);
+ 		/* Kill the stabilization timer, in case we're killing the
+ 		   encoder before the previous stabilization interval has
+ 		   been properly timed. */
+-		del_timer_sync(&hdw->decoder_stabilization_timer);
++		timer_delete_sync(&hdw->decoder_stabilization_timer);
+ 		hdw->state_decoder_ready = 0;
+ 	} else {
+ 		if (!hdw->state_decoder_quiescent) {
+@@ -4515,7 +4515,7 @@
+ 		    !hdw->state_pipeline_config ||
+ 		    !hdw->state_encoder_config ||
+ 		    !hdw->state_encoder_ok) return 0;
+-		del_timer_sync(&hdw->quiescent_timer);
++		timer_delete_sync(&hdw->quiescent_timer);
+ 		if (hdw->flag_decoder_missed) return 0;
+ 		if (pvr2_decoder_enable(hdw,!0) < 0) return 0;
+ 		hdw->state_decoder_quiescent = 0;
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c tbs6285-modules-2025.06.06/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c	2026-03-19 23:07:39.692077243 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c	2026-03-19 23:08:25.758449995 +1300
+@@ -188,7 +188,7 @@
+ 	 * wait a short moment, and then strobe off the flash.
+ 	 */
+ 
+-	timer_pending = del_timer_sync(&flash->flash_off_delay);
++	timer_pending = timer_delete_sync(&flash->flash_off_delay);
+ 
+ 	/* Flash off */
+ 	if (!strobe) {
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/staging/media/imx/imx-ic-prpencvf.c tbs6285-modules-2025.06.06/linux/drivers/staging/media/imx/imx-ic-prpencvf.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/staging/media/imx/imx-ic-prpencvf.c	2026-03-19 23:07:39.699136508 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/staging/media/imx/imx-ic-prpencvf.c	2026-03-19 23:08:25.773259564 +1300
+@@ -781,7 +781,7 @@
+ 	imx_media_free_dma_buf(ic_priv->ipu_dev, &priv->underrun_buf);
+ 
+ 	/* cancel the EOF timeout timer */
+-	del_timer_sync(&priv->eof_timeout_timer);
++	timer_delete_sync(&priv->eof_timeout_timer);
+ 
+ 	prp_put_ipu_resources(priv);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/linux/drivers/staging/media/imx/imx-media-csi.c tbs6285-modules-2025.06.06/linux/drivers/staging/media/imx/imx-media-csi.c
+--- tbs6285-modules-2025.06.06_orig/linux/drivers/staging/media/imx/imx-media-csi.c	2026-03-19 23:07:39.699136508 +1300
++++ tbs6285-modules-2025.06.06/linux/drivers/staging/media/imx/imx-media-csi.c	2026-03-19 23:08:25.773780580 +1300
+@@ -695,7 +695,7 @@
+ 	imx_media_free_dma_buf(priv->dev, &priv->underrun_buf);
+ 
+ 	/* cancel the EOF timeout timer */
+-	del_timer_sync(&priv->eof_timeout_timer);
++	timer_delete_sync(&priv->eof_timeout_timer);
+ 
+ 	csi_idmac_put_ipu_resources(priv);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/atomisp-lm3554.c tbs6285-modules-2025.06.06/v4l/atomisp-lm3554.c
+--- tbs6285-modules-2025.06.06_orig/v4l/atomisp-lm3554.c	2026-03-19 23:07:39.692077243 +1300
++++ tbs6285-modules-2025.06.06/v4l/atomisp-lm3554.c	2026-03-19 23:08:25.758449995 +1300
+@@ -188,7 +188,7 @@
+ 	 * wait a short moment, and then strobe off the flash.
+ 	 */
+ 
+-	timer_pending = del_timer_sync(&flash->flash_off_delay);
++	timer_pending = timer_delete_sync(&flash->flash_off_delay);
+ 
+ 	/* Flash off */
+ 	if (!strobe) {
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/au0828-dvb.c tbs6285-modules-2025.06.06/v4l/au0828-dvb.c
+--- tbs6285-modules-2025.06.06_orig/v4l/au0828-dvb.c	2026-03-19 23:07:39.688273687 +1300
++++ tbs6285-modules-2025.06.06/v4l/au0828-dvb.c	2026-03-19 23:08:25.714747068 +1300
+@@ -143,7 +143,7 @@
+ 		 */
+ 		dprintk(1, "%s cancelling bulk timeout\n", __func__);
+ 		dev->bulk_timeout_running = 0;
+-		del_timer(&dev->bulk_timeout);
++		timer_delete(&dev->bulk_timeout);
+ 	}
+ 
+ 	/* Feed the transport payload into the kernel demux */
+@@ -168,7 +168,7 @@
+ 
+ 	if (dev->bulk_timeout_running == 1) {
+ 		dev->bulk_timeout_running = 0;
+-		del_timer(&dev->bulk_timeout);
++		timer_delete(&dev->bulk_timeout);
+ 	}
+ 
+ 	dev->urb_streaming = false;
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/au0828-video.c tbs6285-modules-2025.06.06/v4l/au0828-video.c
+--- tbs6285-modules-2025.06.06_orig/v4l/au0828-video.c	2026-03-19 23:07:39.688273687 +1300
++++ tbs6285-modules-2025.06.06/v4l/au0828-video.c	2026-03-19 23:08:25.715050702 +1300
+@@ -860,7 +860,7 @@
+ 	}
+ 
+ 	dev->vid_timeout_running = 0;
+-	del_timer_sync(&dev->vid_timeout);
++	timer_delete_sync(&dev->vid_timeout);
+ 
+ 	spin_lock_irqsave(&dev->slock, flags);
+ 	if (dev->isoc_ctl.buf != NULL) {
+@@ -908,7 +908,7 @@
+ 	spin_unlock_irqrestore(&dev->slock, flags);
+ 
+ 	dev->vbi_timeout_running = 0;
+-	del_timer_sync(&dev->vbi_timeout);
++	timer_delete_sync(&dev->vbi_timeout);
+ }
+ 
+ static const struct vb2_ops au0828_video_qops = {
+@@ -1045,12 +1045,12 @@
+ 	if (vdev->vfl_type == VFL_TYPE_VIDEO && dev->vid_timeout_running) {
+ 		/* Cancel timeout thread in case they didn't call streamoff */
+ 		dev->vid_timeout_running = 0;
+-		del_timer_sync(&dev->vid_timeout);
++		timer_delete_sync(&dev->vid_timeout);
+ 	} else if (vdev->vfl_type == VFL_TYPE_VBI &&
+ 			dev->vbi_timeout_running) {
+ 		/* Cancel timeout thread in case they didn't call streamoff */
+ 		dev->vbi_timeout_running = 0;
+-		del_timer_sync(&dev->vbi_timeout);
++		timer_delete_sync(&dev->vbi_timeout);
+ 	}
+ 
+ 	if (test_bit(DEV_DISCONNECTED, &dev->dev_state))
+@@ -1699,9 +1699,9 @@
+ 	}
+ 
+ 	if (dev->vid_timeout_running)
+-		del_timer_sync(&dev->vid_timeout);
++		timer_delete_sync(&dev->vid_timeout);
+ 	if (dev->vbi_timeout_running)
+-		del_timer_sync(&dev->vbi_timeout);
++		timer_delete_sync(&dev->vbi_timeout);
+ }
+ 
+ void au0828_v4l2_resume(struct au0828_dev *dev)
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/bttv-driver.c tbs6285-modules-2025.06.06/v4l/bttv-driver.c
+--- tbs6285-modules-2025.06.06_orig/v4l/bttv-driver.c	2026-03-19 23:07:39.671789928 +1300
++++ tbs6285-modules-2025.06.06/v4l/bttv-driver.c	2026-03-19 23:08:25.599814682 +1300
+@@ -3494,7 +3494,7 @@
+ 
+ 	/* free resources */
+ 	free_irq(btv->c.pci->irq,btv);
+-	del_timer_sync(&btv->timeout);
++	timer_delete_sync(&btv->timeout);
+ 	iounmap(btv->bt848_mmio);
+ 	release_mem_region(pci_resource_start(btv->c.pci,0),
+ 			   pci_resource_len(btv->c.pci,0));
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/bttv-input.c tbs6285-modules-2025.06.06/v4l/bttv-input.c
+--- tbs6285-modules-2025.06.06_orig/v4l/bttv-input.c	2026-03-19 23:07:39.671789928 +1300
++++ tbs6285-modules-2025.06.06/v4l/bttv-input.c	2026-03-19 23:08:25.600436359 +1300
+@@ -305,12 +305,12 @@
+ static void bttv_ir_stop(struct bttv *btv)
+ {
+ 	if (btv->remote->polling)
+-		del_timer_sync(&btv->remote->timer);
++		timer_delete_sync(&btv->remote->timer);
+ 
+ 	if (btv->remote->rc5_gpio) {
+ 		u32 gpio;
+ 
+-		del_timer_sync(&btv->remote->timer);
++		timer_delete_sync(&btv->remote->timer);
+ 
+ 		gpio = bttv_gpio_read(&btv->c);
+ 		bttv_gpio_write(&btv->c, gpio & ~(1 << 4));
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/bttv-risc.c tbs6285-modules-2025.06.06/v4l/bttv-risc.c
+--- tbs6285-modules-2025.06.06_orig/v4l/bttv-risc.c	2026-03-19 23:07:39.671789928 +1300
++++ tbs6285-modules-2025.06.06/v4l/bttv-risc.c	2026-03-19 23:08:25.600529711 +1300
+@@ -377,7 +377,7 @@
+ 	if (btv->curr.frame_irq || btv->loop_irq || btv->cvbi)
+ 		mod_timer(&btv->timeout, jiffies + BTTV_TIMEOUT);
+ 	else
+-		del_timer(&btv->timeout);
++		timer_delete(&btv->timeout);
+ }
+ 
+ static int bttv_set_capture_control(struct bttv *btv, int start_capture)
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/c8sectpfe-core.c tbs6285-modules-2025.06.06/v4l/c8sectpfe-core.c
+--- tbs6285-modules-2025.06.06_orig/v4l/c8sectpfe-core.c	2026-03-19 23:07:39.681909780 +1300
++++ tbs6285-modules-2025.06.06/v4l/c8sectpfe-core.c	2026-03-19 23:08:25.671111912 +1300
+@@ -352,7 +352,7 @@
+ 		dev_dbg(fei->dev, "%s:%d global_feed_count=%d\n"
+ 			, __func__, __LINE__, fei->global_feed_count);
+ 
+-		del_timer(&fei->timer);
++		timer_delete(&fei->timer);
+ 	}
+ 
+ 	mutex_unlock(&fei->lock);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/dmxdev.c tbs6285-modules-2025.06.06/v4l/dmxdev.c
+--- tbs6285-modules-2025.06.06_orig/v4l/dmxdev.c	2026-03-19 23:07:39.665693404 +1300
++++ tbs6285-modules-2025.06.06/v4l/dmxdev.c	2026-03-19 23:08:25.538633164 +1300
+@@ -366,7 +366,7 @@
+ {
+ 	struct dmx_sct_filter_params *para = &dmxdevfilter->params.sec;
+ 
+-	del_timer(&dmxdevfilter->timer);
++	timer_delete(&dmxdevfilter->timer);
+ 	if (para->timeout) {
+ 		dmxdevfilter->timer.expires =
+ 		    jiffies + 1 + (HZ / 2 + HZ * para->timeout) / 1000;
+@@ -392,7 +392,7 @@
+ 		spin_unlock(&dmxdevfilter->dev->lock);
+ 		return 0;
+ 	}
+-	del_timer(&dmxdevfilter->timer);
++	timer_delete(&dmxdevfilter->timer);
+ 	dprintk("section callback %*ph\n", 6, buffer1);
+ 	if (dvb_vb2_is_streaming(&dmxdevfilter->vb2_ctx)) {
+ 		ret = dvb_vb2_fill_buffer(&dmxdevfilter->vb2_ctx,
+@@ -483,7 +483,7 @@
+ 
+ 	switch (dmxdevfilter->type) {
+ 	case DMXDEV_TYPE_SEC:
+-		del_timer(&dmxdevfilter->timer);
++		timer_delete(&dmxdevfilter->timer);
+ 		dmxdevfilter->feed.sec->stop_filtering(dmxdevfilter->feed.sec);
+ 		break;
+ 	case DMXDEV_TYPE_PES:
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/ene_ir.c tbs6285-modules-2025.06.06/v4l/ene_ir.c
+--- tbs6285-modules-2025.06.06_orig/v4l/ene_ir.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/ene_ir.c	2026-03-19 23:08:25.690198732 +1300
+@@ -1108,7 +1108,7 @@
+ 	unsigned long flags;
+ 
+ 	rc_unregister_device(dev->rdev);
+-	del_timer_sync(&dev->tx_sim_timer);
++	timer_delete_sync(&dev->tx_sim_timer);
+ 	spin_lock_irqsave(&dev->hw_lock, flags);
+ 	ene_rx_disable(dev);
+ 	ene_rx_restore_hw_buffer(dev);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/fmdrv_common.c tbs6285-modules-2025.06.06/v4l/fmdrv_common.c
+--- tbs6285-modules-2025.06.06_orig/v4l/fmdrv_common.c	2026-03-19 23:07:39.684309659 +1300
++++ tbs6285-modules-2025.06.06/v4l/fmdrv_common.c	2026-03-19 23:08:25.689354492 +1300
+@@ -504,7 +504,7 @@
+ 	struct fm_event_msg_hdr *fm_evt_hdr;
+ 	unsigned long flags;
+ 
+-	del_timer(&fmdev->irq_info.timer);
++	timer_delete(&fmdev->irq_info.timer);
+ 
+ 	spin_lock_irqsave(&fmdev->resp_skb_lock, flags);
+ 	*skb = fmdev->resp_skb;
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/igorplugusb.c tbs6285-modules-2025.06.06/v4l/igorplugusb.c
+--- tbs6285-modules-2025.06.06_orig/v4l/igorplugusb.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/igorplugusb.c	2026-03-19 23:08:25.690630487 +1300
+@@ -223,7 +223,7 @@
+ 	return 0;
+ fail:
+ 	usb_poison_urb(ir->urb);
+-	del_timer(&ir->timer);
++	timer_delete(&ir->timer);
+ 	usb_unpoison_urb(ir->urb);
+ 	usb_free_urb(ir->urb);
+ 	rc_free_device(ir->rc);
+@@ -238,7 +238,7 @@
+ 
+ 	rc_unregister_device(ir->rc);
+ 	usb_poison_urb(ir->urb);
+-	del_timer_sync(&ir->timer);
++	timer_delete_sync(&ir->timer);
+ 	usb_set_intfdata(intf, NULL);
+ 	usb_unpoison_urb(ir->urb);
+ 	usb_free_urb(ir->urb);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/img-ir-hw.c tbs6285-modules-2025.06.06/v4l/img-ir-hw.c
+--- tbs6285-modules-2025.06.06_orig/v4l/img-ir-hw.c	2026-03-19 23:07:39.684877126 +1300
++++ tbs6285-modules-2025.06.06/v4l/img-ir-hw.c	2026-03-19 23:08:25.695749849 +1300
+@@ -556,8 +556,8 @@
+ 	 * acquires the lock and we don't want to deadlock waiting for it.
+ 	 */
+ 	spin_unlock_irq(&priv->lock);
+-	del_timer_sync(&hw->end_timer);
+-	del_timer_sync(&hw->suspend_timer);
++	timer_delete_sync(&hw->end_timer);
++	timer_delete_sync(&hw->suspend_timer);
+ 	spin_lock_irq(&priv->lock);
+ 
+ 	hw->stopping = false;
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/img-ir-raw.c tbs6285-modules-2025.06.06/v4l/img-ir-raw.c
+--- tbs6285-modules-2025.06.06_orig/v4l/img-ir-raw.c	2026-03-19 23:07:39.684877126 +1300
++++ tbs6285-modules-2025.06.06/v4l/img-ir-raw.c	2026-03-19 23:08:25.696102674 +1300
+@@ -147,5 +147,5 @@
+ 
+ 	rc_unregister_device(rdev);
+ 
+-	del_timer_sync(&raw->timer);
++	timer_delete_sync(&raw->timer);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/imon.c tbs6285-modules-2025.06.06/v4l/imon.c
+--- tbs6285-modules-2025.06.06_orig/v4l/imon.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/imon.c	2026-03-19 23:08:25.690778769 +1300
+@@ -2532,7 +2532,7 @@
+ 		ictx->dev_present_intf1 = false;
+ 		usb_kill_urb(ictx->rx_urb_intf1);
+ 		if (ictx->display_type == IMON_DISPLAY_TYPE_VGA) {
+-			del_timer_sync(&ictx->ttimer);
++			timer_delete_sync(&ictx->ttimer);
+ 			input_unregister_device(ictx->touch);
+ 		}
+ 		usb_put_dev(ictx->usbdev_intf1);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/imx-ic-prpencvf.c tbs6285-modules-2025.06.06/v4l/imx-ic-prpencvf.c
+--- tbs6285-modules-2025.06.06_orig/v4l/imx-ic-prpencvf.c	2026-03-19 23:07:39.699136508 +1300
++++ tbs6285-modules-2025.06.06/v4l/imx-ic-prpencvf.c	2026-03-19 23:08:25.773259564 +1300
+@@ -781,7 +781,7 @@
+ 	imx_media_free_dma_buf(ic_priv->ipu_dev, &priv->underrun_buf);
+ 
+ 	/* cancel the EOF timeout timer */
+-	del_timer_sync(&priv->eof_timeout_timer);
++	timer_delete_sync(&priv->eof_timeout_timer);
+ 
+ 	prp_put_ipu_resources(priv);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/imx-media-csi.c tbs6285-modules-2025.06.06/v4l/imx-media-csi.c
+--- tbs6285-modules-2025.06.06_orig/v4l/imx-media-csi.c	2026-03-19 23:07:39.699136508 +1300
++++ tbs6285-modules-2025.06.06/v4l/imx-media-csi.c	2026-03-19 23:08:25.773780580 +1300
+@@ -695,7 +695,7 @@
+ 	imx_media_free_dma_buf(priv->dev, &priv->underrun_buf);
+ 
+ 	/* cancel the EOF timeout timer */
+-	del_timer_sync(&priv->eof_timeout_timer);
++	timer_delete_sync(&priv->eof_timeout_timer);
+ 
+ 	csi_idmac_put_ipu_resources(priv);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/ir-mce_kbd-decoder.c tbs6285-modules-2025.06.06/v4l/ir-mce_kbd-decoder.c
+--- tbs6285-modules-2025.06.06_orig/v4l/ir-mce_kbd-decoder.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/ir-mce_kbd-decoder.c	2026-03-19 23:08:25.691443697 +1300
+@@ -324,7 +324,7 @@
+ 					msecs_to_jiffies(100);
+ 				mod_timer(&data->rx_timeout, jiffies + delay);
+ 			} else {
+-				del_timer(&data->rx_timeout);
++				timer_delete(&data->rx_timeout);
+ 			}
+ 			/* Pass data to keyboard buffer parser */
+ 			ir_mce_kbd_process_keyboard_data(dev, scancode);
+@@ -372,7 +372,7 @@
+ {
+ 	struct mce_kbd_dec *mce_kbd = &dev->raw->mce_kbd;
+ 
+-	del_timer_sync(&mce_kbd->rx_timeout);
++	timer_delete_sync(&mce_kbd->rx_timeout);
+ 
+ 	return 0;
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/ivtv-irq.c tbs6285-modules-2025.06.06/v4l/ivtv-irq.c
+--- tbs6285-modules-2025.06.06_orig/v4l/ivtv-irq.c	2026-03-19 23:07:39.673722822 +1300
++++ tbs6285-modules-2025.06.06/v4l/ivtv-irq.c	2026-03-19 23:08:25.612228302 +1300
+@@ -532,7 +532,7 @@
+ 
+ 	IVTV_DEBUG_HI_IRQ("DEC DMA READ\n");
+ 
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	if (!test_bit(IVTV_F_I_UDMA, &itv->i_flags) && itv->cur_dma_stream < 0)
+ 		return;
+@@ -597,7 +597,7 @@
+ 	ivtv_api_get_data(&itv->enc_mbox, IVTV_MBOX_DMA_END, 2, data);
+ 	IVTV_DEBUG_HI_IRQ("ENC DMA COMPLETE %x %d (%d)\n", data[0], data[1], itv->cur_dma_stream);
+ 
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	if (itv->cur_dma_stream < 0)
+ 		return;
+@@ -670,7 +670,7 @@
+ 	u32 data[CX2341X_MBOX_MAX_DATA];
+ 	u32 status;
+ 
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	ivtv_api_get_data(&itv->enc_mbox, IVTV_MBOX_DMA_END, 2, data);
+ 	status = read_reg(IVTV_REG_DMASTATUS);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/ivtv-streams.c tbs6285-modules-2025.06.06/v4l/ivtv-streams.c
+--- tbs6285-modules-2025.06.06_orig/v4l/ivtv-streams.c	2026-03-19 23:07:39.673722822 +1300
++++ tbs6285-modules-2025.06.06/v4l/ivtv-streams.c	2026-03-19 23:08:25.612558696 +1300
+@@ -889,7 +889,7 @@
+ 
+ 	/* Set the following Interrupt mask bits for capture */
+ 	ivtv_set_irq_mask(itv, IVTV_IRQ_MASK_CAPTURE);
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	/* event notification (off) */
+ 	if (test_and_clear_bit(IVTV_F_I_DIG_RST, &itv->i_flags)) {
+@@ -954,7 +954,7 @@
+ 	ivtv_vapi(itv, CX2341X_DEC_SET_EVENT_NOTIFICATION, 4, 0, 0, IVTV_IRQ_DEC_AUD_MODE_CHG, -1);
+ 
+ 	ivtv_set_irq_mask(itv, IVTV_IRQ_MASK_DECODE);
+-	del_timer(&itv->dma_timer);
++	timer_delete(&itv->dma_timer);
+ 
+ 	clear_bit(IVTV_F_S_NEEDS_DATA, &s->s_flags);
+ 	clear_bit(IVTV_F_S_STREAMING, &s->s_flags);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/netup_unidvb_core.c tbs6285-modules-2025.06.06/v4l/netup_unidvb_core.c
+--- tbs6285-modules-2025.06.06_orig/v4l/netup_unidvb_core.c	2026-03-19 23:07:39.674383360 +1300
++++ tbs6285-modules-2025.06.06/v4l/netup_unidvb_core.c	2026-03-19 23:08:25.614155145 +1300
+@@ -697,7 +697,7 @@
+ 	netup_unidvb_dma_enable(dma, 0);
+ 	msleep(50);
+ 	cancel_work_sync(&dma->work);
+-	del_timer_sync(&dma->timeout);
++	timer_delete_sync(&dma->timeout);
+ }
+ 
+ static int netup_unidvb_dma_setup(struct netup_unidvb_dev *ndev)
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/pvrusb2-encoder.c tbs6285-modules-2025.06.06/v4l/pvrusb2-encoder.c
+--- tbs6285-modules-2025.06.06_orig/v4l/pvrusb2-encoder.c	2026-03-19 23:07:39.690808998 +1300
++++ tbs6285-modules-2025.06.06/v4l/pvrusb2-encoder.c	2026-03-19 23:08:25.747401442 +1300
+@@ -257,7 +257,7 @@
+ 			ret = -EBUSY;
+ 		}
+ 		if (ret) {
+-			del_timer_sync(&hdw->encoder_run_timer);
++			timer_delete_sync(&hdw->encoder_run_timer);
+ 			hdw->state_encoder_ok = 0;
+ 			pvr2_trace(PVR2_TRACE_STBITS,
+ 				   "State bit %s <-- %s",
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/pvrusb2-hdw.c tbs6285-modules-2025.06.06/v4l/pvrusb2-hdw.c
+--- tbs6285-modules-2025.06.06_orig/v4l/pvrusb2-hdw.c	2026-03-19 23:07:39.690808998 +1300
++++ tbs6285-modules-2025.06.06/v4l/pvrusb2-hdw.c	2026-03-19 23:08:25.747506653 +1300
+@@ -1527,7 +1527,7 @@
+ 
+ 	/* Encoder is about to be reset so note that as far as we're
+ 	   concerned now, the encoder has never been run. */
+-	del_timer_sync(&hdw->encoder_run_timer);
++	timer_delete_sync(&hdw->encoder_run_timer);
+ 	if (hdw->state_encoder_runok) {
+ 		hdw->state_encoder_runok = 0;
+ 		trace_stbit("state_encoder_runok",hdw->state_encoder_runok);
+@@ -3722,7 +3722,7 @@
+ 	hdw->cmd_debug_state = 5;
+ 
+ 	/* Stop timer */
+-	del_timer_sync(&timer.timer);
++	timer_delete_sync(&timer.timer);
+ 
+ 	hdw->cmd_debug_state = 6;
+ 	status = 0;
+@@ -4246,7 +4246,7 @@
+ 		hdw->state_encoder_waitok = 0;
+ 		trace_stbit("state_encoder_waitok",hdw->state_encoder_waitok);
+ 		/* paranoia - solve race if timer just completed */
+-		del_timer_sync(&hdw->encoder_wait_timer);
++		timer_delete_sync(&hdw->encoder_wait_timer);
+ 	} else {
+ 		if (!hdw->state_pathway_ok ||
+ 		    (hdw->pathway_state != PVR2_PATHWAY_ANALOG) ||
+@@ -4259,7 +4259,7 @@
+ 			   anything has happened that might have disturbed
+ 			   the encoder.  This should be a rare case. */
+ 			if (timer_pending(&hdw->encoder_wait_timer)) {
+-				del_timer_sync(&hdw->encoder_wait_timer);
++				timer_delete_sync(&hdw->encoder_wait_timer);
+ 			}
+ 			if (hdw->state_encoder_waitok) {
+ 				/* Must clear the state - therefore we did
+@@ -4397,7 +4397,7 @@
+ 	if (hdw->state_encoder_run) {
+ 		if (!state_check_disable_encoder_run(hdw)) return 0;
+ 		if (hdw->state_encoder_ok) {
+-			del_timer_sync(&hdw->encoder_run_timer);
++			timer_delete_sync(&hdw->encoder_run_timer);
+ 			if (pvr2_encoder_stop(hdw) < 0) return !0;
+ 		}
+ 		hdw->state_encoder_run = 0;
+@@ -4477,11 +4477,11 @@
+ 		hdw->state_decoder_quiescent = 0;
+ 		hdw->state_decoder_run = 0;
+ 		/* paranoia - solve race if timer(s) just completed */
+-		del_timer_sync(&hdw->quiescent_timer);
++		timer_delete_sync(&hdw->quiescent_timer);
+ 		/* Kill the stabilization timer, in case we're killing the
+ 		   encoder before the previous stabilization interval has
+ 		   been properly timed. */
+-		del_timer_sync(&hdw->decoder_stabilization_timer);
++		timer_delete_sync(&hdw->decoder_stabilization_timer);
+ 		hdw->state_decoder_ready = 0;
+ 	} else {
+ 		if (!hdw->state_decoder_quiescent) {
+@@ -4515,7 +4515,7 @@
+ 		    !hdw->state_pipeline_config ||
+ 		    !hdw->state_encoder_config ||
+ 		    !hdw->state_encoder_ok) return 0;
+-		del_timer_sync(&hdw->quiescent_timer);
++		timer_delete_sync(&hdw->quiescent_timer);
+ 		if (hdw->flag_decoder_missed) return 0;
+ 		if (pvr2_decoder_enable(hdw,!0) < 0) return 0;
+ 		hdw->state_decoder_quiescent = 0;
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/radio-cadet.c tbs6285-modules-2025.06.06/v4l/radio-cadet.c
+--- tbs6285-modules-2025.06.06_orig/v4l/radio-cadet.c	2026-03-19 23:07:39.683898714 +1300
++++ tbs6285-modules-2025.06.06/v4l/radio-cadet.c	2026-03-19 23:08:25.686093102 +1300
+@@ -471,7 +471,7 @@
+ 
+ 	mutex_lock(&dev->lock);
+ 	if (v4l2_fh_is_singular_file(file) && dev->rdsstat) {
+-		del_timer_sync(&dev->readtimer);
++		timer_delete_sync(&dev->readtimer);
+ 		dev->rdsstat = 0;
+ 	}
+ 	v4l2_fh_release(file);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/rc-ir-raw.c tbs6285-modules-2025.06.06/v4l/rc-ir-raw.c
+--- tbs6285-modules-2025.06.06_orig/v4l/rc-ir-raw.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/rc-ir-raw.c	2026-03-19 23:08:25.693804055 +1300
+@@ -662,7 +662,7 @@
+ 		return;
+ 
+ 	kthread_stop(dev->raw->thread);
+-	del_timer_sync(&dev->raw->edge_handle);
++	timer_delete_sync(&dev->raw->edge_handle);
+ 
+ 	mutex_lock(&ir_raw_handler_lock);
+ 	list_del(&dev->raw->list);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/rc-main.c tbs6285-modules-2025.06.06/v4l/rc-main.c
+--- tbs6285-modules-2025.06.06_orig/v4l/rc-main.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/rc-main.c	2026-03-19 23:08:25.694051648 +1300
+@@ -640,7 +640,7 @@
+ 		return;
+ 
+ 	dev_dbg(&dev->dev, "keyup key 0x%04x\n", dev->last_keycode);
+-	del_timer(&dev->timer_repeat);
++	timer_delete(&dev->timer_repeat);
+ 	input_report_key(dev->input_dev, dev->last_keycode, 0);
+ 	led_trigger_event(led_feedback, LED_OFF);
+ 	if (sync)
+@@ -2022,8 +2022,8 @@
+ 	if (dev->driver_type == RC_DRIVER_IR_RAW)
+ 		ir_raw_event_unregister(dev);
+ 
+-	del_timer_sync(&dev->timer_keyup);
+-	del_timer_sync(&dev->timer_repeat);
++	timer_delete_sync(&dev->timer_keyup);
++	timer_delete_sync(&dev->timer_repeat);
+ 
+ 	mutex_lock(&dev->lock);
+ 	if (dev->users && dev->close)
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/s5p_mfc.c tbs6285-modules-2025.06.06/v4l/s5p_mfc.c
+--- tbs6285-modules-2025.06.06_orig/v4l/s5p_mfc.c	2026-03-19 23:07:39.681472025 +1300
++++ tbs6285-modules-2025.06.06/v4l/s5p_mfc.c	2026-03-19 23:08:25.668269128 +1300
+@@ -929,7 +929,7 @@
+ 	if (dev->num_inst == 1) {
+ 		if (s5p_mfc_power_off() < 0)
+ 			mfc_err("power off failed\n");
+-		del_timer_sync(&dev->watchdog_timer);
++		timer_delete_sync(&dev->watchdog_timer);
+ 	}
+ err_ctrls_setup:
+ 	s5p_mfc_dec_ctrls_delete(ctx);
+@@ -978,7 +978,7 @@
+ 		if (dev->num_inst == 0) {
+ 			mfc_debug(2, "Last instance\n");
+ 			s5p_mfc_deinit_hw(dev);
+-			del_timer_sync(&dev->watchdog_timer);
++			timer_delete_sync(&dev->watchdog_timer);
+ 			s5p_mfc_clock_off();
+ 			if (s5p_mfc_power_off() < 0)
+ 				mfc_err("Power off failed\n");
+@@ -1454,7 +1454,7 @@
+ 	}
+ 	mutex_unlock(&dev->mfc_mutex);
+ 
+-	del_timer_sync(&dev->watchdog_timer);
++	timer_delete_sync(&dev->watchdog_timer);
+ 	flush_work(&dev->watchdog_work);
+ 
+ 	video_unregister_device(dev->vfd_enc);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7134-core.c tbs6285-modules-2025.06.06/v4l/saa7134-core.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7134-core.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7134-core.c	2026-03-19 23:08:25.616524094 +1300
+@@ -322,7 +322,7 @@
+ 		/* nothing to do -- just stop DMA */
+ 		core_dbg("buffer_next %p\n", NULL);
+ 		saa7134_set_dmabits(dev);
+-		del_timer(&q->timeout);
++		timer_delete(&q->timeout);
+ 	}
+ }
+ 
+@@ -364,7 +364,7 @@
+ 		tmp = NULL;
+ 	}
+ 	spin_unlock_irqrestore(&dev->slock, flags);
+-	saa7134_buffer_timeout(&q->timeout); /* also calls del_timer(&q->timeout) */
++	saa7134_buffer_timeout(&q->timeout); /* also calls timer_delete(&q->timeout) */
+ }
+ EXPORT_SYMBOL_GPL(saa7134_stop_streaming);
+ 
+@@ -1390,9 +1390,9 @@
+ 	/* Disable timeout timers - if we have active buffers, we will
+ 	   fill them on resume*/
+ 
+-	del_timer(&dev->video_q.timeout);
+-	del_timer(&dev->vbi_q.timeout);
+-	del_timer(&dev->ts_q.timeout);
++	timer_delete(&dev->video_q.timeout);
++	timer_delete(&dev->vbi_q.timeout);
++	timer_delete(&dev->ts_q.timeout);
+ 
+ 	if (dev->remote && dev->remote->dev->users)
+ 		saa7134_ir_close(dev->remote->dev);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7134-input.c tbs6285-modules-2025.06.06/v4l/saa7134-input.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7134-input.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7134-input.c	2026-03-19 23:08:25.617294783 +1300
+@@ -496,7 +496,7 @@
+ 	struct saa7134_card_ir *ir = dev->remote;
+ 
+ 	if (ir->polling)
+-		del_timer_sync(&ir->timer);
++		timer_delete_sync(&ir->timer);
+ 
+ 	ir->running = false;
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7134-ts.c tbs6285-modules-2025.06.06/v4l/saa7134-ts.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7134-ts.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7134-ts.c	2026-03-19 23:08:25.617436344 +1300
+@@ -300,7 +300,7 @@
+ 
+ int saa7134_ts_fini(struct saa7134_dev *dev)
+ {
+-	del_timer_sync(&dev->ts_q.timeout);
++	timer_delete_sync(&dev->ts_q.timeout);
+ 	saa7134_pgtable_free(dev->pci, &dev->ts_q.pt);
+ 	return 0;
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7134-vbi.c tbs6285-modules-2025.06.06/v4l/saa7134-vbi.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7134-vbi.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7134-vbi.c	2026-03-19 23:08:25.617668857 +1300
+@@ -185,7 +185,7 @@
+ int saa7134_vbi_fini(struct saa7134_dev *dev)
+ {
+ 	/* nothing */
+-	del_timer_sync(&dev->vbi_q.timeout);
++	timer_delete_sync(&dev->vbi_q.timeout);
+ 	return 0;
+ }
+ 
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7134-video.c tbs6285-modules-2025.06.06/v4l/saa7134-video.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7134-video.c	2026-03-19 23:07:39.674646203 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7134-video.c	2026-03-19 23:08:25.617719928 +1300
+@@ -1743,7 +1743,7 @@
+ 
+ void saa7134_video_fini(struct saa7134_dev *dev)
+ {
+-	del_timer_sync(&dev->video_q.timeout);
++	timer_delete_sync(&dev->video_q.timeout);
+ 	/* free stuff */
+ 	saa7134_pgtable_free(dev->pci, &dev->video_q.pt);
+ 	saa7134_pgtable_free(dev->pci, &dev->vbi_q.pt);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7146_fops.c tbs6285-modules-2025.06.06/v4l/saa7146_fops.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7146_fops.c	2026-03-19 23:07:39.665381121 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7146_fops.c	2026-03-19 23:08:25.535699279 +1300
+@@ -148,7 +148,7 @@
+ 			printk("vdma%d.num_line_byte: 0x%08x\n", 1,saa7146_read(dev,NUM_LINE_BYTE1));
+ */
+ 		}
+-		del_timer(&q->timeout);
++		timer_delete(&q->timeout);
+ 	}
+ }
+ 
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7146_vbi.c tbs6285-modules-2025.06.06/v4l/saa7146_vbi.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7146_vbi.c	2026-03-19 23:07:39.665381121 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7146_vbi.c	2026-03-19 23:08:25.536011632 +1300
+@@ -322,8 +322,8 @@
+ 	/* shut down dma 3 transfers */
+ 	saa7146_write(dev, MC1, MASK_20);
+ 
+-	del_timer(&vv->vbi_dmaq.timeout);
+-	del_timer(&vv->vbi_read_timeout);
++	timer_delete(&vv->vbi_dmaq.timeout);
++	timer_delete(&vv->vbi_read_timeout);
+ 
+ 	spin_unlock_irqrestore(&dev->slock, flags);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa7146_video.c tbs6285-modules-2025.06.06/v4l/saa7146_video.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa7146_video.c	2026-03-19 23:07:39.665381121 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa7146_video.c	2026-03-19 23:08:25.536092673 +1300
+@@ -669,7 +669,7 @@
+ 	struct saa7146_dev *dev = vb2_get_drv_priv(q);
+ 	struct saa7146_dmaqueue *dq = &dev->vv_data->video_dmaq;
+ 
+-	del_timer(&dq->timeout);
++	timer_delete(&dq->timeout);
+ 	video_end(dev);
+ 	return_buffers(q, VB2_BUF_STATE_ERROR);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/saa716x_ff_ir.c tbs6285-modules-2025.06.06/v4l/saa716x_ff_ir.c
+--- tbs6285-modules-2025.06.06_orig/v4l/saa716x_ff_ir.c	2026-03-19 23:07:39.675030327 +1300
++++ tbs6285-modules-2025.06.06/v4l/saa716x_ff_ir.c	2026-03-19 23:08:25.620579792 +1300
+@@ -115,7 +115,7 @@
+ 	}
+ 
+ 	if (timer_pending(&ir->keyup_timer)) {
+-		del_timer(&ir->keyup_timer);
++		timer_delete(&ir->keyup_timer);
+ 		if (ir->last_key != keycode || toggle != ir->last_toggle) {
+ 			ir->delay_timer_finished = false;
+ 			input_event(ir->input_dev, EV_KEY, ir->last_key, 0);
+@@ -259,7 +259,7 @@
+ 
+ 	saa716x->ir_priv = NULL;
+ 	tasklet_kill(&ir->tasklet);
+-	del_timer_sync(&ir->keyup_timer);
++	timer_delete_sync(&ir->keyup_timer);
+ 	input_unregister_device(ir->input_dev);
+ 	kfree(ir);
+ }
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/serial_ir.c tbs6285-modules-2025.06.06/v4l/serial_ir.c
+--- tbs6285-modules-2025.06.06_orig/v4l/serial_ir.c	2026-03-19 23:07:39.684422140 +1300
++++ tbs6285-modules-2025.06.06/v4l/serial_ir.c	2026-03-19 23:08:25.694721987 +1300
+@@ -799,7 +799,7 @@
+ 
+ static void __exit serial_ir_exit_module(void)
+ {
+-	del_timer_sync(&serial_ir.timeout_timer);
++	timer_delete_sync(&serial_ir.timeout_timer);
+ 	serial_ir_exit();
+ }
+ 
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/tc358743.c tbs6285-modules-2025.06.06/v4l/tc358743.c
+--- tbs6285-modules-2025.06.06_orig/v4l/tc358743.c	2026-03-19 23:07:39.669725273 +1300
++++ tbs6285-modules-2025.06.06/v4l/tc358743.c	2026-03-19 23:08:25.592101769 +1300
+@@ -2174,7 +2174,7 @@
+ 	struct tc358743_state *state = to_state(sd);
+ 
+ 	if (!state->i2c_client->irq) {
+-		del_timer_sync(&state->timer);
++		timer_delete_sync(&state->timer);
+ 		flush_work(&state->work_i2c_poll);
+ 	}
+ 	cancel_delayed_work_sync(&state->delayed_work_enable_hotplug);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/tvaudio.c tbs6285-modules-2025.06.06/v4l/tvaudio.c
+--- tbs6285-modules-2025.06.06_orig/v4l/tvaudio.c	2026-03-19 23:07:39.669725273 +1300
++++ tbs6285-modules-2025.06.06/v4l/tvaudio.c	2026-03-19 23:08:25.593430255 +1300
+@@ -1787,7 +1787,7 @@
+ 	struct CHIPSTATE *chip = to_state(sd);
+ 
+ 	chip->radio = 1;
+-	/* del_timer(&chip->wt); */
++	/* timer_delete(&chip->wt); */
+ 	return 0;
+ }
+ 
+@@ -2071,7 +2071,7 @@
+ 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
+ 	struct CHIPSTATE *chip = to_state(sd);
+ 
+-	del_timer_sync(&chip->wt);
++	timer_delete_sync(&chip->wt);
+ 	if (chip->thread) {
+ 		/* shutdown async thread */
+ 		kthread_stop(chip->thread);
+diff -Nur tbs6285-modules-2025.06.06_orig/v4l/tw686x-core.c tbs6285-modules-2025.06.06/v4l/tw686x-core.c
+--- tbs6285-modules-2025.06.06_orig/v4l/tw686x-core.c	2026-03-19 23:07:39.677019921 +1300
++++ tbs6285-modules-2025.06.06/v4l/tw686x-core.c	2026-03-19 23:08:25.634047745 +1300
+@@ -373,7 +373,7 @@
+ 
+ 	tw686x_video_free(dev);
+ 	tw686x_audio_free(dev);
+-	del_timer_sync(&dev->dma_delay_timer);
++	timer_delete_sync(&dev->dma_delay_timer);
+ 
+ 	pci_iounmap(pci_dev, dev->mmio);
+ 	pci_release_regions(pci_dev);
