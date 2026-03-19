@@ -36,6 +36,7 @@ BDEPEND="
 PATCHES=(
 	"${FILESDIR}"/${PV}-EXTRA_CFLAGS.patch
 	"${FILESDIR}"/${PV}-timer_delete.patch
+	"${FILESDIR}"/${PV}-timer_container_of.patch
 )
 
 
@@ -64,12 +65,6 @@ src_prepare() {
 	sed -r -e "s|/sbin/lsmod|$(command -v lsmod)|" -i "v4l/Makefile" || die
 
 	sed -r -e '/^print OUT "\\t\/sbin\/depmod -a/d' -i "v4l/scripts/make_makefile.pl" || die
-
-	pushd v4l &>/dev/null || die
-		emake prepare VER="${KV_FULL}"
-	popd &>/dev/null || die
-
-	# some files are symlinks
 
 	default
 }

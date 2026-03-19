@@ -1,0 +1,456 @@
+diff -Nur media_build_orig/linux/drivers/media/common/saa7146/saa7146_fops.c media_build/linux/drivers/media/common/saa7146/saa7146_fops.c
+--- media_build_orig/linux/drivers/media/common/saa7146/saa7146_fops.c	2026-03-20 09:28:05.002298952 +1300
++++ media_build/linux/drivers/media/common/saa7146/saa7146_fops.c	2026-03-20 09:28:12.897337482 +1300
+@@ -153,7 +153,7 @@
+ 
+ void saa7146_buffer_timeout(struct timer_list *t)
+ {
+-	struct saa7146_dmaqueue *q = from_timer(q, t, timeout);
++	struct saa7146_dmaqueue *q = timer_container_of(q, t, timeout);
+ 	struct saa7146_dev *dev = q->dev;
+ 	unsigned long flags;
+ 
+diff -Nur media_build_orig/linux/drivers/media/common/saa7146/saa7146_vbi.c media_build/linux/drivers/media/common/saa7146/saa7146_vbi.c
+--- media_build_orig/linux/drivers/media/common/saa7146/saa7146_vbi.c	2026-03-20 09:28:05.002298952 +1300
++++ media_build/linux/drivers/media/common/saa7146/saa7146_vbi.c	2026-03-20 09:28:12.897062039 +1300
+@@ -330,7 +330,7 @@
+ 
+ static void vbi_read_timeout(struct timer_list *t)
+ {
+-	struct saa7146_vv *vv = from_timer(vv, t, vbi_read_timeout);
++	struct saa7146_vv *vv = timer_container_of(vv, t, vbi_read_timeout);
+ 	struct saa7146_dev *dev = vv->vbi_dmaq.dev;
+ 
+ 	DEB_VBI("dev:%p\n", dev);
+diff -Nur media_build_orig/linux/drivers/media/dvb-core/dmxdev.c media_build/linux/drivers/media/dvb-core/dmxdev.c
+--- media_build_orig/linux/drivers/media/dvb-core/dmxdev.c	2026-03-20 09:28:05.016277745 +1300
++++ media_build/linux/drivers/media/dvb-core/dmxdev.c	2026-03-20 09:28:13.184761989 +1300
+@@ -352,7 +352,7 @@
+ 
+ static void dvb_dmxdev_filter_timeout(struct timer_list *t)
+ {
+-	struct dmxdev_filter *dmxdevfilter = from_timer(dmxdevfilter, t, timer);
++	struct dmxdev_filter *dmxdevfilter = timer_container_of(dmxdevfilter, t, timer);
+ 
+ 	dmxdevfilter->buffer.error = -ETIMEDOUT;
+ 	spin_lock_irq(&dmxdevfilter->dev->lock);
+diff -Nur media_build_orig/linux/drivers/media/i2c/tc358743.c media_build/linux/drivers/media/i2c/tc358743.c
+--- media_build_orig/linux/drivers/media/i2c/tc358743.c	2026-03-20 09:28:05.003119491 +1300
++++ media_build/linux/drivers/media/i2c/tc358743.c	2026-03-20 09:28:12.931623734 +1300
+@@ -1474,7 +1474,7 @@
+ 
+ static void tc358743_irq_poll_timer(struct timer_list *t)
+ {
+-	struct tc358743_state *state = from_timer(state, t, timer);
++	struct tc358743_state *state = timer_container_of(state, t, timer);
+ 	unsigned int msecs;
+ 
+ 	schedule_work(&state->work_i2c_poll);
+diff -Nur media_build_orig/linux/drivers/media/i2c/tvaudio.c media_build/linux/drivers/media/i2c/tvaudio.c
+--- media_build_orig/linux/drivers/media/i2c/tvaudio.c	2026-03-20 09:28:05.002878658 +1300
++++ media_build/linux/drivers/media/i2c/tvaudio.c	2026-03-20 09:28:12.911898582 +1300
+@@ -318,7 +318,7 @@
+ 
+ static void chip_thread_wake(struct timer_list *t)
+ {
+-	struct CHIPSTATE *chip = from_timer(chip, t, wt);
++	struct CHIPSTATE *chip = timer_container_of(chip, t, wt);
+ 	wake_up_process(chip->thread);
+ }
+ 
+diff -Nur media_build_orig/linux/drivers/media/pci/bt8xx/bttv-driver.c media_build/linux/drivers/media/pci/bt8xx/bttv-driver.c
+--- media_build_orig/linux/drivers/media/pci/bt8xx/bttv-driver.c	2026-03-20 09:28:04.995230009 +1300
++++ media_build/linux/drivers/media/pci/bt8xx/bttv-driver.c	2026-03-20 09:28:12.771803631 +1300
+@@ -2800,7 +2800,7 @@
+ 
+ static void bttv_irq_timeout(struct timer_list *t)
+ {
+-	struct bttv *btv = from_timer(btv, t, timeout);
++	struct bttv *btv = timer_container_of(btv, t, timeout);
+ 	struct bttv_buffer_set old,new;
+ 	struct bttv_buffer *ovbi;
+ 	struct bttv_buffer *item;
+diff -Nur media_build_orig/linux/drivers/media/pci/bt8xx/bttv-input.c media_build/linux/drivers/media/pci/bt8xx/bttv-input.c
+--- media_build_orig/linux/drivers/media/pci/bt8xx/bttv-input.c	2026-03-20 09:28:04.995230009 +1300
++++ media_build/linux/drivers/media/pci/bt8xx/bttv-input.c	2026-03-20 09:28:12.772311307 +1300
+@@ -126,7 +126,7 @@
+ 
+ static void bttv_input_timer(struct timer_list *t)
+ {
+-	struct bttv_ir *ir = from_timer(ir, t, timer);
++	struct bttv_ir *ir = timer_container_of(ir, t, timer);
+ 	struct bttv *btv = ir->btv;
+ 
+ 	if (btv->c.type == BTTV_BOARD_ENLTV_FM_2)
+@@ -182,7 +182,7 @@
+ 
+ static void bttv_rc5_timer_end(struct timer_list *t)
+ {
+-	struct bttv_ir *ir = from_timer(ir, t, timer);
++	struct bttv_ir *ir = timer_container_of(ir, t, timer);
+ 	ktime_t tv;
+ 	u32 gap, rc5, scancode;
+ 	u8 toggle, command, system;
+diff -Nur media_build_orig/linux/drivers/media/pci/cx18/cx18-fileops.c media_build/linux/drivers/media/pci/cx18/cx18-fileops.c
+--- media_build_orig/linux/drivers/media/pci/cx18/cx18-fileops.c	2026-03-20 09:28:04.993249986 +1300
++++ media_build/linux/drivers/media/pci/cx18/cx18-fileops.c	2026-03-20 09:28:12.749522870 +1300
+@@ -628,7 +628,7 @@
+ 
+ void cx18_vb_timeout(struct timer_list *t)
+ {
+-	struct cx18_stream *s = from_timer(s, t, vb_timeout);
++	struct cx18_stream *s = timer_container_of(s, t, vb_timeout);
+ 
+ 	/*
+ 	 * Return all of the buffers in error state, so the vbi/vid inode
+diff -Nur media_build_orig/linux/drivers/media/pci/ivtv/ivtv-irq.c media_build/linux/drivers/media/pci/ivtv/ivtv-irq.c
+--- media_build_orig/linux/drivers/media/pci/ivtv/ivtv-irq.c	2026-03-20 09:28:04.996309902 +1300
++++ media_build/linux/drivers/media/pci/ivtv/ivtv-irq.c	2026-03-20 09:28:12.794932872 +1300
+@@ -1064,7 +1064,7 @@
+ 
+ void ivtv_unfinished_dma(struct timer_list *t)
+ {
+-	struct ivtv *itv = from_timer(itv, t, dma_timer);
++	struct ivtv *itv = timer_container_of(itv, t, dma_timer);
+ 
+ 	if (!test_bit(IVTV_F_I_DMA, &itv->i_flags))
+ 		return;
+diff -Nur media_build_orig/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c media_build/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c
+--- media_build_orig/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c	2026-03-20 09:28:04.996779557 +1300
++++ media_build/linux/drivers/media/pci/netup_unidvb/netup_unidvb_core.c	2026-03-20 09:28:12.798218741 +1300
+@@ -636,7 +636,7 @@
+ 
+ static void netup_unidvb_dma_timeout(struct timer_list *t)
+ {
+-	struct netup_dma *dma = from_timer(dma, t, timeout);
++	struct netup_dma *dma = timer_container_of(dma, t, timeout);
+ 	struct netup_unidvb_dev *ndev = dma->ndev;
+ 
+ 	dev_dbg(&ndev->pci_dev->dev, "%s()\n", __func__);
+diff -Nur media_build_orig/linux/drivers/media/pci/saa7134/saa7134-core.c media_build/linux/drivers/media/pci/saa7134/saa7134-core.c
+--- media_build_orig/linux/drivers/media/pci/saa7134/saa7134-core.c	2026-03-20 09:28:04.994873475 +1300
++++ media_build/linux/drivers/media/pci/saa7134/saa7134-core.c	2026-03-20 09:28:12.769353193 +1300
+@@ -328,7 +328,7 @@
+ 
+ void saa7134_buffer_timeout(struct timer_list *t)
+ {
+-	struct saa7134_dmaqueue *q = from_timer(q, t, timeout);
++	struct saa7134_dmaqueue *q = timer_container_of(q, t, timeout);
+ 	struct saa7134_dev *dev = q->dev;
+ 	unsigned long flags;
+ 
+diff -Nur media_build_orig/linux/drivers/media/pci/saa7134/saa7134-input.c media_build/linux/drivers/media/pci/saa7134/saa7134-input.c
+--- media_build_orig/linux/drivers/media/pci/saa7134/saa7134-input.c	2026-03-20 09:28:04.994873475 +1300
++++ media_build/linux/drivers/media/pci/saa7134/saa7134-input.c	2026-03-20 09:28:12.767515361 +1300
+@@ -431,7 +431,7 @@
+ 
+ static void saa7134_input_timer(struct timer_list *t)
+ {
+-	struct saa7134_card_ir *ir = from_timer(ir, t, timer);
++	struct saa7134_card_ir *ir = timer_container_of(ir, t, timer);
+ 	struct saa7134_dev *dev = ir->dev->priv;
+ 
+ 	build_key(dev);
+diff -Nur media_build_orig/linux/drivers/media/pci/tw686x/tw686x-core.c media_build/linux/drivers/media/pci/tw686x/tw686x-core.c
+--- media_build_orig/linux/drivers/media/pci/tw686x/tw686x-core.c	2026-03-20 09:28:04.994325658 +1300
++++ media_build/linux/drivers/media/pci/tw686x/tw686x-core.c	2026-03-20 09:28:12.761203847 +1300
+@@ -125,7 +125,7 @@
+  */
+ static void tw686x_dma_delay(struct timer_list *t)
+ {
+-	struct tw686x_dev *dev = from_timer(dev, t, dma_delay_timer);
++	struct tw686x_dev *dev = timer_container_of(dev, t, dma_delay_timer);
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&dev->lock, flags);
+diff -Nur media_build_orig/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c media_build/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c
+--- media_build_orig/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c	2026-03-20 09:28:05.006799954 +1300
++++ media_build/linux/drivers/media/platform/samsung/s5p-mfc/s5p_mfc.c	2026-03-20 09:28:13.011914045 +1300
+@@ -143,7 +143,7 @@
+ 
+ static void s5p_mfc_watchdog(struct timer_list *t)
+ {
+-	struct s5p_mfc_dev *dev = from_timer(dev, t, watchdog_timer);
++	struct s5p_mfc_dev *dev = timer_container_of(dev, t, watchdog_timer);
+ 
+ 	if (test_bit(0, &dev->hw_lock))
+ 		atomic_inc(&dev->watchdog_cnt);
+diff -Nur media_build_orig/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c media_build/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c
+--- media_build_orig/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c	2026-03-20 09:28:05.009500386 +1300
++++ media_build/linux/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.c	2026-03-20 09:28:13.070817364 +1300
+@@ -63,7 +63,7 @@
+ 
+ static void c8sectpfe_timer_interrupt(struct timer_list *t)
+ {
+-	struct c8sectpfei *fei = from_timer(fei, t, timer);
++	struct c8sectpfei *fei = timer_container_of(fei, t, timer);
+ 	struct channel_info *channel;
+ 	int chan_num;
+ 
+diff -Nur media_build_orig/linux/drivers/media/radio/radio-cadet.c media_build/linux/drivers/media/radio/radio-cadet.c
+--- media_build_orig/linux/drivers/media/radio/radio-cadet.c	2026-03-20 09:28:05.013417632 +1300
++++ media_build/linux/drivers/media/radio/radio-cadet.c	2026-03-20 09:28:13.140616102 +1300
+@@ -284,7 +284,7 @@
+ 
+ static void cadet_handler(struct timer_list *t)
+ {
+-	struct cadet *dev = from_timer(dev, t, readtimer);
++	struct cadet *dev = timer_container_of(dev, t, readtimer);
+ 
+ 	/* Service the RDS fifo */
+ 	if (mutex_trylock(&dev->lock)) {
+diff -Nur media_build_orig/linux/drivers/media/radio/wl128x/fmdrv_common.c media_build/linux/drivers/media/radio/wl128x/fmdrv_common.c
+--- media_build_orig/linux/drivers/media/radio/wl128x/fmdrv_common.c	2026-03-20 09:28:05.013417632 +1300
++++ media_build/linux/drivers/media/radio/wl128x/fmdrv_common.c	2026-03-20 09:28:13.138584718 +1300
+@@ -544,7 +544,7 @@
+ 	struct fm_irq *fmirq;
+ 
+ 	fmdbg("irq: timeout,trying to re-enable fm interrupts\n");
+-	fmdev = from_timer(fmdev, t, irq_info.timer);
++	fmdev = timer_container_of(fmdev, t, irq_info.timer);
+ 	fmirq = &fmdev->irq_info;
+ 	fmirq->retry++;
+ 
+diff -Nur media_build_orig/linux/drivers/media/rc/ene_ir.c media_build/linux/drivers/media/rc/ene_ir.c
+--- media_build_orig/linux/drivers/media/rc/ene_ir.c	2026-03-20 09:28:05.015213353 +1300
++++ media_build/linux/drivers/media/rc/ene_ir.c	2026-03-20 09:28:13.163845744 +1300
+@@ -662,7 +662,7 @@
+ /* timer to simulate tx done interrupt */
+ static void ene_tx_irqsim(struct timer_list *t)
+ {
+-	struct ene_device *dev = from_timer(dev, t, tx_sim_timer);
++	struct ene_device *dev = timer_container_of(dev, t, tx_sim_timer);
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&dev->hw_lock, flags);
+diff -Nur media_build_orig/linux/drivers/media/rc/igorplugusb.c media_build/linux/drivers/media/rc/igorplugusb.c
+--- media_build_orig/linux/drivers/media/rc/igorplugusb.c	2026-03-20 09:28:05.013934848 +1300
++++ media_build/linux/drivers/media/rc/igorplugusb.c	2026-03-20 09:28:13.157916645 +1300
+@@ -131,7 +131,7 @@
+ 
+ static void igorplugusb_timer(struct timer_list *t)
+ {
+-	struct igorplugusb *ir = from_timer(ir, t, timer);
++	struct igorplugusb *ir = timer_container_of(ir, t, timer);
+ 
+ 	igorplugusb_cmd(ir, GET_INFRACODE);
+ }
+diff -Nur media_build_orig/linux/drivers/media/rc/img-ir/img-ir-hw.c media_build/linux/drivers/media/rc/img-ir/img-ir-hw.c
+--- media_build_orig/linux/drivers/media/rc/img-ir/img-ir-hw.c	2026-03-20 09:28:05.015213353 +1300
++++ media_build/linux/drivers/media/rc/img-ir/img-ir-hw.c	2026-03-20 09:28:13.163343979 +1300
+@@ -865,7 +865,7 @@
+ /* timer function to end waiting for repeat. */
+ static void img_ir_end_timer(struct timer_list *t)
+ {
+-	struct img_ir_priv *priv = from_timer(priv, t, hw.end_timer);
++	struct img_ir_priv *priv = timer_container_of(priv, t, hw.end_timer);
+ 
+ 	spin_lock_irq(&priv->lock);
+ 	img_ir_end_repeat(priv);
+@@ -879,7 +879,7 @@
+  */
+ static void img_ir_suspend_timer(struct timer_list *t)
+ {
+-	struct img_ir_priv *priv = from_timer(priv, t, hw.suspend_timer);
++	struct img_ir_priv *priv = timer_container_of(priv, t, hw.suspend_timer);
+ 
+ 	spin_lock_irq(&priv->lock);
+ 	/*
+diff -Nur media_build_orig/linux/drivers/media/rc/img-ir/img-ir-raw.c media_build/linux/drivers/media/rc/img-ir/img-ir-raw.c
+--- media_build_orig/linux/drivers/media/rc/img-ir/img-ir-raw.c	2026-03-20 09:28:05.015213353 +1300
++++ media_build/linux/drivers/media/rc/img-ir/img-ir-raw.c	2026-03-20 09:28:13.162916354 +1300
+@@ -65,7 +65,7 @@
+  */
+ static void img_ir_echo_timer(struct timer_list *t)
+ {
+-	struct img_ir_priv *priv = from_timer(priv, t, raw.timer);
++	struct img_ir_priv *priv = timer_container_of(priv, t, raw.timer);
+ 
+ 	spin_lock_irq(&priv->lock);
+ 
+diff -Nur media_build_orig/linux/drivers/media/rc/imon.c media_build/linux/drivers/media/rc/imon.c
+--- media_build_orig/linux/drivers/media/rc/imon.c	2026-03-20 09:28:05.013934848 +1300
++++ media_build/linux/drivers/media/rc/imon.c	2026-03-20 09:28:13.156948194 +1300
+@@ -1091,7 +1091,7 @@
+  */
+ static void imon_touch_display_timeout(struct timer_list *t)
+ {
+-	struct imon_context *ictx = from_timer(ictx, t, ttimer);
++	struct imon_context *ictx = timer_container_of(ictx, t, ttimer);
+ 
+ 	if (ictx->display_type != IMON_DISPLAY_TYPE_VGA)
+ 		return;
+diff -Nur media_build_orig/linux/drivers/media/rc/ir-mce_kbd-decoder.c media_build/linux/drivers/media/rc/ir-mce_kbd-decoder.c
+--- media_build_orig/linux/drivers/media/rc/ir-mce_kbd-decoder.c	2026-03-20 09:28:05.013934848 +1300
++++ media_build/linux/drivers/media/rc/ir-mce_kbd-decoder.c	2026-03-20 09:28:13.157457440 +1300
+@@ -109,7 +109,7 @@
+ 
+ static void mce_kbd_rx_timeout(struct timer_list *t)
+ {
+-	struct ir_raw_event_ctrl *raw = from_timer(raw, t, mce_kbd.rx_timeout);
++	struct ir_raw_event_ctrl *raw = timer_container_of(raw, t, mce_kbd.rx_timeout);
+ 	unsigned char maskcode;
+ 	unsigned long flags;
+ 	int i;
+diff -Nur media_build_orig/linux/drivers/media/rc/rc-ir-raw.c media_build/linux/drivers/media/rc/rc-ir-raw.c
+--- media_build_orig/linux/drivers/media/rc/rc-ir-raw.c	2026-03-20 09:28:05.015213353 +1300
++++ media_build/linux/drivers/media/rc/rc-ir-raw.c	2026-03-20 09:28:13.167371346 +1300
+@@ -552,7 +552,7 @@
+  */
+ static void ir_raw_edge_handle(struct timer_list *t)
+ {
+-	struct ir_raw_event_ctrl *raw = from_timer(raw, t, edge_handle);
++	struct ir_raw_event_ctrl *raw = timer_container_of(raw, t, edge_handle);
+ 	struct rc_dev *dev = raw->dev;
+ 	unsigned long flags;
+ 	ktime_t interval;
+diff -Nur media_build_orig/linux/drivers/media/rc/rc-main.c media_build/linux/drivers/media/rc/rc-main.c
+--- media_build_orig/linux/drivers/media/rc/rc-main.c	2026-03-20 09:28:05.013934848 +1300
++++ media_build/linux/drivers/media/rc/rc-main.c	2026-03-20 09:28:13.154600227 +1300
+@@ -674,7 +674,7 @@
+  */
+ static void ir_timer_keyup(struct timer_list *t)
+ {
+-	struct rc_dev *dev = from_timer(dev, t, timer_keyup);
++	struct rc_dev *dev = timer_container_of(dev, t, timer_keyup);
+ 	unsigned long flags;
+ 
+ 	/*
+@@ -703,7 +703,7 @@
+  */
+ static void ir_timer_repeat(struct timer_list *t)
+ {
+-	struct rc_dev *dev = from_timer(dev, t, timer_repeat);
++	struct rc_dev *dev = timer_container_of(dev, t, timer_repeat);
+ 	struct input_dev *input = dev->input_dev;
+ 	unsigned long flags;
+ 
+diff -Nur media_build_orig/linux/drivers/media/usb/au0828/au0828-dvb.c media_build/linux/drivers/media/usb/au0828/au0828-dvb.c
+--- media_build_orig/linux/drivers/media/usb/au0828/au0828-dvb.c	2026-03-20 09:28:05.000805914 +1300
++++ media_build/linux/drivers/media/usb/au0828/au0828-dvb.c	2026-03-20 09:28:12.872433750 +1300
+@@ -97,7 +97,7 @@
+ 
+ static void au0828_bulk_timeout(struct timer_list *t)
+ {
+-	struct au0828_dev *dev = from_timer(dev, t, bulk_timeout);
++	struct au0828_dev *dev = timer_container_of(dev, t, bulk_timeout);
+ 
+ 	dprintk(1, "%s called\n", __func__);
+ 	dev->bulk_timeout_running = 0;
+diff -Nur media_build_orig/linux/drivers/media/usb/au0828/au0828-video.c media_build/linux/drivers/media/usb/au0828/au0828-video.c
+--- media_build_orig/linux/drivers/media/usb/au0828/au0828-video.c	2026-03-20 09:28:05.000805914 +1300
++++ media_build/linux/drivers/media/usb/au0828/au0828-video.c	2026-03-20 09:28:12.873168159 +1300
+@@ -953,7 +953,7 @@
+    such as tvtime from hanging) */
+ static void au0828_vid_buffer_timeout(struct timer_list *t)
+ {
+-	struct au0828_dev *dev = from_timer(dev, t, vid_timeout);
++	struct au0828_dev *dev = timer_container_of(dev, t, vid_timeout);
+ 	struct au0828_dmaqueue *dma_q = &dev->vidq;
+ 	struct au0828_buffer *buf;
+ 	unsigned char *vid_data;
+@@ -977,7 +977,7 @@
+ 
+ static void au0828_vbi_buffer_timeout(struct timer_list *t)
+ {
+-	struct au0828_dev *dev = from_timer(dev, t, vbi_timeout);
++	struct au0828_dev *dev = timer_container_of(dev, t, vbi_timeout);
+ 	struct au0828_dmaqueue *dma_q = &dev->vbiq;
+ 	struct au0828_buffer *buf;
+ 	unsigned char *vbi_data;
+diff -Nur media_build_orig/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c media_build/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c
+--- media_build_orig/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c	2026-03-20 09:28:04.999216916 +1300
++++ media_build/linux/drivers/media/usb/pvrusb2/pvrusb2-hdw.c	2026-03-20 09:28:12.840286813 +1300
+@@ -3560,7 +3560,7 @@
+ 
+ static void pvr2_ctl_timeout(struct timer_list *t)
+ {
+-	struct hdw_timer *timer = from_timer(timer, t, timer);
++	struct hdw_timer *timer = timer_container_of(timer, t, timer);
+ 	struct pvr2_hdw *hdw = timer->hdw;
+ 
+ 	if (hdw->ctl_write_pend_flag || hdw->ctl_read_pend_flag) {
+@@ -4419,7 +4419,7 @@
+ /* Timeout function for quiescent timer. */
+ static void pvr2_hdw_quiescent_timeout(struct timer_list *t)
+ {
+-	struct pvr2_hdw *hdw = from_timer(hdw, t, quiescent_timer);
++	struct pvr2_hdw *hdw = timer_container_of(hdw, t, quiescent_timer);
+ 	hdw->state_decoder_quiescent = !0;
+ 	trace_stbit("state_decoder_quiescent",hdw->state_decoder_quiescent);
+ 	hdw->state_stale = !0;
+@@ -4430,7 +4430,7 @@
+ /* Timeout function for decoder stabilization timer. */
+ static void pvr2_hdw_decoder_stabilization_timeout(struct timer_list *t)
+ {
+-	struct pvr2_hdw *hdw = from_timer(hdw, t, decoder_stabilization_timer);
++	struct pvr2_hdw *hdw = timer_container_of(hdw, t, decoder_stabilization_timer);
+ 	hdw->state_decoder_ready = !0;
+ 	trace_stbit("state_decoder_ready", hdw->state_decoder_ready);
+ 	hdw->state_stale = !0;
+@@ -4441,7 +4441,7 @@
+ /* Timeout function for encoder wait timer. */
+ static void pvr2_hdw_encoder_wait_timeout(struct timer_list *t)
+ {
+-	struct pvr2_hdw *hdw = from_timer(hdw, t, encoder_wait_timer);
++	struct pvr2_hdw *hdw = timer_container_of(hdw, t, encoder_wait_timer);
+ 	hdw->state_encoder_waitok = !0;
+ 	trace_stbit("state_encoder_waitok",hdw->state_encoder_waitok);
+ 	hdw->state_stale = !0;
+@@ -4452,7 +4452,7 @@
+ /* Timeout function for encoder run timer. */
+ static void pvr2_hdw_encoder_run_timeout(struct timer_list *t)
+ {
+-	struct pvr2_hdw *hdw = from_timer(hdw, t, encoder_run_timer);
++	struct pvr2_hdw *hdw = timer_container_of(hdw, t, encoder_run_timer);
+ 	if (!hdw->state_encoder_runok) {
+ 		hdw->state_encoder_runok = !0;
+ 		trace_stbit("state_encoder_runok",hdw->state_encoder_runok);
+diff -Nur media_build_orig/linux/drivers/media/usb/s2255/s2255drv.c media_build/linux/drivers/media/usb/s2255/s2255drv.c
+--- media_build_orig/linux/drivers/media/usb/s2255/s2255drv.c	2026-03-20 09:28:04.997926501 +1300
++++ media_build/linux/drivers/media/usb/s2255/s2255drv.c	2026-03-20 09:28:12.816124391 +1300
+@@ -471,7 +471,7 @@
+  */
+ static void s2255_timer(struct timer_list *t)
+ {
+-	struct s2255_dev *dev = from_timer(dev, t, timer);
++	struct s2255_dev *dev = timer_container_of(dev, t, timer);
+ 	struct s2255_fw *data = dev->fw_data;
+ 	if (usb_submit_urb(data->fw_urb, GFP_ATOMIC) < 0) {
+ 		pr_err("s2255: can't submit urb\n");
+diff -Nur media_build_orig/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c media_build/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c
+--- media_build_orig/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c	2026-03-20 09:28:05.022761222 +1300
++++ media_build/linux/drivers/staging/media/atomisp/i2c/atomisp-lm3554.c	2026-03-20 09:28:13.217205940 +1300
+@@ -169,7 +169,7 @@
+  */
+ static void lm3554_flash_off_delay(struct timer_list *t)
+ {
+-	struct lm3554 *flash = from_timer(flash, t, flash_off_delay);
++	struct lm3554 *flash = timer_container_of(flash, t, flash_off_delay);
+ 	struct lm3554_platform_data *pdata = flash->pdata;
+ 
+ 	gpiod_set_value(pdata->gpio_strobe, 0);
+diff -Nur media_build_orig/linux/drivers/staging/media/imx/imx-ic-prpencvf.c media_build/linux/drivers/staging/media/imx/imx-ic-prpencvf.c
+--- media_build_orig/linux/drivers/staging/media/imx/imx-ic-prpencvf.c	2026-03-20 09:28:05.016820062 +1300
++++ media_build/linux/drivers/staging/media/imx/imx-ic-prpencvf.c	2026-03-20 09:28:13.192333528 +1300
+@@ -295,7 +295,7 @@
+  */
+ static void prp_eof_timeout(struct timer_list *t)
+ {
+-	struct prp_priv *priv = from_timer(priv, t, eof_timeout_timer);
++	struct prp_priv *priv = timer_container_of(priv, t, eof_timeout_timer);
+ 	struct imx_media_video_dev *vdev = priv->vdev;
+ 	struct imx_ic_priv *ic_priv = priv->ic_priv;
+ 
+diff -Nur media_build_orig/linux/drivers/staging/media/imx/imx-media-csi.c media_build/linux/drivers/staging/media/imx/imx-media-csi.c
+--- media_build_orig/linux/drivers/staging/media/imx/imx-media-csi.c	2026-03-20 09:28:05.016820062 +1300
++++ media_build/linux/drivers/staging/media/imx/imx-media-csi.c	2026-03-20 09:28:13.190696329 +1300
+@@ -356,7 +356,7 @@
+  */
+ static void csi_idmac_eof_timeout(struct timer_list *t)
+ {
+-	struct csi_priv *priv = from_timer(priv, t, eof_timeout_timer);
++	struct csi_priv *priv = timer_container_of(priv, t, eof_timeout_timer);
+ 	struct imx_media_video_dev *vdev = priv->vdev;
+ 
+ 	v4l2_err(&priv->sd, "EOF timeout\n");
