@@ -34,9 +34,10 @@ BDEPEND="
 "
 
 PATCHES=(
-	"${FILESDIR}"/${PV}-EXTRA_CFLAGS.patch
-	"${FILESDIR}"/${PV}-timer_delete.patch
-	"${FILESDIR}"/${PV}-timer_container_of.patch
+	"${FILESDIR}/${PV}-EXTRA_CFLAGS.patch"
+	"${FILESDIR}/${PV}-timer_delete.patch"
+	"${FILESDIR}/${PV}-timer_container_of.patch"
+	"${FILESDIR}/${PV}-align_down.patch"
 )
 
 
