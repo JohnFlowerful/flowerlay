@@ -10,14 +10,15 @@ inherit linux-mod-r1
 DESCRIPTION="Kernel Modules for TBS DTV devices"
 HOMEPAGE="https://www.tbsdtv.com/"
 
-MEDIA_BUILD_COMMIT="3ae3e7dec33570a2c9a31fdc97890dd23fae460f"
+MEDIA_BUILD_COMMIT="ff326ab69e786d447a0e0e967cb45acb5d5ca9ff"
 # warning: these archives are snapshots with no versioning
+# also: the dev is awol so might need to maintain patches/backports...
 SRC_URI="
 	https://github.com/tbsdtv/media_build/archive/${MEDIA_BUILD_COMMIT}.tar.gz
 		-> tbs_media_build-${MEDIA_BUILD_COMMIT}.tar.gz
-	https://github.com/tbsdtv/media_build/releases/download/latest/linux-media.tar.bz2
+	https://github.com/tbsdtv/media_build/releases/download/last/linux-media.tar.bz2
 		-> tbs_linux-media-${PV}.tar.bz2
-	https://github.com/tbsdtv/media_build/releases/download/latest/dvb-firmwares.tar.bz2
+	https://github.com/tbsdtv/media_build/releases/download/last/dvb-firmwares.tar.bz2
 		-> tbs_dvb-firmwares-${PV}.tar.bz2
 "
 
