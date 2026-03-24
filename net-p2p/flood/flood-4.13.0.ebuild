@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit npm
+inherit pnpm
 
 DESCRIPTION="A modern web UI for various torrent clients"
 HOMEPAGE="https://flood.js.org/"
@@ -15,7 +15,7 @@ if [[ "${PV}" == 9999 ]]; then
 else
 	SRC_URI="
 		https://github.com/jesec/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
-		!build-online? ( https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz )
+		!build-online? ( https://dandelion.ilypetals.net/dist/nodejs/${P}-pnpm-deps.tar.gz )
 	"
 	IUSE="build-online"
 	KEYWORDS="amd64"
@@ -27,8 +27,7 @@ IUSE+=" mediainfo"
 PROPERTIES="build-online? ( live )"
 RESTRICT="mirror"
 
-BDEPEND=">=net-libs/nodejs-18
-"
+BDEPEND=">=net-libs/nodejs-22"
 RDEPEND="
 	${BDEPEND}
 	acct-group/flood
@@ -36,30 +35,40 @@ RDEPEND="
 	mediainfo? ( media-video/mediainfo )
 "
 
-NPM_FLAGS=("--legacy-peer-deps")
-NPM_BUILD_SCRIPT="build"
+PNPM_BUILD_SCRIPT="build"
+NO_NODE_MODULES=1
 
 src_unpack() {
 	if use build-online; then
 		unpack ${P}.tar.gz
 	else
-		npm_src_unpack
+		pnpm_src_unpack
 	fi
 }
 
 src_configure() {
 	if use build-online; then
-		npm clean-install || die
-		# 'npm audit fix' exits with a non-0 when there's breaking changes
+		pnpm install || die
+		# `pnpm audit --fix` exits with a non-0 when there's breaking changes
 		# play it safe: don't die and don't add '--force'
-		npm audit fix
+		pnpm audit --fix
 	else
-		npm_src_configure
+		pnpm_src_configure
 	fi
 }
 
+src_prepare() {
+	eapply_user
+
+	# pnpm has no --no-foreground-scripts option for `pnpm pack`, so manually
+	# remove these
+	sed -e '/"prepack": .*$/d' \
+		-e '/"prepare": .*$,/d' \
+		-i package.json || die
+}
+
 src_install() {
-	npm_src_install
+	pnpm_src_install
 
 	newinitd "${FILESDIR}/${PN}-r2.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
