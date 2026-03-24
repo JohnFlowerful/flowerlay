@@ -65,6 +65,11 @@ fi
 # NODE_WRAPPER_OPT=("--enable-source-maps" "--use_strict")
 # @CODE
 
+# @ECLASS_VARIABLE: NO_NODE_MODULES
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# If set to a non-null value, npm_src_install will not install node_modules
+
 # @ECLASS_VARIABLE: NPM_DEPS_DIR
 # @DESCRIPTION:
 # Directory where downloaded tarballs are located. This should be ${WORKDIR}/npm-deps
@@ -241,14 +246,7 @@ npm_src_compile() {
 npm_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
 
-	local -r dest_dir="${D}/usr/$(get_libdir)/node_modules/$(jq --raw-output '.name' package.json)"
-
-	# `npm pack` writes to cache so temporarily override it
-	while IFS= read -r file; do
-		local dest="$dest_dir/$(dirname "$file")"
-		mkdir -p "$dest"
-		cp "${NPM_WORKSPACE-.}/$file" "$dest"
-	done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(npm_config_cache="$HOME/.npm" npm pack --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
+	local -r dest_dir="/usr/$(get_libdir)/node_modules/$(jq --raw-output '.name' package.json)"
 
 	# support both the case when NODE_WRAPPER_OPT is an array and an 
 	# IFS-separated string
@@ -262,7 +260,7 @@ npm_src_install() {
 		newbin - ${PN} <<-EOF
 			#!/usr/bin/env sh
 
-			${my_node} "${dest_dir#${D}}/${bin[1]}" "${user_args[@]}" "\$@"
+			${my_node} "${dest_dir}/${bin[1]}" "${user_args[@]}" "\$@"
 		EOF
 	done < <(jq --raw-output '(.bin | type) as $typ | if $typ == "string" then
 		.name + " " + .bin
@@ -271,26 +269,34 @@ npm_src_install() {
 		else "invalid type " + $typ | halt_error end' "${NPM_WORKSPACE-.}/package.json")
 
 	while IFS= read -r man; do
-		doman "$dest_dir/$man"
+		doman "${dest_dir}/$man"
 	done < <(jq --raw-output '(.man | type) as $typ | if $typ == "string" then .man
 		elif $typ == "list" then .man | join("\n")
 		elif $typ == "null" then empty
 		else "invalid type " + $typ | halt_error end' "${NPM_WORKSPACE-.}/package.json")
 
-	local -r node_mod_path="$dest_dir/node_modules"
+	if [ -z "${NO_NODE_MODULES-}" ]; then
+		# `npm pack` writes to cache so temporarily override it
+		while IFS= read -r file; do
+			local dest="${dest_dir}/$(dirname "${file}")"
+			insinto ${dest}
+			doins ${PNPM_WORKSPACE-.}/${file}
+		done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(npm_config_cache="${HOME}/.npm" npm pack --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
 
-	# if node_modules wasn't generated with `npm pack`, prune and copy them 
-	# from ${S}
-	if [ ! -d "$node_mod_path" ]; then
-		if [ -z "${NPM_NO_PRUNE-}" ]; then
-			if ! npm prune --omit=dev --no-save ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_PRUNE_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
-				die '`npm prune` failed'
+		# if node_modules wasn't generated with `npm pack`, prune and copy them 
+		# from ${S}
+		if [ ! -d "${dest_dir}/node_modules" ]; then
+			if [ -z "${NPM_NO_PRUNE-}" ]; then
+				if ! npm prune --omit=dev --no-save ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_PRUNE_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+					die '`npm prune` failed'
+				fi
 			fi
+
+			find node_modules -maxdepth 1 -type d -empty -delete
+
+			insinto ${dest_dir}
+			doins -r node_modules
 		fi
-
-		find node_modules -maxdepth 1 -type d -empty -delete
-
-		cp -r node_modules "$node_mod_path"
 	fi
 }
 
