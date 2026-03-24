@@ -1,4 +1,4 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -63,12 +63,15 @@ src_prepare() {
 	# pnpm has no --no-foreground-scripts option for `pnpm pack`, so manually
 	# remove these
 	sed -e '/"prepack": .*$/d' \
-		-e '/"prepare": .*$,/d' \
+		-e '/"prepare": .*$/d' \
 		-i package.json || die
 }
 
 src_install() {
 	pnpm_src_install
+
+	insinto "/usr/$(get_libdir)/node_modules/${PN}"
+	doins -r dist
 
 	newinitd "${FILESDIR}/${PN}-r2.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
