@@ -280,10 +280,10 @@ pnpm_src_configure() {
 	# the ability to use npm_config_ variables doesn't appear to be documented...
 	export npm_config_progress="false"
 	export npm_config_registry="http://localhost:${port}"
-	pnpm config set store-dir "${HOME}/pnpm" || die
 	pushd "${HOME}" &>/dev/null
 		pnpm config set manage-package-manager-versions false || die
 	popd &>/dev/null
+	pnpm config set store-dir "${HOME}/pnpm" || die
 	pnpm config set package-import-method clone-or-copy || die
 
 	if ! pnpm install \
