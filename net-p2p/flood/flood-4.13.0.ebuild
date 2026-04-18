@@ -35,7 +35,19 @@ RDEPEND="
 	mediainfo? ( media-video/mediainfo )
 "
 
+# note: there's inconsistency in build methodology upstream
+# the Dockerfile uses `npm run build` [1]. this file still uses a forked
+# version of rtorrent where many of the features are now in mainline rtorrent
+# so maybe safe to ignore
+#
+# conversely the workflow files for building debian .deb and publishing to
+# the npm registry use `pnpm run build` [2][3]
+#
+# [1] https://github.com/jesec/flood/blob/master/Dockerfile
+# [2] https://github.com/jesec/flood/blob/master/.github/workflows/build-debian.yml
+# [3] https://github.com/jesec/flood/blob/master/.github/workflows/package.yml
 PNPM_BUILD_SCRIPT="build"
+# they're bundled with esbuild
 NO_NODE_MODULES=1
 
 src_unpack() {

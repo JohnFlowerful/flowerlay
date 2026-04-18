@@ -4,19 +4,20 @@ After=network.target
 
 [Service]
 Type=simple
-Environment="RUNDIR=/run/flood"
+Environment="RUNDIR=/var/lib/flood"
 Environment="FLOOD_OPTS="
 WorkingDirectory=/var/lib/flood
 User=flood
 Group=flood
-ExecStart=/usr/bin/flood --enable-source-maps --use_strict --rundir=${RUNDIR} ${FLOOD_OPTS}
+ExecStart=/bin/sh -c '/usr/bin/flood --enable-source-maps --use_strict --rundir=${RUNDIR} ${FLOOD_OPTS}'
 Restart=on-failure
 RestartSec=3
 
 PrivateTmp=true
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=true
+# note: most user sockets will be in their /home directory
+ProtectHome=false
 ReadWritePaths=/var/lib/flood
 
 [Install]
