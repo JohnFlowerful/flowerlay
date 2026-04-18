@@ -1,12 +1,12 @@
 [Unit]
 Description=RoonServer daemon
-After=network-online.target
-Wants=network-online.target
+After=network.target
 
 [Service]
 Type=simple
 Environment="ROON_DATAROOT=/var/lib/roon"
 Environment="ROON_ID_DIR=/var/lib/roon"
+WorkingDirectory=/var/lib/roon
 User=roon
 Group=roon
 ExecStart=/opt/RoonServer/Server/RoonServer
@@ -16,7 +16,7 @@ RestartSec=5
 PrivateTmp=true
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=false
+ProtectHome=true
 ReadWritePaths=/var/lib/roon
 
 [Install]
