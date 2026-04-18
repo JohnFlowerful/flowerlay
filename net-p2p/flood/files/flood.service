@@ -1,0 +1,23 @@
+[Unit]
+Description=Flood service
+After=network.target
+
+[Service]
+Type=simple
+Environment="RUNDIR=/run/flood"
+Environment="FLOOD_OPTS="
+WorkingDirectory=/var/lib/flood
+User=flood
+Group=flood
+ExecStart=/usr/bin/flood --enable-source-maps --use_strict --rundir=${RUNDIR} ${FLOOD_OPTS}
+Restart=on-failure
+RestartSec=3
+
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/flood
+
+[Install]
+WantedBy=multi-user.target
