@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit systemd pnpm
+inherit optfeature pnpm systemd
 
 DESCRIPTION="A modern web UI for various torrent clients"
 HOMEPAGE="https://flood.js.org/"
@@ -23,16 +23,14 @@ fi
 
 LICENSE="GPL-3"
 SLOT="0"
-IUSE+=" mediainfo"
 PROPERTIES="build-online? ( live )"
-RESTRICT="mirror"
+RESTRICT="mirror network-sandbox"
 
 BDEPEND=">=net-libs/nodejs-22"
 RDEPEND="
 	${BDEPEND}
 	acct-group/flood
 	acct-user/flood
-	mediainfo? ( media-video/mediainfo )
 "
 
 # note: there's inconsistency in build methodology upstream
@@ -59,6 +57,13 @@ src_unpack() {
 }
 
 src_configure() {
+	# since we're targetting pnpm 11, we need to recreate the contents of .npmrc
+	# in pnpm-workspace.yaml
+	cat > pnpm-workspace.yaml <<- EOF || die
+		nodeLinker: hoisted
+		hoistPattern:
+		- '!@lingui/*'
+		EOF
 	if use build-online; then
 		pnpm install || die
 		# `pnpm audit --fix` exits with a non-0 when there's breaking changes
@@ -96,6 +101,8 @@ src_install() {
 }
 
 pkg_postinst() {
+	optfeature "mediainfo functionality" media-video/mediainfo
+
 	if ! [[ -f "${EROOT}/var/lib/flood/flood.secret" ]]; then
 		einfo "Flood will only listen on localhost by default."
 		einfo "To listen for outside connections, add a --host directive to"

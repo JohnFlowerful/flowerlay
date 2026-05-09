@@ -8,9 +8,6 @@
 		<flag name="build-online">
 			Disable network-sandbox and resolve Node packages online
 		</flag>
-		<flag name='mediainfo'>Pulls <pkg>media-video/mediainfo</pkg>. Flood's 
-			mediainfo functionality will fail without this package
-		</flag>
 	</use>
 	<longdescription lang="en">
 		Flood is a monitoring service for various torrent clients. It's a Node.js
