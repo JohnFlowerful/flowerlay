@@ -14,7 +14,7 @@ esac
 
 if [[ ! ${NODE_OPTIONAL} ]]; then
 	BDEPEND="
-		dev-util/pnpm
+		>=dev-util/pnpm-11
 		net-libs/nodejs[-corepack]
 		app-misc/jq
 		app-portage/node-deps
@@ -201,7 +201,7 @@ _check_port() {
 	elif command -v netstat &>/dev/null; then
 		netstat -tuln | grep -q ":${port} "
 	elif command -v lsof &>/dev/null; then
-		lsof -i :"$port" &>/dev/null
+		lsof -i :"${port}" &>/dev/null
 	else
 		die "Can't find suitable network diagnosis tool"
 	fi
@@ -216,8 +216,8 @@ _find_free_port() {
 	local max_attempts=25
 	for ((i = 0; i < max_attempts; i++)); do
 		local port=$((start_port + i))
-		if ! _check_port "$port"; then
-			echo "$port"
+		if ! _check_port "${port}"; then
+			echo "${port}"
 			return 0
 		fi
 	done
@@ -239,8 +239,8 @@ _start_web_server() {
 
 	sleep 1
 	for i in {1..10}; do
-		if curl -sf "http://localhost:${port}" > /dev/null; then
-			einfo "Server is ready on http://localhost:${port}"
+		if curl -sf "http://127.0.0.1:${port}" > /dev/null; then
+			einfo "Server is ready on http://127.0.0.1:${port}"
 			echo "${server_pid}"
 			return 0
 		fi
@@ -263,7 +263,7 @@ pnpm_src_configure() {
 	export npm_config_node_gyp="/usr/$(get_libdir)/node_modules/npm/node_modules/node-gyp/lib/node-gyp.js"
 
 	ebegin "Generating temporary HTTP server directory"
-	local project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
+	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
 	node-deps cache \
 		--pm pnpm \
 		--project-dir "${project_dir}" \
@@ -272,17 +272,15 @@ pnpm_src_configure() {
 	eend $?
 
 	einfo "Spinning up temporary HTTP server ..."
-	local port=$(_find_free_port 8000) || die
-	local server_pid=$(_start_web_server "${port}" "${PNPM_CACHE_DIR}") || die
+	local -r port=$(_find_free_port 8000) || die
+	local -r server_pid=$(_start_web_server "${port}" "${PNPM_CACHE_DIR}") || die
 	trap "_cleanup $server_pid" EXIT INT TERM
 
 	einfo "Installing dependencies ..."
-	# the ability to use npm_config_ variables doesn't appear to be documented...
-	export npm_config_progress="false"
-	export npm_config_registry="http://localhost:${port}"
-	pushd "${HOME}" &>/dev/null
-		pnpm config set manage-package-manager-versions false || die
-	popd &>/dev/null
+	export pnpm_config_progress="false"
+	export pnpm_config_registry="http://127.0.0.1:${port}"
+
+	echo "pmOnFail: ignore" >> pnpm-workspace.yaml || die
 	pnpm config set store-dir "${HOME}/pnpm" || die
 	pnpm config set package-import-method clone-or-copy || die
 
