@@ -24,7 +24,7 @@ fi
 LICENSE="GPL-3"
 SLOT="0"
 PROPERTIES="build-online? ( live )"
-RESTRICT="mirror network-sandbox"
+RESTRICT="mirror"
 
 BDEPEND=">=net-libs/nodejs-22"
 RDEPEND="
