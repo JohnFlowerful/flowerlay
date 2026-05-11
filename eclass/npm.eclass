@@ -212,7 +212,7 @@ npm_src_configure() {
 	export npm_config_progress="false"
 
 	einfo "Installing dependencies ..."
-	if ! npm ci --ignore-scripts "${NPM_INSTALL_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+	if ! npm ci --prefix "${project_dir}" --ignore-scripts "${NPM_INSTALL_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
 		die "npm failed to install dependencies"
 	fi
 
@@ -229,7 +229,7 @@ npm_src_compile() {
 		die "NPM_BUILD_SCRIPT is not set when it should be"
 	fi
 
-	if ! npm run ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_SCRIPT}" "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+	if ! npm run --prefix "${project_dir}" ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_SCRIPT}" "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
 		die '`npm run` build failed'
 	fi
 }
@@ -245,6 +245,8 @@ npm_src_compile() {
 # Adapted from https://github.com/NixOS/nixpkgs/blob/master/pkgs/build-support/node/build-npm-package/hooks/npm-install-hook.sh
 npm_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
+
+	local project_dir="${NPM_PROJECT_DIR:-"${S}"}"
 
 	local -r dest_dir="/usr/$(get_libdir)/node_modules/$(jq --raw-output '.name' package.json)"
 
@@ -281,13 +283,13 @@ npm_src_install() {
 			local dest="${dest_dir}/$(dirname "${file}")"
 			insinto ${dest}
 			doins ${PNPM_WORKSPACE-.}/${file}
-		done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(npm_config_cache="${HOME}/.npm" npm pack --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
+		done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(npm_config_cache="${HOME}/.npm" npm pack --prefix "${project_dir}" --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
 
 		# if node_modules wasn't generated with `npm pack`, prune and copy them 
 		# from ${S}
 		if [ ! -d "${dest_dir}/node_modules" ]; then
 			if [ -z "${NPM_NO_PRUNE-}" ]; then
-				if ! npm prune --omit=dev --no-save ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_PRUNE_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+				if ! npm prune --prefix "${project_dir}" --omit=dev --no-save ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_PRUNE_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
 					die '`npm prune` failed'
 				fi
 			fi
