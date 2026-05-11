@@ -196,7 +196,8 @@ npm_src_configure() {
 	ebegin "Generating cacache structure"
 
 	local project_dir="${NPM_PROJECT_DIR:-"${S}"}"
-	node-deps cache --pm npm \
+	node-deps cache \
+		--pm npm \
 		--project-dir "${project_dir}" \
 		--deps-dir "${NPM_DEPS_DIR}" \
 		--cache-dir "${NPM_CACHE_DIR}" || die
@@ -212,7 +213,12 @@ npm_src_configure() {
 	export npm_config_progress="false"
 
 	einfo "Installing dependencies ..."
-	if ! npm ci --prefix "${project_dir}" --ignore-scripts "${NPM_INSTALL_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+	if ! npm ci \
+		--prefix "${project_dir}" \
+		--ignore-scripts \
+		"${NPM_INSTALL_FLAGS[@]}" \
+		"${NPM_FLAGS[@]}"
+	then
 		die "npm failed to install dependencies"
 	fi
 
@@ -225,11 +231,19 @@ npm_src_configure() {
 npm_src_compile() {
 	debug-print-function ${FUNCNAME} "$@"
 
+	local project_dir="${NPM_PROJECT_DIR:-"${S}"}"
+
 	if [[ -z "${NPM_BUILD_SCRIPT-}" ]]; then
 		die "NPM_BUILD_SCRIPT is not set when it should be"
 	fi
 
-	if ! npm run --prefix "${project_dir}" ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_SCRIPT}" "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+	if ! npm run \
+		--prefix "${project_dir}" \
+		${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
+		"${NPM_BUILD_SCRIPT}" \
+		"${NPM_BUILD_FLAGS[@]}" \
+		"${NPM_FLAGS[@]}"
+	then
 		die '`npm run` build failed'
 	fi
 }
@@ -279,17 +293,37 @@ npm_src_install() {
 
 	if [ -z "${NO_NODE_MODULES-}" ]; then
 		# `npm pack` writes to cache so temporarily override it
+		npm_json=$(npm_config_cache="${HOME}/.npm" npm pack \
+			--prefix "${project_dir}" \
+			--json \
+			--dry-run \
+			--loglevel=warn \
+			--no-foreground-scripts \
+			${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
+			"${NPM_BUILD_FLAGS[@]}" \
+			"${NPM_FLAGS[@]}"
+		)
+
+		file_list=$(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "${npm_json}")
+
 		while IFS= read -r file; do
 			local dest="${dest_dir}/$(dirname "${file}")"
 			insinto ${dest}
 			doins ${PNPM_WORKSPACE-.}/${file}
-		done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(npm_config_cache="${HOME}/.npm" npm pack --prefix "${project_dir}" --json --dry-run --loglevel=warn --no-foreground-scripts ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_BUILD_FLAGS[@]}" "${NPM_FLAGS[@]}")")
+		done <<< "${file_list}"
 
 		# if node_modules wasn't generated with `npm pack`, prune and copy them 
 		# from ${S}
 		if [ ! -d "${dest_dir}/node_modules" ]; then
 			if [ -z "${NPM_NO_PRUNE-}" ]; then
-				if ! npm prune --prefix "${project_dir}" --omit=dev --no-save ${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} "${NPM_PRUNE_FLAGS[@]}" "${NPM_FLAGS[@]}"; then
+				if ! npm prune \
+					--prefix "${project_dir}" \
+					--omit=dev \
+					--no-save \
+					${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
+					"${NPM_PRUNE_FLAGS[@]}" \
+					"${NPM_FLAGS[@]}"
+				then
 					die '`npm prune` failed'
 				fi
 			fi
