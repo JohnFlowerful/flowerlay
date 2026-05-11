@@ -4,7 +4,7 @@
 EAPI=8
 
 # qmk_firmware version in which the udev rules file was last modified
-QMK_FIRMWARE_VER="0.27.3"
+QMK_UDEV_VER="0.1.20"
 
 DISTUTILS_USE_PEP517=setuptools
 PYTHON_COMPAT=( python3_{10..13} )
@@ -19,8 +19,8 @@ HOMEPAGE="
 "
 SRC_URI="
 	$(pypi_sdist_url)
-	https://raw.githubusercontent.com/qmk/qmk_firmware/${QMK_FIRMWARE_VER}/util/udev/50-qmk.rules
-		-> ${PN}-udev-${QMK_FIRMWARE_VER}.rules
+	https://raw.githubusercontent.com/qmk/qmk_udev/v${QMK_UDEV_VER}/50-qmk.rules
+		-> ${PN}-udev-${QMK_UDEV_VER}.rules
 "
 
 LICENSE="MIT"
@@ -58,7 +58,7 @@ RDEPEND="
 # see https://github.com/qmk/qmk_cli/issues/82 for the discussion
 #
 # provide a patch to remove pyhidapi dependency and use dev-python/hidapi instead
-PATCHES=("${FILESDIR}/${PN}-1.1.5_linux-hidapi.patch")
+PATCHES=("${FILESDIR}/${P}_linux-hidapi.patch")
 
 src_prepare() {
 	sed -rz -e 's/,\n.+"wheel"//' -i "pyproject.toml" || die
@@ -67,7 +67,7 @@ src_prepare() {
 }
 
 src_install() {
-	udev_newrules "${DISTDIR}/${PN}-udev-${QMK_FIRMWARE_VER}.rules" 50-qmk.rules
+	udev_newrules "${DISTDIR}/${PN}-udev-${QMK_UDEV_VER}.rules" 50-qmk.rules
 
 	distutils-r1_src_install
 }
