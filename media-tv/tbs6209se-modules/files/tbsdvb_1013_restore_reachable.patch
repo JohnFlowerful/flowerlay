@@ -1,0 +1,550 @@
+diff -Nur tbsdvb_orig/frontends/cx24117.h tbsdvb/frontends/cx24117.h
+--- tbsdvb_orig/frontends/cx24117.h	2024-02-27 21:06:06.000000000 +1300
++++ tbsdvb/frontends/cx24117.h	2026-05-16 14:12:23.510232473 +1200
+@@ -20,12 +20,12 @@
+ 	void (*lnb_power)(struct dvb_frontend *fe, int demod, int onoff);
+ };
+ 
+-//#if IS_REACHABLE(CONFIG_DVB_CX24117)
++#if IS_REACHABLE(CONFIG_DVB_CX24117)
+ extern struct i2c_adapter *cx24117_get_i2c_adapter(struct dvb_frontend *fe);
+ extern struct dvb_frontend *cx24117_attach(
+ 	struct cx24117_config *config,
+ 	struct i2c_adapter *i2c);
+-/*#else
++#else
+ static inline struct dvb_frontend *cx24117_attach(
+ 	struct cx24117_config *config,
+ 	struct i2c_adapter *i2c)
+@@ -33,6 +33,6 @@
+ 	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
+ 	return NULL;
+ }
+-#endif*/
++#endif
+ 
+ #endif /* CX24117_H */
+diff -Nur tbsdvb_orig/frontends/cxd2878.h tbsdvb/frontends/cxd2878.h
+--- tbsdvb_orig/frontends/cxd2878.h	2026-01-04 16:34:44.000000000 +1300
++++ tbsdvb/frontends/cxd2878.h	2026-05-16 14:15:38.286950974 +1200
+@@ -90,10 +90,19 @@
+ 	void (*LED_switch)(struct i2c_adapter * i2c,u8 flag); //5590	
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_CXD2878)
+ extern struct dvb_frontend *cxd2878_attach(
+ 	const struct cxd2878_config *config,
+ 	struct i2c_adapter *i2c);
++#else
++static inline struct dvb_frontend *cxd2878_attach(
++	const struct cxd2878_config *config,
++	struct i2c_adapter *i2c)
++{
++	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif
+ 
+ #endif
+diff -Nur tbsdvb_orig/frontends/gx1133.h tbsdvb/frontends/gx1133.h
+--- tbsdvb_orig/frontends/gx1133.h	2026-01-04 16:28:55.000000000 +1300
++++ tbsdvb/frontends/gx1133.h	2026-05-16 14:18:11.844808646 +1200
+@@ -86,11 +86,23 @@
+ 
+ 
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_GX1133)
+ extern struct dvb_frontend *gx1133_attach(
+ 	const struct gx1133_config *cfg,
+ 	struct i2c_adapter *i2c);
+ extern struct i2c_adapter *gx1133_get_i2c_adapter(struct dvb_frontend *fe, int bus);
+-
++#else
++static inline struct dvb_frontend *gx1133_attach(
++	const struct gx1133_config *cfg,
++	struct i2c_adapter *i2c)
++{
++	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++static struct i2c_adapter *gx1133_get_i2c_adapter(struct dvb_frontend *fe, int bus)
++{
++	return NULL;
++}
++#endif
+ 
+ #endif /* gx1133_H */
+diff -Nur tbsdvb_orig/frontends/mb86a16.h tbsdvb/frontends/mb86a16.h
+--- tbsdvb_orig/frontends/mb86a16.h	2026-01-04 19:22:38.000000000 +1300
++++ tbsdvb/frontends/mb86a16.h	2026-05-16 14:21:32.249543791 +1200
+@@ -22,11 +22,20 @@
+ 
+ 
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_MB86A16)
+ 
+ extern struct dvb_frontend *mb86a16_attach(const struct mb86a16_config *config,
+ 					   struct i2c_adapter *i2c_adap);
+ 
++#else
++
++static inline struct dvb_frontend *mb86a16_attach(const struct mb86a16_config *config,
++					   struct i2c_adapter *i2c_adap)
++{
++	printk(KERN_WARNING "%s: Driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif /* CONFIG_DVB_MB86A16 */
+ 
+ #endif /* __MB86A16_H */
+diff -Nur tbsdvb_orig/frontends/mn88436.h tbsdvb/frontends/mn88436.h
+--- tbsdvb_orig/frontends/mn88436.h	2026-01-04 16:33:43.000000000 +1300
++++ tbsdvb/frontends/mn88436.h	2026-05-16 14:24:30.057455778 +1200
+@@ -10,10 +10,19 @@
+ //	int (*tbs6704_ctl2)(struct tbs_pcie_dev *dev, int a, int b);
+ };
+ 
+-
++#if defined(CONFIG_DVB_MN88436) || \
++	(defined(CONFIG_DVB_MN88436_MODULE) && defined(MODULE))
+ extern struct dvb_frontend* mndmd_attach(
+ 	struct mndmd_config* config,
+ 	struct i2c_adapter* i2c);
+-
++#else
++static inline struct dvb_frontend* mndmd_attach(
++	struct mndmd_config* config,
++	struct i2c_adapter* i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif
+ 
+ #endif
+diff -Nur tbsdvb_orig/frontends/mxl58x.h tbsdvb/frontends/mxl58x.h
+--- tbsdvb_orig/frontends/mxl58x.h	2026-01-04 16:29:57.000000000 +1300
++++ tbsdvb/frontends/mxl58x.h	2026-05-16 14:26:58.237182501 +1200
+@@ -29,11 +29,21 @@
+ 	void (*read_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 *buf);
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_MXL58X)
+ 
+ extern struct dvb_frontend *mxl58x_attach(struct i2c_adapter *i2c,
+ 					  struct mxl58x_cfg *cfg,
+ 					  u32 demod);
++#else
++
++static inline struct dvb_frontend *mxl58x_attach(struct i2c_adapter *i2c,
++						 struct mxl58x_cfg *cfg,
++						 u32 demod)
++{
++	pr_warn("%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif
+ 
+ #endif
+diff -Nur tbsdvb_orig/frontends/mxl5xx.h tbsdvb/frontends/mxl5xx.h
+--- tbsdvb_orig/frontends/mxl5xx.h	2026-01-04 16:30:23.000000000 +1300
++++ tbsdvb/frontends/mxl5xx.h	2026-05-16 14:26:29.808291281 +1200
+@@ -33,11 +33,22 @@
+ 	void *fw_priv;
+ };
+ 
++#if IS_REACHABLE(CONFIG_DVB_MXL5XX)
+ 
+ extern struct dvb_frontend *mxl5xx_attach(struct i2c_adapter *i2c,
+ 	struct mxl5xx_cfg *cfg, u32 demod, u32 tuner,
+ 	int (**fn_set_input)(struct dvb_frontend *, int));
+ 
++#else
+ 
++static inline struct dvb_frontend *mxl5xx_attach(struct i2c_adapter *i2c,
++	struct mxl5xx_cfg *cfg, u32 demod, u32 tuner,
++	int (**fn_set_input)(struct dvb_frontend *, int))
++{
++	pr_warn("%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++
++#endif /* CONFIG_DVB_MXL5XX */
+ 
+ #endif /* _MXL5XX_H_ */
+diff -Nur tbsdvb_orig/frontends/stb6000.h tbsdvb/frontends/stb6000.h
+--- tbsdvb_orig/frontends/stb6000.h	2026-01-07 20:14:14.000000000 +1300
++++ tbsdvb/frontends/stb6000.h	2026-05-16 14:29:24.716176271 +1200
+@@ -13,7 +13,7 @@
+ #include <linux/i2c.h>
+ #include <media/dvb_frontend.h>
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STB6000)
+ /**
+  * stb6000_attach - Attach a stb6000 tuner to the supplied frontend structure.
+  *
+@@ -25,6 +25,14 @@
+  */
+ extern struct dvb_frontend *stb6000_attach(struct dvb_frontend *fe, int addr,
+ 					   struct i2c_adapter *i2c);
+-
++#else
++static inline struct dvb_frontend *stb6000_attach(struct dvb_frontend *fe,
++						  int addr,
++						  struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif /* CONFIG_DVB_STB6000 */
+ 
+ #endif /* __DVB_STB6000_H__ */
+diff -Nur tbsdvb_orig/frontends/stb6100.h tbsdvb/frontends/stb6100.h
+--- tbsdvb_orig/frontends/stb6100.h	2026-01-07 20:17:56.000000000 +1300
++++ tbsdvb/frontends/stb6100.h	2026-05-16 14:30:15.722453567 +1200
+@@ -81,12 +81,22 @@
+ 	u32 reference;
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STB6100)
+ 
+ extern struct dvb_frontend *stb6100_attach(struct dvb_frontend *fe,
+ 					   const struct stb6100_config *config,
+ 					   struct i2c_adapter *i2c);
+ 
++#else
++
++static inline struct dvb_frontend *stb6100_attach(struct dvb_frontend *fe,
++						  const struct stb6100_config *config,
++						  struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: Driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif //CONFIG_DVB_STB6100
+ 
+ #endif
+diff -Nur tbsdvb_orig/frontends/stid135/stid135.h tbsdvb/frontends/stid135/stid135.h
+--- tbsdvb_orig/frontends/stid135/stid135.h	2026-01-04 16:35:36.000000000 +1300
++++ tbsdvb/frontends/stid135/stid135.h	2026-05-16 14:09:35.987692892 +1200
+@@ -53,10 +53,19 @@
+ 	bool control_22k;
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STID135)
+ extern struct dvb_frontend *stid135_attach(struct i2c_adapter *i2c,
+ 					   struct stid135_cfg *cfg,
+ 					   int nr, int tuner_nr);
++#else
++static inline struct dvb_frontend *stid135_attach(struct i2c_adapter *i2c,
++						  struct stid135_cfg *cfg,
++						  int nr, int tuner_nr)
++{
++	pr_warn("%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif
+ 
+ #endif
+diff -Nur tbsdvb_orig/frontends/stv0288.h tbsdvb/frontends/stv0288.h
+--- tbsdvb_orig/frontends/stv0288.h	2026-01-07 20:10:32.000000000 +1300
++++ tbsdvb/frontends/stv0288.h	2026-05-16 14:31:49.829743049 +1200
+@@ -33,10 +33,17 @@
+ 	void (*set_lock_led)(struct dvb_frontend *fe, int offon);
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STV0288)
+ extern struct dvb_frontend *stv0288_attach(const struct stv0288_config *config,
+ 					   struct i2c_adapter *i2c);
+-
++#else
++static inline struct dvb_frontend *stv0288_attach(const struct stv0288_config *config,
++					   struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif /* CONFIG_DVB_STV0288 */
+ 
+ static inline int stv0288_writereg(struct dvb_frontend *fe, u8 reg, u8 val)
+ {
+diff -Nur tbsdvb_orig/frontends/stv0299.h tbsdvb/frontends/stv0299.h
+--- tbsdvb_orig/frontends/stv0299.h	2026-01-07 20:05:46.000000000 +1300
++++ tbsdvb/frontends/stv0299.h	2026-05-16 14:32:21.714322875 +1200
+@@ -83,10 +83,17 @@
+ 	int (*set_ts_params)(struct dvb_frontend *fe, int is_punctured);
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STV0299)
+ extern struct dvb_frontend *stv0299_attach(const struct stv0299_config *config,
+ 					   struct i2c_adapter *i2c);
+-
++#else
++static inline struct dvb_frontend *stv0299_attach(const struct stv0299_config *config,
++					   struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif // CONFIG_DVB_STV0299
+ 
+ static inline int stv0299_writereg(struct dvb_frontend *fe, u8 reg, u8 val) {
+ 	int r = 0;
+diff -Nur tbsdvb_orig/frontends/stv090x.h tbsdvb/frontends/stv090x.h
+--- tbsdvb_orig/frontends/stv090x.h	2026-01-04 16:31:03.000000000 +1300
++++ tbsdvb/frontends/stv090x.h	2026-05-16 14:30:48.172842482 +1200
+@@ -100,12 +100,22 @@
+ 	struct dvb_frontend* (*get_dvb_frontend)(struct i2c_client *i2c);
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STV090x)
+ 
+ struct dvb_frontend *stv090x_attach(struct stv090x_config *config,
+ 				    struct i2c_adapter *i2c,
+ 				    enum stv090x_demodulator demod);
+ 
++#else
++
++static inline struct dvb_frontend *stv090x_attach(const struct stv090x_config *config,
++						  struct i2c_adapter *i2c,
++						  enum stv090x_demodulator demod)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif /* CONFIG_DVB_STV090x */
+ 
+ #endif /* __STV090x_H */
+diff -Nur tbsdvb_orig/frontends/stv0910.h tbsdvb/frontends/stv0910.h
+--- tbsdvb_orig/frontends/stv0910.h	2026-01-04 16:32:37.000000000 +1300
++++ tbsdvb/frontends/stv0910.h	2026-05-16 14:33:14.734442953 +1200
+@@ -22,11 +22,21 @@
+ 	u8  tsspeed;
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STV0910)
+ 
+ struct dvb_frontend *stv0910_attach(struct i2c_adapter *i2c,
+ 				    struct stv0910_cfg *cfg, int nr);
+ 
++#else
++
++static inline struct dvb_frontend *stv0910_attach(struct i2c_adapter *i2c,
++						  struct stv0910_cfg *cfg,
++						  int nr)
++{
++	pr_warn("%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif /* CONFIG_DVB_STV0910 */
+ 
+ #endif /* _STV0910_H_ */
+diff -Nur tbsdvb_orig/frontends/stv091x.h tbsdvb/frontends/stv091x.h
+--- tbsdvb_orig/frontends/stv091x.h	2026-01-04 16:31:38.000000000 +1300
++++ tbsdvb/frontends/stv091x.h	2026-05-16 14:31:17.521262918 +1200
+@@ -47,10 +47,18 @@
+ 	void (*read_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 *buf);
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_STV091X)
+ extern struct dvb_frontend *stv091x_attach(struct i2c_adapter *i2c,
+ 					   struct stv091x_cfg *cfg, int nr);
++#else
++static inline struct dvb_frontend *stv091x_attach(struct i2c_adapter *i2c,
++						  struct stv091x_cfg *cfg,
++						  int nr)
++{
++	pr_warn("%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
+-
++#endif
+ 
+ #endif
+diff -Nur tbsdvb_orig/frontends/tas2101.h tbsdvb/frontends/tas2101.h
+--- tbsdvb_orig/frontends/tas2101.h	2026-01-04 16:27:53.000000000 +1300
++++ tbsdvb/frontends/tas2101.h	2026-05-16 14:34:36.336956092 +1200
+@@ -58,10 +58,23 @@
+ 
+ 
+ 
++#if IS_REACHABLE(CONFIG_DVB_TAS2101)
+ extern struct dvb_frontend *tas2101_attach(
+ 	const struct tas2101_config *cfg,
+ 	struct i2c_adapter *i2c);
+ extern struct i2c_adapter *tas2101_get_i2c_adapter(struct dvb_frontend *fe, int bus);
+-
++#else
++static inline struct dvb_frontend *tas2101_attach(
++	const struct tas2101_config *cfg,
++	struct i2c_adapter *i2c)
++{
++	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++static struct i2c_adapter *tas2101_get_i2c_adapter(struct dvb_frontend *fe, int bus)
++{
++	return NULL;
++}
++#endif
+ 
+ #endif /* TAS2101_H */
+diff -Nur tbsdvb_orig/frontends/tbs_priv.h tbsdvb/frontends/tbs_priv.h
+--- tbsdvb_orig/frontends/tbs_priv.h	2026-01-07 16:39:06.000000000 +1300
++++ tbsdvb/frontends/tbs_priv.h	2026-05-16 15:01:56.566404407 +1200
+@@ -23,10 +23,18 @@
+ 	void (*i2cwrite_properties) (struct i2c_adapter *i2c,u8 chip_addr,u8 reg, u8 num, u8 *buf);
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_DVB_TBSPRIV)
+ extern struct dvb_frontend *tbs_attach(struct i2c_adapter * i2c,
+ 											struct tbs_cfg * cfg,int demod);
++#else
++static inline struct dvb_frontend *tbs_attach(struct i2c_adapter * i2c,
++										struct tbs_cfg * cfg,int demod)
++{
++	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
+ 
++#endif
+ 
+ 
+ #endif
+diff -Nur tbsdvb_orig/tuners/av201x.h tbsdvb/tuners/av201x.h
+--- tbsdvb_orig/tuners/av201x.h	2026-01-04 16:18:15.000000000 +1300
++++ tbsdvb/tuners/av201x.h	2026-05-16 14:40:01.740602591 +1200
+@@ -41,10 +41,16 @@
+ 	u32 xtal_freq;
+ };
+ 
+-
+-struct dvb_frontend *av201x_attach(struct dvb_frontend *fe,
++#if IS_REACHABLE(CONFIG_MEDIA_TUNER_AV201X)
++extern struct dvb_frontend *av201x_attach(struct dvb_frontend *fe,
+ 		struct av201x_config *cfg, struct i2c_adapter *i2c);
+-
+-
++#else
++static inline struct dvb_frontend *av201x_attach(struct dvb_frontend *fe,
++		struct av201x_config *cfg, struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif
+ 
+ #endif /* AV201X_H */
+diff -Nur tbsdvb_orig/tuners/r848.h tbsdvb/tuners/r848.h
+--- tbsdvb_orig/tuners/r848.h	2026-01-04 16:18:36.000000000 +1300
++++ tbsdvb/tuners/r848.h	2026-05-16 14:41:17.661129425 +1200
+@@ -41,9 +41,16 @@
+ 
+ };
+ 
+-
+- struct dvb_frontend *r848_attach(struct dvb_frontend *fe,
++#if IS_REACHABLE(CONFIG_MEDIA_TUNER_R848)
++extern struct dvb_frontend *r848_attach(struct dvb_frontend *fe,
+ 		struct r848_config *cfg, struct i2c_adapter *i2c);
+-
++#else
++static inline struct dvb_frontend *r848_attach(struct dvb_frontend *fe,
++		struct r848_config *cfg, struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif
+ 
+ #endif /* R848_H */
+diff -Nur tbsdvb_orig/tuners/r850.h tbsdvb/tuners/r850.h
+--- tbsdvb_orig/tuners/r850.h	2026-01-23 14:48:48.000000000 +1300
++++ tbsdvb/tuners/r850.h	2026-05-16 14:41:51.913847323 +1200
+@@ -13,9 +13,16 @@
+ 
+ };
+ 
+-
++#if IS_REACHABLE(CONFIG_MEDIA_TUNER_R850)
+ extern struct dvb_frontend *r850_attach(struct dvb_frontend *fe,
+ 		struct r850_config *cfg, struct i2c_adapter *i2c);
+-
++#else
++static inline struct dvb_frontend *r850_attach(struct dvb_frontend *fe,
++		struct r850_config *cfg, struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif
+ 
+ #endif //__R850_H__
+diff -Nur tbsdvb_orig/tuners/rda5816.h tbsdvb/tuners/rda5816.h
+--- tbsdvb_orig/tuners/rda5816.h	2026-01-04 16:19:36.000000000 +1300
++++ tbsdvb/tuners/rda5816.h	2026-05-16 14:42:21.311571254 +1200
+@@ -9,10 +9,17 @@
+ 	u8 xtal;//1=27M 0=24M
+ };
+ 
+-
+- struct dvb_frontend *rda5816_attach(struct dvb_frontend *fe,
++#if IS_REACHABLE(CONFIG_MEDIA_TUNER_RDA5816)
++extern struct dvb_frontend *rda5816_attach(struct dvb_frontend *fe,
+ 		struct rda5816_config *cfg, struct i2c_adapter *i2c);
+-
++#else
++static inline struct dvb_frontend *rda5816_attach(struct dvb_frontend *fe,
++		struct rda5816_config *cfg, struct i2c_adapter *i2c)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif
+ 
+ 
+ #endif
+diff -Nur tbsdvb_orig/tuners/stv6120.h tbsdvb/tuners/stv6120.h
+--- tbsdvb_orig/tuners/stv6120.h	2025-12-31 22:46:36.000000000 +1300
++++ tbsdvb/tuners/stv6120.h	2026-05-16 14:42:59.221834397 +1200
+@@ -13,10 +13,17 @@
+ };
+ 
+ 
+-
++#if IS_REACHABLE(CONFIG_MEDIA_TUNER_STV6120)
+ extern struct dvb_frontend *stv6120_attach(struct dvb_frontend *fe,
+ 		    struct i2c_adapter *i2c, struct stv6120_cfg *cfg, int nr);
+-
++#else
++static inline struct dvb_frontend *stv6120_attach(struct dvb_frontend *fe,
++			struct i2c_adapter *i2c, struct stv6120_cfg *cfg, int nr)
++{
++	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
++	return NULL;
++}
++#endif
+ 
+ 
+ #endif /* STV6120_H */
