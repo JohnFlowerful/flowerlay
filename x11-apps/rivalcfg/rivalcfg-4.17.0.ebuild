@@ -3,26 +3,30 @@
 
 EAPI=8
 
-DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{10..13} )
+DISTUTILS_USE_PEP517=flit
+PYTHON_COMPAT=( python3_{12..14} )
 
-inherit distutils-r1 pypi udev
+inherit distutils-r1 udev
 
 DESCRIPTION="CLI tool and Python library to configure SteelSeries gaming mice"
 HOMEPAGE="
 	https://github.com/flozz/rivalcfg
 	https://pypi.org/project/rivalcfg/
 "
+# the pypi archive is missing test files
+SRC_URI="
+	https://github.com/flozz/${PN}/archive/v${PV}.tar.gz
+		-> ${P}.gh.tar.gz
+"
 
 LICENSE="WTFPL-2"
 SLOT="0"
 KEYWORDS="~amd64"
 
-RDEPEND="
-	${PYTHON_DEPS}
-	>=dev-python/hidapi-0.14.0[${PYTHON_USEDEP}]
-"
+RDEPEND=">=dev-python/hidapi-0.14.0[${PYTHON_USEDEP}]"
 
+EPYTEST_PLUGINS=()
+EPYTEST_XDIST=1
 distutils_enable_tests pytest
 
 src_prepare() {
