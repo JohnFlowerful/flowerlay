@@ -3,6 +3,8 @@
 
 EAPI=8
 
+MY_PN="${PN%-bin}"
+
 DESCRIPTION="Fast, disk space efficient package manager, alternative to npm and yarn"
 HOMEPAGE="https://pnpm.io"
 SRC_URI="
@@ -25,14 +27,14 @@ QA_PREBUILT="opt/pnpm/pnpm"
 src_install() {
 	# dist/ is expected and hardcoded:
 	# https://github.com/pnpm/pnpm/blob/v11.0.9/pnpm/pnpm.cjs#L18
-	INS_DIR="/opt/${PN}"
-	exeinto "${INS_DIR}"
+	local ins_dir="/opt/${MY_PN}"
+	exeinto "${ins_dir}"
 	doexe pnpm
 
-	insinto "${INS_DIR}"
+	insinto "${ins_dir}"
 	doins -r "dist/"
 
-	newbin - "${PN}" <<-EOF
+	newbin - "${MY_PN}" <<-EOF
 			#!/bin/sh
 
 			exec /opt/pnpm/pnpm "\$@"
