@@ -8,7 +8,7 @@ MY_PN="${PN%-bin}"
 DESCRIPTION="Fast, disk space efficient package manager, alternative to npm and yarn"
 HOMEPAGE="https://pnpm.io"
 SRC_URI="
-	https://github.com/pnpm/pnpm/releases/download/v${PV}/pnpm-linux-x64.tar.gz 
+	https://github.com/pnpm/pnpm/releases/download/v${PV}/pnpm-linux-x64.tar.gz
 		-> ${P}.tar.gz
 "
 
