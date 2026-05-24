@@ -1,0 +1,17 @@
+[Unit]
+Description=Gotify
+Requires=network.target
+After=network.target
+
+[Service]
+Type=simple
+User=gotify
+WorkingDirectory=/var/lib/gotify
+ExecStart=/usr/bin/gotify-server
+StandardOutput=append:/var/log/gotify/gotify.log
+StandardError=append:/var/log/gotify/gotify-error.log
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
