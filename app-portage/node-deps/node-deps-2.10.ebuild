@@ -12,7 +12,7 @@ SLOT="0"
 KEYWORDS="amd64"
 
 RDEPEND="
-	dev-lang/perl\
+	dev-lang/perl
 	virtual/perl-Digest-SHA
 	virtual/perl-File-Path
 	virtual/perl-File-Spec
