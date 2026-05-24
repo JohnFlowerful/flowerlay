@@ -14,8 +14,7 @@ esac
 
 if [[ ! ${NODE_OPTIONAL} ]]; then
 	BDEPEND="
-		>=dev-util/pnpm-11
-		net-libs/nodejs[-corepack]
+		>=dev-util/pnpm-bin-11
 		app-misc/jq
 		app-portage/node-deps
 	"
