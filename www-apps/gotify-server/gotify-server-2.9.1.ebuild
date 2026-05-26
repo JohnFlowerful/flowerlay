@@ -39,23 +39,23 @@ RDEPEND="
 "
 
 src_configure() {
-	pushd ui &>/dev/null || die
-		yarn config set disable-self-update-check true || die
-		yarn config set nodedir /usr/include/node || die
-		yarn config set yarn-offline-mirror "${WORKDIR}/yarn-deps" || die
-		# puppeteer is a dev dependency used for tests
-		export PUPPETEER_SKIP_DOWNLOAD=true
+	yarn config set disable-self-update-check true || die
+	yarn config set nodedir /usr/include/node || die
+	yarn config set yarn-offline-mirror "${WORKDIR}/yarn-deps" || die
+	# puppeteer is a dev dependency used for tests
+	export PUPPETEER_SKIP_DOWNLOAD=true
 
-		yarn install --frozen-lockfile --offline --no-progress || die
-	popd &>/dev/null || die
+	yarn install \
+		--frozen-lockfile \
+		--offline \
+		--no-progress \
+		--cwd ui/ || die
 }
 
 src_compile() {
 	# build ui
 	einfo "Building web assets"
-	pushd ui &>/dev/null || die
-		yarn run build || die
-	popd &>/dev/null || die
+	yarn run build --cwd ui/ || die
 
 	# build binary
 	einfo "Building application binary"
