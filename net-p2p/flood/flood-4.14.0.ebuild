@@ -101,6 +101,7 @@ src_install() {
 }
 
 pkg_postinst() {
+	optfeature_header
 	optfeature "mediainfo functionality" media-video/mediainfo
 
 	if ! [[ -f "${EROOT}/var/lib/flood/flood.secret" ]]; then
