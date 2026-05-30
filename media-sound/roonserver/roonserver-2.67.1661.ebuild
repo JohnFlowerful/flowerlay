@@ -64,6 +64,7 @@ src_install() {
 }
 
 pkg_postinst() {
+	optfeature_header
 	optfeature "native DSD playback" media-libs/alsa-lib
 	optfeature "mounting network locations" net-fs/cifs-utils
 
