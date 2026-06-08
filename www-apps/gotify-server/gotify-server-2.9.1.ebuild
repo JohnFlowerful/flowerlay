@@ -45,17 +45,17 @@ src_configure() {
 	# puppeteer is a dev dependency used for tests
 	export PUPPETEER_SKIP_DOWNLOAD=true
 
-	yarn install \
+	yarn --cwd ui/ \
 		--frozen-lockfile \
 		--offline \
 		--no-progress \
-		--cwd ui/ || die
+		install || die
 }
 
 src_compile() {
 	# build ui
 	einfo "Building web assets"
-	yarn run build --cwd ui/ || die
+	yarn --cwd ui/ run build || die
 
 	# build binary
 	einfo "Building application binary"
