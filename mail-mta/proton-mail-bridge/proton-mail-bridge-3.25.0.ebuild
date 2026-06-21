@@ -1,4 +1,4 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -7,12 +7,12 @@ inherit cmake desktop go-env go-module systemd xdg-utils
 
 MY_PN="${PN/-mail/}"
 MY_P="${MY_PN}-${PV}"
-MY_COMMIT="11ecdd91ccafb67618d46584d19d4d70f592925f"
+MY_COMMIT="9f9b1912ec32872bda543d7f698d1928f7d864fe"
 
 DESCRIPTION="Serves Proton Mail to IMAP/SMTP clients"
 HOMEPAGE="https://proton.me/mail/bridge https://github.com/mnixry/proton-bridge/"
 SRC_URI="https://github.com/mnixry/${MY_PN}/archive/${MY_COMMIT}.tar.gz -> ${P}-mnixry.tar.gz
-	https://dev.gentoo.org/~expeditioneer/distfiles/${CATEGORY}/${PN}/${P}-vendor.tar.xz"
+	https://dandelion.ilypetals.net/dist/go/${PN}-${MY_COMMIT}-vendor.tar.xz"
 S="${WORKDIR}"/${MY_PN}-${MY_COMMIT}
 
 LICENSE="GPL-3+ Apache-2.0 BSD BSD-2 ISC LGPL-3+ MIT MPL-2.0 Unlicense"
@@ -24,8 +24,10 @@ IUSE="gui"
 PROPERTIES="test_network"
 RESTRICT="test"
 
+BDEPEND=">=dev-lang/go-1.26.1"
 RDEPEND="
 	app-crypt/libsecret
+	dev-libs/libfido2
 	gui? (
 		>=dev-libs/protobuf-21.12:=
 		dev-libs/re2:=
@@ -50,7 +52,8 @@ src_unpack() {
 	default
 
 	# move reused vendor files to the correct directory
-	mv "${WORKDIR}"/${MY_P}/vendor ${MY_PN}-${MY_COMMIT} || die
+	# not needed while using my own vendor tarball
+	#mv "${WORKDIR}"/${MY_P}/vendor "${S}" || die
 
 	if [[ -d "${WORKDIR}"/vendor ]]; then # if we ship the dependencies
 		mv "${WORKDIR}"/vendor "${S}"/vendor || die # move them into the tree
