@@ -279,7 +279,7 @@ pnpm_src_configure() {
 	export pnpm_config_progress="false"
 	export pnpm_config_registry="http://127.0.0.1:${port}"
 	export pnpm_config_pm_on_fail=ignore
-	# the following should be on for our usecase. the short of it:
+	# the following should be off for our usecase. the short of it:
 	# `pnpm install` now hits the internet for security (supply chain, verity
 	# etc.) reasons. this means a fully offline build is impossible except by 
 	# doing one of the following:
