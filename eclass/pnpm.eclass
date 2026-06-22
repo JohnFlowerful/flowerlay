@@ -278,8 +278,18 @@ pnpm_src_configure() {
 	einfo "Installing dependencies ..."
 	export pnpm_config_progress="false"
 	export pnpm_config_registry="http://127.0.0.1:${port}"
+	export pnpm_config_pm_on_fail=ignore
+	# the following should be on for our usecase. the short of it:
+	# `pnpm install` now hits the internet for security (supply chain, verity
+	# etc.) reasons. this means a fully offline build is impossible except by 
+	# doing one of the following:
+	# 1. pack and distribute the final result of `pnpm install` from a machine
+	#    with a compatible version of pnpm and "trustLockfile: false" or
+	# 2. run `pnpm install` during src_unpack, bypassing the network sandbox
+	#    this is not truly offline in the traditional gentoo sense
+	# TODO: maybe fix it
+	export pnpm_config_trust_lockfile=true
 
-	echo "pmOnFail: ignore" >> pnpm-workspace.yaml || die
 	pnpm config set store-dir "${HOME}/pnpm" || die
 	pnpm config set package-import-method clone-or-copy || die
 
