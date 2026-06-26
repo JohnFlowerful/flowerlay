@@ -16,7 +16,7 @@ if [[ ! ${NODE_OPTIONAL} ]]; then
 	BDEPEND="
 		>=dev-util/pnpm-bin-11
 		app-misc/jq
-		app-portage/node-deps
+		>=app-portage/node-deps-2.12
 	"
 fi
 
@@ -74,7 +74,7 @@ fi
 # @DESCRIPTION:
 # Directory where downloaded tarballs are located. This should be ${WORKDIR}/pnpm-deps
 # when using a tarball sourced from `node-deps --pm pnpm download --pack`
-# 
+#
 # If you have defined all nodejs source tarballs in SRC_URI, you will need to
 # set this variable appropriately (likely to ${DISTDIR})
 # Using this method has been discussed and is discourage upstream.
@@ -178,7 +178,7 @@ pnpm_src_unpack() {
 # @FUNCTION: _cleanup
 # @INTERNAL
 # @DESCRIPTION:
-# Check if the port is free
+# Terminate the temporary python web-server
 _cleanup() {
 	einfo "Killing temporary HTTP server ..."
 	kill "${1}" 2>/dev/null || true
@@ -262,23 +262,24 @@ pnpm_src_configure() {
 	export npm_config_node_gyp="/usr/$(get_libdir)/node_modules/npm/node_modules/node-gyp/lib/node-gyp.js"
 
 	ebegin "Generating temporary HTTP server directory"
+	local -r port=$(_find_free_port 8000) || die
 	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
 	node-deps cache \
 		--pm pnpm \
 		--project-dir "${project_dir}" \
 		--deps-dir "${PNPM_DEPS_DIR}" \
-		--cache-dir "${PNPM_CACHE_DIR}" || die
+		--cache-dir "${PNPM_CACHE_DIR}" \
+		--cache-port "${port}" || die
 	eend $?
 
 	einfo "Spinning up temporary HTTP server ..."
-	local -r port=$(_find_free_port 8000) || die
 	local -r server_pid=$(_start_web_server "${port}" "${PNPM_CACHE_DIR}") || die
-	trap "_cleanup $server_pid" EXIT INT TERM
+	trap "_cleanup ${server_pid}" EXIT INT TERM
 
 	einfo "Installing dependencies ..."
 	export pnpm_config_progress="false"
 	export pnpm_config_registry="http://127.0.0.1:${port}"
-	export pnpm_config_pm_on_fail=ignore
+	export pnpm_config_pm_on_fail="ignore"
 	# the following should be off for our usecase. the short of it:
 	# `pnpm install` now hits the internet for security (supply chain, verity
 	# etc.) reasons. this means a fully offline build is impossible except by 
@@ -294,6 +295,7 @@ pnpm_src_configure() {
 	pnpm config set package-import-method clone-or-copy || die
 
 	if ! pnpm install \
+		--dir "${project_dir}" \
 		--ignore-scripts \
 		--frozen-lockfile \
 		"${PNPM_INSTALL_FLAGS[@]}" \
@@ -311,11 +313,14 @@ pnpm_src_configure() {
 pnpm_src_compile() {
 	debug-print-function ${FUNCNAME} "$@"
 
+	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
+
 	if [[ -z "${PNPM_BUILD_SCRIPT-}" ]]; then
 		die "PNPM_BUILD_SCRIPT is not set when it should be"
 	fi
 
 	if ! pnpm run \
+		--dir "${project_dir}" \
 		${PNPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
 		"${PNPM_BUILD_SCRIPT}" \
 		"${PNPM_BUILD_FLAGS[@]}" \
@@ -332,10 +337,12 @@ pnpm_src_compile() {
 # If you're not building a standalone nodejs application (e.g. web assets), you
 # will need to define your own src_install function that installs the completed
 # build directory as desired.
-# 
+#
 # Adapted from https://github.com/NixOS/nixpkgs/blob/master/pkgs/build-support/node/build-npm-package/hooks/npm-install-hook.sh
 pnpm_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
+
+	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
 
 	local -r dest_dir="/usr/$(get_libdir)/node_modules/$(jq --raw-output '.name' package.json)"
 
@@ -353,32 +360,73 @@ pnpm_src_install() {
 
 			${my_node} "${dest_dir}/${bin[1]}" "${user_args[@]}" "\$@"
 		EOF
-	done < <(jq --raw-output '(.bin | type) as $typ | if $typ == "string" then
-		.name + " " + .bin
-		elif $typ == "object" then .bin | to_entries | map(.key + " " + .value) | join("\n")
-		elif $typ == "null" then empty
-		else "invalid type " + $typ | halt_error end' "${PNPM_WORKSPACE-.}/package.json")
+	done < <(jq --raw-output '
+		(.bin | type) as $typ |
+		if $typ == "string" then
+			.name + " " + .bin
+		elif $typ == "object" then
+			.bin | to_entries |
+			map(.key + " " + .value) |
+			join("\n")
+		elif $typ == "null" then
+			empty
+		else
+			"invalid type " + $typ |
+			halt_error
+		end
+	' "${PNPM_WORKSPACE-.}/package.json")
 
 	while IFS= read -r man; do
 		doman "${dest_dir}/${man}"
-	done < <(jq --raw-output '(.man | type) as $typ | if $typ == "string" then .man
-		elif $typ == "list" then .man | join("\n")
-		elif $typ == "null" then empty
-		else "invalid type " + $typ | halt_error end' "${PNPM_WORKSPACE-.}/package.json")
+	done < <(jq --raw-output '
+		(.man | type) as $typ |
+		if $typ == "string" then
+			.man
+		elif $typ == "list" then
+			.man | join("\n")
+		elif $typ == "null" then
+			empty
+		else
+			"invalid type " + $typ |
+			halt_error
+		end
+	' "${PNPM_WORKSPACE-.}/package.json")
 
-	if [ -z "${NO_NODE_MODULES-}" ]; then
-		# `pnpm pack` doesn't write to cache but this code works
-		while IFS= read -r file; do
-			local dest="${dest_dir}/$(dirname "${file}")"
-			insinto ${dest}
-			doins ${PNPM_WORKSPACE-.}/${file}
-		done < <(jq --raw-output '.[0].files | map(.path | select(. | startswith("node_modules/") | not)) | join("\n")' <<< "$(pnpm pack --json --dry-run --loglevel warn ${PNPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} "${PNPM_BUILD_FLAGS[@]}" "${PNPM_FLAGS[@]}")")
+	# `pnpm pack` writes to cache so temporarily override it
+	local pnpm_json=$(pnpm pack \
+		--dir "${project_dir}" \
+		--json \
+		--dry-run \
+		--loglevel warn \
+		${PNPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
+		"${PNPM_BUILD_FLAGS[@]}" \
+		"${PNPM_FLAGS[@]}"
+	)
 
-		# if node_modules wasn't generated with `pnpm pack`, prune and copy them 
-		# from ${S}
-		if [ ! -d "${dest_dir}/node_modules" ]; then
-			if [ -z "${PNPM_NO_PRUNE-}" ]; then
-				if ! pnpm prune --prod ${NPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} "${PNPM_PRUNE_FLAGS[@]}" "${PNPM_FLAGS[@]}"; then
+	local file_list=$(jq --raw-output '
+		.files |
+		map(.path | select(. | startswith("node_modules/") | not)) |
+		join("\n")
+	' <<< "${pnpm_json}")
+
+	while IFS= read -r file; do
+		local dest="${dest_dir}/$(dirname "${file}")"
+		insinto ${dest}
+		doins ${PNPM_WORKSPACE-.}/${file}
+	done <<< "${file_list}"
+
+	# if node_modules wasn't generated with `pnpm pack`, prune and copy them
+	# from ${S}
+	if [[ -z "${NO_NODE_MODULES-}" ]]; then
+		if [[ ! -d "${dest_dir}/node_modules" ]]; then
+			if [[ -z "${PNPM_NO_PRUNE-}" ]]; then
+				if ! pnpm prune \
+					--dir "${project_dir}" \
+					--prod \
+					${NPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
+					"${PNPM_PRUNE_FLAGS[@]}" \
+					"${PNPM_FLAGS[@]}"
+				then
 					die '`pnpm prune` failed'
 				fi
 			fi
