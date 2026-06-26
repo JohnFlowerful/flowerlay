@@ -80,9 +80,6 @@ src_prepare() {
 src_install() {
 	pnpm_src_install
 
-	insinto "/usr/$(get_libdir)/node_modules/${PN}"
-	doins -r dist
-
 	newinitd "${FILESDIR}/${PN}-r2.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
 	systemd_dounit "${FILESDIR}/${PN}.service"
