@@ -44,7 +44,7 @@ src_install() {
 	systemd_dounit "${FILESDIR}/${PN}.service"
 
 	keepdir "/var/lib/roon"
-	#fowners roon:roon "/var/lib/roon"
+	fowners roon:roon "/var/lib/roon"
 
 	# the doins helper function doesn't preserve perms so we need to copy manually
 	mkdir "${D}/opt" || die
