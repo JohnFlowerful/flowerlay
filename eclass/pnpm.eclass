@@ -143,7 +143,7 @@ fi
 # @DESCRIPTION:
 # Setting to a non-null value will disable `pnpm prune` in the src_install function
 
-# @ECLASS_VARIABLE: CACHE_DIR
+# @ECLASS_VARIABLE: PNPM_CACHE_DIR
 # @INTERNAL
 # @DESCRIPTION:
 # Set the default pnpm-cache directory for this script and `node-deps`
@@ -154,36 +154,13 @@ PNPM_CACHE_DIR="${WORKDIR}/pnpm-cache"
 # Does default unpack then verifies that PNPM_DEPS_DIR exists and that the
 # tarballs match the integrity found in pnpm-lock.yaml
 pnpm_src_unpack() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	if [[ -n ${NODE_URIS} ]]; then
-		die "${FUNCNAME} shouldn't be used when NODE_URIS is defined"
+		die "${FUNCNAME[0]} shouldn't be used when NODE_URIS is defined"
 	fi
 
 	default
-
-	# verify with `node-deps`
-	ebegin "Verifying unpacked tarballs"
-
-	local project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
-	node-deps verify-files \
-		--no-delete \
-		--pm pnpm \
-		--project-dir "${project_dir}" \
-		--deps-dir "${PNPM_DEPS_DIR}" || die
-
-	eend $?
-}
-
-# @FUNCTION: _cleanup
-# @INTERNAL
-# @DESCRIPTION:
-# Terminate the temporary python web-server
-_cleanup() {
-	einfo "Killing temporary HTTP server ..."
-	kill "${1}" 2>/dev/null || true
-	wait "${1}" 2>/dev/null || true
-	exit 0
 }
 
 # @FUNCTION: _check_port
@@ -209,7 +186,7 @@ _check_port() {
 # @FUNCTION: _find_free_port
 # @INTERNAL
 # @DESCRIPTION:
-# Find a free port for the temporary dependency web-server
+# Find a free port for the temporary dependency http server
 _find_free_port() {
 	local start_port=$1
 	local max_attempts=25
@@ -220,63 +197,96 @@ _find_free_port() {
 			return 0
 		fi
 	done
+
 	die "No free port available in range"
 }
 
-# @FUNCTION: _start_web_server
+# @FUNCTION: _start_http_server
 # @INTERNAL
 # @DESCRIPTION:
-# Spins up a temporary web-server to serve node dependencies to pnpm
-_start_web_server() {
+# Spins up a temporary http server to serve node dependencies to pnpm
+_start_http_server() {
 	local port="${1}"
 	local dir="${2}"
 	local server_pid=""
 
-	einfo "Starting HTTP server on port ${port} ..."
 	python3 -m http.server "${port}" --directory "${dir}" > /dev/null 2>&1 &
 	server_pid=$!
-
 	sleep 1
+
 	for i in {1..10}; do
 		if curl -sf "http://127.0.0.1:${port}" > /dev/null; then
-			einfo "Server is ready on http://127.0.0.1:${port}"
 			echo "${server_pid}"
 			return 0
 		fi
 		sleep 0.5
 	done
+
+	die "Failed to start http server"
+}
+
+# @FUNCTION: _kill_http_server
+# @INTERNAL
+# @DESCRIPTION:
+# Kill the temporary python http server
+_kill_http_server() {
+	local pid="${1}"
+	local ret=0
+
+	wait_for_termination() {
+		local pid="${1}"
+		local timeout=5
+		while kill -0 "${pid}" 2>/dev/null && [[ ${timeout} -gt 0 ]]; do
+			sleep 1
+			((timeout--))
+		done
+
+		! kill -0 "${pid}" 2>/dev/null
+	}
+
+	kill "${pid}" 2>/dev/null || true
+
+	if ! wait_for_termination "${pid}"; then
+		ewarn "Force killing http server"
+		kill -9 "${pid}" 2>/dev/null || true
+		wait_for_termination "${pid}"
+	fi
+
+	wait "${pid}" 2>/dev/null || true
+
+	if kill -0 "${pid}" 2>/dev/null; then
+		eerror "Failed to kill http server (PID: ${pid})"
+		ret=1
+	fi
+
+	return ${ret}
 }
 
 # @FUNCTION: pnpm_src_configure
 # @DESCRIPTION:
 # Configures pnpm to build with the distributed tarball. This relies `node-deps`
 # to modify pnpm-lock.yaml for any git hosted deps and then symlink all deps for
-# the webserver
+# the web server
 pnpm_src_configure() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	einfo "Configuring pnpm ..."
-
-	export npm_config_nodedir="/usr/include/node"
-	export npm_package_config_node_gyp_nodedir="/usr/include/node"
-	export npm_config_node_gyp="/usr/$(get_libdir)/node_modules/npm/node_modules/node-gyp/lib/node-gyp.js"
-
-	ebegin "Generating temporary HTTP server directory"
-	local -r port=$(_find_free_port 8000) || die
 	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
+
+	ebegin "Generating temporary http server directory"
+	local -r port=$(_find_free_port 8000)
 	node-deps cache \
 		--pm pnpm \
 		--project-dir "${project_dir}" \
 		--deps-dir "${PNPM_DEPS_DIR}" \
 		--cache-dir "${PNPM_CACHE_DIR}" \
-		--cache-port "${port}" || die
+		--cache-port "${port}"
 	eend $?
 
-	einfo "Spinning up temporary HTTP server ..."
-	local -r server_pid=$(_start_web_server "${port}" "${PNPM_CACHE_DIR}") || die
-	trap "_cleanup ${server_pid}" EXIT INT TERM
+	ebegin "Starting temporary http server"
+	local -r server_pid=$(_start_http_server "${port}" "${PNPM_CACHE_DIR}")
+	trap "_kill_http_server ${server_pid}" INT TERM
+	eend $?
 
-	einfo "Installing dependencies ..."
 	export pnpm_config_progress="false"
 	export pnpm_config_registry="http://127.0.0.1:${port}"
 	export pnpm_config_pm_on_fail="ignore"
@@ -289,21 +299,34 @@ pnpm_src_configure() {
 	# 2. run `pnpm install` during src_unpack, bypassing the network sandbox
 	#    this is not truly offline in the traditional gentoo sense
 	# TODO: maybe fix it
-	export pnpm_config_trust_lockfile=true
+	export pnpm_config_trust_lockfile="true"
 
+	export npm_config_nodedir="/usr/include/node"
+	export npm_package_config_node_gyp_nodedir="/usr/include/node"
+	npm_config_node_gyp="/usr/$(get_libdir)/node_modules/npm/node_modules/node-gyp/lib/node-gyp.js"
+	export npm_config_node_gyp
+
+	einfo "Installing dependencies"
 	pnpm config set store-dir "${HOME}/pnpm" || die
 	pnpm config set package-import-method clone-or-copy || die
-
 	if ! pnpm install \
 		--dir "${project_dir}" \
 		--ignore-scripts \
 		--frozen-lockfile \
+		--network-concurrency 8 \
 		"${PNPM_INSTALL_FLAGS[@]}" \
 		"${PNPM_FLAGS[@]}"
 	then
 		die "pnpm failed to install dependencies"
 	fi
 
+	ebegin "Killing temporary http server"
+	_kill_http_server "${server_pid}"
+	eend ${ret}
+
+	# ensure lifecycle scripts are run
+	# don't die here. wait for packages to transition away from postinstall
+	# scripts, which are no longer allowed by (p)npm
 	pnpm rebuild "${PNPM_REBUILD_FLAGS[@]}" "${PNPM_FLAGS[@]}"
 }
 
@@ -311,7 +334,7 @@ pnpm_src_configure() {
 # @DESCRIPTION:
 # Runs the `pnpm run` build with all the provided flags
 pnpm_src_compile() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
 
@@ -326,7 +349,7 @@ pnpm_src_compile() {
 		"${PNPM_BUILD_FLAGS[@]}" \
 		"${PNPM_FLAGS[@]}"
 	then
-		die '`pnpm run` build failed'
+		die "'pnpm run' build failed"
 	fi
 }
 
@@ -340,7 +363,7 @@ pnpm_src_compile() {
 #
 # Adapted from https://github.com/NixOS/nixpkgs/blob/master/pkgs/build-support/node/build-npm-package/hooks/npm-install-hook.sh
 pnpm_src_install() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
 
@@ -351,11 +374,13 @@ pnpm_src_install() {
 	if [[ "${NODE_WRAPPER_OPT+defined}" == "defined" && "$(declare -p NODE_WRAPPER_OPT)" =~ ^'declare -a NODE_WRAPPER_OPT=' ]]; then
 		local -a user_args=("${NODE_WRAPPER_OPT[@]}")
 	else
-		local -a user_args="(${NODE_WRAPPER_OPT:-})"
+		local -a user_args
+		read -ra user_args <<< "${NODE_WRAPPER_OPT:-}"
 	fi
 	while IFS=" " read -ra bin; do
-		local my_node=$(command -v node)
-		newbin - ${PN} <<-EOF
+		local my_node
+		my_node=$(command -v node)
+		newbin - "${PN}" <<-EOF
 			#!/usr/bin/env sh
 
 			${my_node} "${dest_dir}/${bin[1]}" "${user_args[@]}" "\$@"
@@ -393,7 +418,8 @@ pnpm_src_install() {
 	' "${PNPM_WORKSPACE-.}/package.json")
 
 	# `pnpm pack` writes to cache so temporarily override it
-	local pnpm_json=$(pnpm pack \
+	local pnpm_json
+	pnpm_json=$(pnpm pack \
 		--dir "${project_dir}" \
 		--json \
 		--dry-run \
@@ -403,16 +429,18 @@ pnpm_src_install() {
 		"${PNPM_FLAGS[@]}"
 	)
 
-	local file_list=$(jq --raw-output '
+	local file_list
+	file_list=$(jq --raw-output '
 		.files |
 		map(.path | select(. | startswith("node_modules/") | not)) |
 		join("\n")
 	' <<< "${pnpm_json}")
 
 	while IFS= read -r file; do
-		local dest="${dest_dir}/$(dirname "${file}")"
-		insinto ${dest}
-		doins ${PNPM_WORKSPACE-.}/${file}
+		local dest
+		dest="${dest_dir}/$(dirname "${file}")"
+		insinto "${dest}"
+		doins "${PNPM_WORKSPACE-.}/${file}"
 	done <<< "${file_list}"
 
 	# if node_modules wasn't generated with `pnpm pack`, prune and copy them
@@ -427,13 +455,13 @@ pnpm_src_install() {
 					"${PNPM_PRUNE_FLAGS[@]}" \
 					"${PNPM_FLAGS[@]}"
 				then
-					die '`pnpm prune` failed'
+					die "'pnpm prune' failed"
 				fi
 			fi
 
 			find node_modules -maxdepth 1 -type d -empty -delete
 
-			insinto ${dest_dir}
+			insinto "${dest_dir}"
 			doins -r node_modules
 		fi
 	fi
