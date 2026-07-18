@@ -322,7 +322,7 @@ pnpm_src_configure() {
 
 	ebegin "Killing temporary http server"
 	_kill_http_server "${server_pid}"
-	eend ${ret}
+	eend $?
 
 	# ensure lifecycle scripts are run
 	# don't die here. wait for packages to transition away from postinstall
