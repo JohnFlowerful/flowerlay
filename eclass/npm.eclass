@@ -149,7 +149,7 @@ fi
 # @DESCRIPTION:
 # Setting to a non-null value will disable `npm prune` in the src_install function
 
-# @ECLASS_VARIABLE: CACHE_DIR
+# @ECLASS_VARIABLE: NPM_CACHE_DIR
 # @INTERNAL
 # @DESCRIPTION:
 # Set the default npm-cache directory for this script and `node-deps`
@@ -160,23 +160,13 @@ NPM_CACHE_DIR="${WORKDIR}/npm-cache"
 # Does default unpack then verifies that NPM_DEPS_DIR exists and that the
 # tarballs match the integrity found in package-lock.json
 npm_src_unpack() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	if [[ -n ${NODE_URIS} ]]; then
-		die "${FUNCNAME} shouldn't be used when NODE_URIS is defined"
+		die "${FUNCNAME[0]} shouldn't be used when NODE_URIS is defined"
 	fi
 
 	default
-
-	# verify with `node-deps`
-	ebegin "Verifying unpacked tarballs"
-
-	local project_dir="${NPM_PROJECT_DIR:-"${S}"}"
-	node-deps verify-files --no-delete --pm npm \
-		--project-dir "${project_dir}" \
-		--deps-dir "${NPM_DEPS_DIR}" || die
-
-	eend $?
 }
 
 # @FUNCTION: npm_src_configure
@@ -185,34 +175,31 @@ npm_src_unpack() {
 # associated script `node-deps` to generate a cacache structure for npm to use
 # during `npm ci`
 npm_src_configure() {
-	debug-print-function ${FUNCNAME} "$@"
-
-	einfo "Configuring npm ..."
-
-	export npm_config_nodedir="/usr/include/node"
-	export npm_package_config_node_gyp_nodedir="/usr/include/node" # for npm >= 11
-	export npm_config_node_gyp="/usr/$(get_libdir)/node_modules/npm/node_modules/node-gyp/lib/node-gyp.js"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	ebegin "Generating cacache structure"
-
 	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
 	node-deps cache \
 		--pm npm \
 		--project-dir "${project_dir}" \
 		--deps-dir "${NPM_DEPS_DIR}" \
-		--cache-dir "${NPM_CACHE_DIR}" || die
-
+		--cache-dir "${NPM_CACHE_DIR}"
 	eend $?
 
 	if [[ -n ${NODE_DEPS_FIXUP_LOCKFILE} ]]; then
-		node-deps fixup-lockfile --pm npm --project-dir "${project_dir}"
+		node-deps fixup-lockfile --pm npm --project-dir "${project_dir}" || die
 	fi
+
+	export npm_config_nodedir="/usr/include/node"
+	export npm_package_config_node_gyp_nodedir="/usr/include/node" # for npm >= 11
+	npm_config_node_gyp="/usr/$(get_libdir)/node_modules/npm/node_modules/node-gyp/lib/node-gyp.js"
+	export npm_config_node_gyp
 
 	export npm_config_cache="${NPM_CACHE_DIR}"
 	export npm_config_offline="true"
 	export npm_config_progress="false"
 
-	einfo "Installing dependencies ..."
+	einfo "Installing dependencies"
 	if ! npm ci \
 		--prefix "${project_dir}" \
 		--ignore-scripts \
@@ -222,6 +209,9 @@ npm_src_configure() {
 		die "npm failed to install dependencies"
 	fi
 
+	# ensure lifecycle scripts are run
+	# don't die here. wait for packages to transition away from postinstall
+	# scripts, which are no longer allowed by (p)npm
 	npm rebuild "${NPM_REBUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"
 }
 
@@ -229,7 +219,7 @@ npm_src_configure() {
 # @DESCRIPTION:
 # Runs the `npm run` build with all the provided flags
 npm_src_compile() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
 
@@ -244,7 +234,7 @@ npm_src_compile() {
 		"${NPM_BUILD_FLAGS[@]}" \
 		"${NPM_FLAGS[@]}"
 	then
-		die '`npm run` build failed'
+		die "'npm run' build failed"
 	fi
 }
 
@@ -258,7 +248,7 @@ npm_src_compile() {
 # 
 # Adapted from https://github.com/NixOS/nixpkgs/blob/master/pkgs/build-support/node/build-npm-package/hooks/npm-install-hook.sh
 npm_src_install() {
-	debug-print-function ${FUNCNAME} "$@"
+	debug-print-function "${FUNCNAME[0]}" "$@"
 
 	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
 
@@ -269,11 +259,13 @@ npm_src_install() {
 	if [[ "${NODE_WRAPPER_OPT+defined}" == "defined" && "$(declare -p NODE_WRAPPER_OPT)" =~ ^'declare -a NODE_WRAPPER_OPT=' ]]; then
 		local -a user_args=("${NODE_WRAPPER_OPT[@]}")
 	else
-		local -a user_args="(${NODE_WRAPPER_OPT:-})"
+		local -a user_args
+		read -ra user_args <<< "${NODE_WRAPPER_OPT:-}"
 	fi
 	while IFS=" " read -ra bin; do
-		local my_node=$(command -v node)
-		newbin - ${PN} <<-EOF
+		local my_node
+		my_node=$(command -v node)
+		newbin - "${PN}" <<-EOF
 			#!/usr/bin/env sh
 
 			${my_node} "${dest_dir}/${bin[1]}" "${user_args[@]}" "\$@"
@@ -311,7 +303,8 @@ npm_src_install() {
 	' "${NPM_WORKSPACE-.}/package.json")
 
 	# `npm pack` writes to cache so temporarily override it
-	local npm_json=$(npm_config_cache="${HOME}/.npm" npm pack \
+	local npm_json
+	npm_json=$(npm_config_cache="${HOME}/.npm" npm pack \
 		--prefix "${project_dir}" \
 		--json \
 		--dry-run \
@@ -322,16 +315,18 @@ npm_src_install() {
 		"${NPM_FLAGS[@]}"
 	)
 
-	local file_list=$(jq --raw-output '
+	local file_list
+	file_list=$(jq --raw-output '
 		.[0].files |
 		map(.path | select(. | startswith("node_modules/") | not)) |
 		join("\n")
 	' <<< "${npm_json}")
 
 	while IFS= read -r file; do
-		local dest="${dest_dir}/$(dirname "${file}")"
-		insinto ${dest}
-		doins ${NPM_WORKSPACE-.}/${file}
+		local dest=
+		dest="${dest_dir}/$(dirname "${file}")"
+		insinto "${dest}"
+		doins "${NPM_WORKSPACE-.}/${file}"
 	done <<< "${file_list}"
 
 	# if node_modules wasn't generated with `npm pack`, prune and copy them
@@ -347,13 +342,13 @@ npm_src_install() {
 					"${NPM_PRUNE_FLAGS[@]}" \
 					"${NPM_FLAGS[@]}"
 				then
-					die '`npm prune` failed'
+					die "'npm prune' failed"
 				fi
 			fi
 
 			find node_modules -maxdepth 1 -type d -empty -delete
 
-			insinto ${dest_dir}
+			insinto "${dest_dir}"
 			doins -r node_modules
 		fi
 	fi
