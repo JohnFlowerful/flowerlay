@@ -1,61 +1,61 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
 MY_PN="gotify"
 
-inherit go-module
+inherit go-module systemd
 
 DESCRIPTION="A server for sending and receiving messages"
 HOMEPAGE="https://gotify.net/"
 
 SRC_URI="
 	https://github.com/gotify/server/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/go/${P}-go-mod.tar.xz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-yarn_distfiles.tar.gz
+	https://dandelion.ilypetals.net/dist/go/${P}-vendor.tar.xz
+	https://dandelion.ilypetals.net/dist/nodejs/${P}-yarn-deps.tar.gz
 "
 
 S="${WORKDIR}/server-${PV}"
 
-LICENSE="Apache-2.0 BSD-2 BSD MIT"
+LICENSE="Apache-2.0 BSD BSD-2 MIT MPL-2.0 Unlicense"
 SLOT="0"
 KEYWORDS="amd64"
-IUSE="mysql postgres sqlite"
+IUSE="mysql postgres +sqlite"
 REQUIRED_USE="|| ( mysql postgres sqlite )"
 RESTRICT="mirror"
 
 BDEPEND="
-	>=dev-lang/go-1.22.4
+	>=dev-lang/go-1.25.0
 	>=net-libs/nodejs-16
 	>=sys-apps/yarn-1.9
 "
 RDEPEND="
 	acct-group/gotify
 	acct-user/gotify
-	mysql? ( virtual/mysql )
-	postgres? ( dev-db/postgresql )
+	mysql? ( dev-db/mysql-connector-c:= )
+	postgres? ( dev-db/postgresql:* )
 	sqlite? ( dev-db/sqlite )
 "
 
 src_configure() {
-	pushd ui &>/dev/null || die
-		yarn config set disable-self-update-check true || die
-		yarn config set nodedir /usr/include/node || die
-		yarn config set yarn-offline-mirror "${WORKDIR}/yarn_distfiles" || die
-		# puppeteer is a dev dependency used for tests
-		export PUPPETEER_SKIP_DOWNLOAD=true
+	yarn config set disable-self-update-check true || die
+	yarn config set nodedir /usr/include/node || die
+	yarn config set yarn-offline-mirror "${WORKDIR}/yarn-deps" || die
+	# puppeteer is a dev dependency used for tests
+	export PUPPETEER_SKIP_DOWNLOAD=true
 
-		yarn install --frozen-lockfile --offline --no-progress || die
-	popd &>/dev/null || die
+	yarn --cwd ui/ \
+		--frozen-lockfile \
+		--offline \
+		--no-progress \
+		install || die
 }
 
 src_compile() {
 	# build ui
 	einfo "Building web assets"
-	pushd ui &>/dev/null || die
-		yarn run build || die
-	popd &>/dev/null || die
+	yarn --cwd ui/ run build || die
 
 	# build binary
 	einfo "Building application binary"
@@ -75,14 +75,25 @@ src_test() {
 src_install() {
 	dobin "${PN}"
 	insinto "/etc/${MY_PN}"
-	newins "config.example.yml" "config.yml"
+	newins "${PN}.env.example" "${PN}.env"
 
 	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
+	systemd_dounit "${FILESDIR}/${PN}.service"
 
 	keepdir "/var/lib/${MY_PN}/data"
 	fowners gotify:gotify "/var/lib/${MY_PN}/data"
 	fperms 700 "/var/lib/${MY_PN}/data"
 
 	einstalldocs
+}
+
+pkg_postinst() {
+	if [[ -n "${REPLACING_VERSIONS}" ]] && ver_test ${REPLACING_VERSIONS} -lt 3.0.0; then
+		echo
+		ewarn "The configuration file format has changed"
+		ewarn "You can convert your config.yml by issuing the following:"
+		ewarn "gotify-server migrate-config config.yml > gotify-server.env"
+		echo
+	fi
 }
