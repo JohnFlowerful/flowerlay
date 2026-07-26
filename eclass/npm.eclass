@@ -2,13 +2,13 @@
 # Distributed under the terms of the GNU General Public License v2
 
 # @ECLASS: npm.eclass
-# @SUPPORTED_EAPIS: 8
+# @SUPPORTED_EAPIS: 8 9
 # @BLURB: An eclass for installing npm based packages
 # @DESCRIPTION:
 # An eclass to help maintain npm based packages.
 
 case ${EAPI} in
-	8) ;;
+	8|9) ;;
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
