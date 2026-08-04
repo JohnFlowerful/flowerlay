@@ -44,7 +44,7 @@ src_install() {
 	systemd_dounit "${FILESDIR}/${PN}.service"
 
 	keepdir "/var/lib/roon"
-	#fowners roon:roon "/var/lib/roon"
+	fowners roon:roon "/var/lib/roon"
 
 	# the doins helper function doesn't preserve perms so we need to copy manually
 	mkdir "${D}/opt" || die
@@ -70,8 +70,10 @@ pkg_postinst() {
 
 	if has_version net-fs/cifs-utils; then
 		local cifs_perm=$(stat -c '%a' /sbin/mount.cifs)
-		if ! [[ ${cifs_perm} =~ ^47[[:digit:]][[:digit:]] ]] && \
-		! [[ $(grep 'USER="root"' "${ROOT}/etc/conf.d/${PN}") ]]; then
+
+		if ! [[ ${cifs_perm} =~ ^47[[:digit:]][[:digit:]] ]] &&
+			! [[ $(grep 'USER="root"' "${ROOT}/etc/conf.d/${PN}") ]]
+		then
 			ewarn "Roon uses the superuser command 'mount.cifs' to access network locations."
 			ewarn "While this ebuild restricts Roon to a regular user account, it is still possible"
 			ewarn "to allow Roon to use 'mount.cifs' with setuid."
