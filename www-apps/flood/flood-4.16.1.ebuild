@@ -45,7 +45,7 @@ RDEPEND="
 # [2] https://github.com/jesec/flood/blob/master/.github/workflows/build-debian.yml
 # [3] https://github.com/jesec/flood/blob/master/.github/workflows/package.yml
 PNPM_BUILD_SCRIPT="build"
-# they're bundled with esbuild
+# they're bundled with vite
 NO_NODE_MODULES=1
 
 src_unpack() {
