@@ -17,7 +17,6 @@ S="${WORKDIR}/${MY_PN}"
 LICENSE="Roon"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="system-dotnet"
 RESTRICT="bindist mirror strip"
 
 RDEPEND="
@@ -26,17 +25,7 @@ RDEPEND="
 	dev-libs/icu
 	dev-util/lttng-ust
 	media-video/ffmpeg
-	system-dotnet? ( dev-dotnet/dotnet-sdk-bin:10.0 )
 "
-
-src_prepare() {
-	# bundled files appear to be a standard dotnet core distribution
-	if use system-dotnet; then
-		rm -rf "RoonDotnet/"* || die
-	fi
-
-	default
-}
 
 src_install() {
 	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
@@ -49,18 +38,6 @@ src_install() {
 	# the doins helper function doesn't preserve perms so we need to copy manually
 	mkdir "${D}/opt" || die
 	cp -r "${S}" "${D}/opt/" || die
-
-	if use system-dotnet; then
-		local dotnet=$(command -v dotnet) || die
-		dosym "${dotnet}" "/opt/${MY_PN}/RoonDotnet/dotnet" || die
-	fi
-
-	# these symlinks should be created when roon is started for the first time,
-	# but this ebuild runs roon as a regular user which doesn't have access to
-	# installation files
-	dosym dotnet "/opt/${MY_PN}/RoonDotnet/RAATServer"
-	dosym dotnet "/opt/${MY_PN}/RoonDotnet/RoonAppliance"
-	dosym dotnet "/opt/${MY_PN}/RoonDotnet/RoonServer"
 }
 
 pkg_postinst() {
