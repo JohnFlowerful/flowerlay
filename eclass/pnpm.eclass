@@ -274,7 +274,7 @@ pnpm_src_configure() {
 
 	ebegin "Generating temporary http server directory"
 	local -r port=$(_find_free_port 8000)
-	node-deps cache \
+	edo node-deps cache \
 		--pm pnpm \
 		--project-dir "${project_dir}" \
 		--deps-dir "${PNPM_DEPS_DIR}" \
@@ -309,16 +309,13 @@ pnpm_src_configure() {
 	einfo "Installing dependencies"
 	pnpm config set store-dir "${HOME}/pnpm" || die
 	pnpm config set package-import-method clone-or-copy || die
-	if ! pnpm install \
+	edo pnpm install \
 		--dir "${project_dir}" \
 		--ignore-scripts \
 		--frozen-lockfile \
 		--network-concurrency 8 \
 		"${PNPM_INSTALL_FLAGS[@]}" \
 		"${PNPM_FLAGS[@]}"
-	then
-		die "pnpm failed to install dependencies"
-	fi
 
 	ebegin "Killing temporary http server"
 	_kill_http_server "${server_pid}"
@@ -327,7 +324,7 @@ pnpm_src_configure() {
 	# ensure lifecycle scripts are run
 	# don't die here. wait for packages to transition away from postinstall
 	# scripts, which are no longer allowed by (p)npm
-	pnpm rebuild "${PNPM_REBUILD_FLAGS[@]}" "${PNPM_FLAGS[@]}"
+	nonfatal edo pnpm rebuild --dir "${project_dir}" "${PNPM_REBUILD_FLAGS[@]}" "${PNPM_FLAGS[@]}"
 }
 
 # @FUNCTION: pnpm_src_compile
@@ -342,15 +339,12 @@ pnpm_src_compile() {
 		die "PNPM_BUILD_SCRIPT is not set when it should be"
 	fi
 
-	if ! pnpm run \
+	edo pnpm run \
 		--dir "${project_dir}" \
 		${PNPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
 		"${PNPM_BUILD_SCRIPT}" \
 		"${PNPM_BUILD_FLAGS[@]}" \
 		"${PNPM_FLAGS[@]}"
-	then
-		die "'pnpm run' build failed"
-	fi
 }
 
 # @FUNCTION: pnpm_src_install
@@ -448,15 +442,12 @@ pnpm_src_install() {
 	if [[ -z "${NO_NODE_MODULES-}" ]]; then
 		if [[ ! -d "${dest_dir}/node_modules" ]]; then
 			if [[ -z "${PNPM_NO_PRUNE-}" ]]; then
-				if ! pnpm prune \
+				edo pnpm prune \
 					--dir "${project_dir}" \
 					--prod \
 					${NPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
 					"${PNPM_PRUNE_FLAGS[@]}" \
 					"${PNPM_FLAGS[@]}"
-				then
-					die "'pnpm prune' failed"
-				fi
 			fi
 
 			find node_modules -maxdepth 1 -type d -empty -delete
