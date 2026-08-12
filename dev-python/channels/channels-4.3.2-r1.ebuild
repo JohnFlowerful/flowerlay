@@ -16,7 +16,7 @@ LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64"
 
-DEPEND="
+RDEPEND="
 	>=dev-python/asgiref-3.5.0[${PYTHON_USEDEP}]
 	>=dev-python/django-4.2[${PYTHON_USEDEP}]
 "
