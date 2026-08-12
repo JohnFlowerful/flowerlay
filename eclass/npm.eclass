@@ -179,7 +179,7 @@ npm_src_configure() {
 
 	ebegin "Generating cacache structure"
 	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
-	node-deps cache \
+	edo node-deps cache \
 		--pm npm \
 		--project-dir "${project_dir}" \
 		--deps-dir "${NPM_DEPS_DIR}" \
@@ -187,7 +187,7 @@ npm_src_configure() {
 	eend $?
 
 	if [[ -n ${NODE_DEPS_FIXUP_LOCKFILE} ]]; then
-		node-deps fixup-lockfile --pm npm --project-dir "${project_dir}" || die
+		edo node-deps fixup-lockfile --pm npm --project-dir "${project_dir}" || die
 	fi
 
 	export npm_config_nodedir="/usr/include/node"
@@ -200,19 +200,16 @@ npm_src_configure() {
 	export npm_config_progress="false"
 
 	einfo "Installing dependencies"
-	if ! npm ci \
+	edo npm ci \
 		--prefix "${project_dir}" \
 		--ignore-scripts \
 		"${NPM_INSTALL_FLAGS[@]}" \
 		"${NPM_FLAGS[@]}"
-	then
-		die "npm failed to install dependencies"
-	fi
 
 	# ensure lifecycle scripts are run
 	# don't die here. wait for packages to transition away from postinstall
 	# scripts, which are no longer allowed by (p)npm
-	npm rebuild "${NPM_REBUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"
+	nonfatal edo npm rebuild --prefix "${project_dir}" "${NPM_REBUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"
 }
 
 # @FUNCTION: npm_src_compile
@@ -227,15 +224,12 @@ npm_src_compile() {
 		die "NPM_BUILD_SCRIPT is not set when it should be"
 	fi
 
-	if ! npm run \
+	edo npm run \
 		--prefix "${project_dir}" \
 		${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
 		"${NPM_BUILD_SCRIPT}" \
 		"${NPM_BUILD_FLAGS[@]}" \
 		"${NPM_FLAGS[@]}"
-	then
-		die "'npm run' build failed"
-	fi
 }
 
 # @FUNCTION: npm_src_install
@@ -334,16 +328,13 @@ npm_src_install() {
 	if [ -z "${NO_NODE_MODULES-}" ]; then
 		if [ ! -d "${dest_dir}/node_modules" ]; then
 			if [ -z "${NPM_NO_PRUNE-}" ]; then
-				if ! npm prune \
+				edo npm prune \
 					--prefix "${project_dir}" \
 					--omit=dev \
 					--no-save \
 					${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
 					"${NPM_PRUNE_FLAGS[@]}" \
 					"${NPM_FLAGS[@]}"
-				then
-					die "'npm prune' failed"
-				fi
 			fi
 
 			find node_modules -maxdepth 1 -type d -empty -delete
