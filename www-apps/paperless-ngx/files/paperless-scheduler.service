@@ -1,0 +1,14 @@
+[Unit]
+Description=Paperless Celery Beat
+Requires=redis.service
+PartOf=paperless.target
+
+[Service]
+User=paperless
+Group=paperless
+WorkingDirectory=/usr/share/paperless/src
+ExecStart=celery --app paperless beat --loglevel INFO
+Restart=on-abort
+
+[Install]
+WantedBy=paperless.target

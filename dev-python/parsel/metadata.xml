@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/scrapy/parsel/issues</bugs-to>
+		<remote-id type="github">scrapy/parsel</remote-id>
+		<remote-id type="pypi">parsel</remote-id>
+	</upstream>
+</pkgmetadata>

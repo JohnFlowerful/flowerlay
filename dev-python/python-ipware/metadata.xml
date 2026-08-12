@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/un33k/python-ipware/issues</bugs-to>
+		<remote-id type="github">un33k/python-ipware</remote-id>
+		<remote-id type="pypi">python-ipware</remote-id>
+	</upstream>
+</pkgmetadata>

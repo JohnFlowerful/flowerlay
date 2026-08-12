@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/fabiocaccamo/django-treenode/issues</bugs-to>
+		<remote-id type="github">fabiocaccamo/django-treenode</remote-id>
+		<remote-id type="pypi">django-treenode</remote-id>
+	</upstream>
+</pkgmetadata>

@@ -1,0 +1,38 @@
+# Copyright 1999-2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+DISTUTILS_USE_PEP517=setuptools
+PYTHON_COMPAT=( python3_{12..14} )
+
+inherit distutils-r1 optfeature
+
+DESCRIPTION="Radically simplified static file serving for Python web apps"
+HOMEPAGE="https://github.com/evansd/whitenoise"
+SRC_URI="https://github.com/evansd/${PN}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
+
+LICENSE="MIT"
+SLOT="0"
+KEYWORDS="~amd64"
+
+DEPEND="
+	>=dev-python/django-4.2[${PYTHON_USEDEP}]
+	<dev-python/django-6.1[${PYTHON_USEDEP}]
+"
+BDEPEND="
+	test? (
+		app-arch/brotli[python,${PYTHON_USEDEP}]
+	)
+"
+
+EPYTEST_PLUGINS=()
+distutils_enable_tests pytest
+
+distutils_enable_sphinx docs \
+	dev-python/furo \
+	dev-python/sphinx-copybutton
+
+pkg_postinst() {
+	optfeature "brotli compression" "app-arch/brotli[python]"
+}

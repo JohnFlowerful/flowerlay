@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/django/daphne/issues</bugs-to>
+		<remote-id type="github">django/daphne</remote-id>
+		<remote-id type="pypi">daphne</remote-id>
+	</upstream>
+</pkgmetadata>

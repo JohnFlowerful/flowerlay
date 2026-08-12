@@ -1,0 +1,11 @@
+--- a/setupsrc/base.py	2026-03-10 23:18:27.497899682 +0100
++++ b/setupsrc/base.py	2026-03-10 23:19:24.051760735 +0100
+@@ -640,6 +640,8 @@
+         if stderr is not None:
+             # allow the caller to pass e.g. subprocess.STDOUT
+             kwargs["stderr"] = stderr
++    else:
++        kwargs["capture_output"] = True
+     
+     comp_process = subprocess.run(command, cwd=cwd, check=check, **kwargs)
+     if capture:

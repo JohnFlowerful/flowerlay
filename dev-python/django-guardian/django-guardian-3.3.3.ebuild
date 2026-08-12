@@ -1,0 +1,31 @@
+# Copyright 1999-2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+DISTUTILS_USE_PEP517=setuptools
+PYTHON_COMPAT=( python3_{12..14} )
+
+inherit distutils-r1
+
+DESCRIPTION="Implementation of per object permissions for Django"
+HOMEPAGE="https://github.com/django-guardian/django-guardian"
+SRC_URI="https://github.com/django-guardian/${PN}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
+
+LICENSE="BSD"
+SLOT="0"
+KEYWORDS="~amd64"
+
+RDEPEND="
+	dev-python/django[${PYTHON_USEDEP}]
+	dev-python/typing-extensions[${PYTHON_USEDEP}]
+"
+DEPEND="${RDEPEND}"
+BDEPEND="
+	test? (
+		dev-python/django-environ[${PYTHON_USEDEP}]
+	)
+"
+
+EPYTEST_PLUGINS=( pytest-django )
+distutils_enable_tests pytest

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/frankie567/httpx-oauth/issues</bugs-to>
+		<remote-id type="github">frankie567/httpx-oauth</remote-id>
+		<remote-id type="pypi">httpx-oauth</remote-id>
+	</upstream>
+</pkgmetadata>
