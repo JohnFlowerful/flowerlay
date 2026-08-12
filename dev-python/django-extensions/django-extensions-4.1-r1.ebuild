@@ -15,7 +15,7 @@ LICENSE="MIT"
 SLOT="0"
 KEYWORDS="~amd64"
 
-DEPEND="
+RDEPEND="
 	>=dev-python/django-4.2[${PYTHON_USEDEP}]
 	<dev-python/django-6.0[${PYTHON_USEDEP}]
 	dev-python/pyasyncore[${PYTHON_USEDEP}]
