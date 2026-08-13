@@ -23,19 +23,6 @@ REQUIRED_USE="
 	|| ( mysql postgres sqlite )
 "
 
-# note: we'll always build en-US
-PAPERLESS_LOCALES=(
-	"ar-AR:ar" "af-ZA:af" "bg-BG:bg" "be-BY:be" "ca-ES:ca" "cs-CZ:cs" "da-DK:da"
-	"de-DE:de" "el-GR:el" "en-GB:en-GB" "es-ES:es" "fa-IR:fa" "fi-FI:fi"
-	"fr-FR:fr" "hu-HU:hu" "id-ID:id" "it-IT:it" "ja-JP:ja" "lb-LU:lb" "ko-KR:ko"
-	"nl-NL:nl" "no-NO:no" "pl-PL:pl" "pt-BR:pt-BR" "pt-PT:pt-PT" "ro-RO:ro"
-	"ru-RU:ru" "sk-SK:sk" "sl-SI:sl" "sr-CS:sr" "sv-SE:sv" "tr-TR:tr" "uk-UA:uk"
-	"vi-VN:vi" "zh-CN:zh-CN" "zh-TW:zh-TW"
-)
-for entry in "${PAPERLESS_LOCALES[@]}"; do
-	IUSE="${IUSE} l10n_${entry#*:}"
-done
-
 ACCT_DEPEND="
 	acct-group/paperless
 	acct-user/paperless
@@ -147,27 +134,15 @@ DEPEND="
 "
 RDEPEND="${DEPEND}"
 
+# note: this project checks locale of the browser and has no option to override.
+# this will cause a "Still here?!" message for installs where the languages
+# installed have no match for the main browser locale
+# TODO: maybe fix it
 PNPM_PROJECT_DIR="${S}/src-ui"
 PNPM_BUILD_FLAGS=("--configuration=production")
 PNPM_BUILD_SCRIPT="build"
 
 DOCS=( docker/rootfs/etc/ImageMagick-6/paperless-policy.xml )
-
-_get_locales() {
-	# force at least en-US
-	local selected_locales=("en-US")
-
-	for entry in "${PAPERLESS_LOCALES[@]}"; do
-		locale="${entry%:*}"
-		flag="l10n_${entry#*:}"
-
-		if use "${flag}"; then
-			selected_locales+=("${locale}")
-		fi
-	done
-
-	echo "${selected_locales[@]}"
-}
 
 src_prepare() {
 	default
@@ -192,34 +167,6 @@ src_prepare() {
 	# See https://github.com/paperless-ngx/paperless-ngx/discussions/9920
 	OMP_NUM_THREADS=1
 	EOF
-
-	local locales
-	locales=$(_get_locales)
-
-	local locales_json
-	locales_json=$(printf '%s\n' "${locales[@]}" | jq -R .)
-	locales_json="[${locales_json}]"
-
-	pushd src-ui &>/dev/null || die
-		jq --argjson locales "${locales_json}" \
-			'.projects["paperless-ui"].architect.build.configurations.production.localize = $locales' \
-			angular.json > angular.json.tmp
-		mv angular.json.tmp angular.json || die "Failed to modify angular.json"
-	popd &>/dev/null || die
-
-	pushd src/locale &>/dev/null || die
-		declare -A keep_map
-		for locale in "${locales[@]}"; do
-			keep_map["${locale/-/_}"]=1
-		done
-
-		for dir in */; do
-			dir="${dir%/}"
-			if [[ -z "${keep_map[${dir}]}" ]]; then
-				rm -rf "${dir}" || die "Failed to remove unused django locale directory"
-			fi
-		done
-	popd &>/dev/null || die
 }
 
 src_compile() {
