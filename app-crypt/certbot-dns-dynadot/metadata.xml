@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/dmig/certbot-dns-dynadot/issues</bugs-to>
+		<remote-id type="github">dmig/certbot-dns-dynadot</remote-id>
+		<remote-id type="pypi">certbot-dns-dynadot</remote-id>
+	</upstream>
+</pkgmetadata>
