@@ -11,7 +11,7 @@ DESCRIPTION="A community-supported supercharged document management system"
 HOMEPAGE="https://github.com/paperless-ngx/paperless-ngx"
 SRC_URI="
 	https://github.com/paperless-ngx/paperless-ngx/archive/refs/tags/v${PV}.tar.gz -> ${P}-gh.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-pnpm-deps.tar.gz
+	https://crunchday.io/dist/nodejs/${P}-pnpm-deps.tar.gz
 "
 
 LICENSE="GPL-3"

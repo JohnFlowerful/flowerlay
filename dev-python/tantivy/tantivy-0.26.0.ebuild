@@ -22,7 +22,7 @@ HOMEPAGE="
 "
 SRC_URI="
 	https://github.com/quickwit-oss/${MY_PN}/archive/refs/tags/${PV}.tar.gz -> ${P}.gh.tar.gz
-	https://dandelion.ilypetals.net/dist/rust/${P}-crates.tar.xz
+	https://crunchday.io/dist/rust/${P}-crates.tar.xz
 	${CARGO_CRATE_URIS}
 "
 

@@ -12,7 +12,7 @@ MY_COMMIT="495d5f0d9e88a6e75bfd496fc6234a51b61de7f1"
 DESCRIPTION="Serves Proton Mail to IMAP/SMTP clients"
 HOMEPAGE="https://proton.me/mail/bridge https://github.com/mnixry/proton-bridge/"
 SRC_URI="https://github.com/mnixry/${MY_PN}/archive/${MY_COMMIT}.tar.gz -> ${P}-mnixry.tar.gz
-	https://dandelion.ilypetals.net/dist/go/${PN}-${MY_COMMIT}-vendor.tar.xz"
+	https://crunchday.io/dist/go/${PN}-${MY_COMMIT}-vendor.tar.xz"
 S="${WORKDIR}"/${MY_PN}-${MY_COMMIT}
 
 LICENSE="GPL-3+ Apache-2.0 BSD BSD-2 ISC LGPL-3+ MIT MPL-2.0 Unlicense"

@@ -13,7 +13,7 @@ HOMEPAGE="https://github.com/dani-garcia/bw_web_builds"
 SRC_URI="
 	https://github.com/vaultwarden/vw_web_builds/archive/refs/heads/v${PV}.tar.gz
 		-> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
+	https://crunchday.io/dist/nodejs/${P}-npm-deps.tar.gz
 "
 
 S="${WORKDIR}/vw_web_builds-${PV}"

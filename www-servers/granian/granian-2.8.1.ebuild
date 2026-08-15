@@ -23,7 +23,7 @@ HOMEPAGE="
 	https://pypi.org/project/granian/
 "
 SRC_URI+="
-	https://dandelion.ilypetals.net/dist/rust/${P}-crates.tar.xz
+	https://crunchday.io/dist/rust/${P}-crates.tar.xz
 	${CARGO_CRATE_URIS}
 "
 

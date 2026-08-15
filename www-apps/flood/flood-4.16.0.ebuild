@@ -15,7 +15,7 @@ if [[ "${PV}" == 9999 ]]; then
 else
 	SRC_URI="
 		https://github.com/jesec/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz
-		!build-online? ( https://dandelion.ilypetals.net/dist/nodejs/${P}-pnpm-deps.tar.gz )
+		!build-online? ( https://crunchday.io/dist/nodejs/${P}-pnpm-deps.tar.gz )
 	"
 	IUSE="build-online"
 	KEYWORDS="amd64"

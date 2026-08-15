@@ -12,8 +12,8 @@ HOMEPAGE="https://gotify.net/"
 
 SRC_URI="
 	https://github.com/gotify/server/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/go/${P}-vendor.tar.xz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-yarn-deps.tar.gz
+	https://crunchday.io/dist/go/${P}-vendor.tar.xz
+	https://crunchday.io/dist/nodejs/${P}-yarn-deps.tar.gz
 "
 
 S="${WORKDIR}/server-${PV}"

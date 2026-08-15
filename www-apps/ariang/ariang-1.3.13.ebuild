@@ -13,7 +13,7 @@ HOMEPAGE="https://ariang.mayswind.net/"
 SRC_URI="
 	https://github.com/mayswind/AriaNg/archive/refs/tags/${PV}.tar.gz
 		-> ${P}.tar.gz
-	https://dandelion.ilypetals.net/dist/nodejs/${P}-npm-deps.tar.gz
+	https://crunchday.io/dist/nodejs/${P}-npm-deps.tar.gz
 "
 
 S="${WORKDIR}/${MY_PN}-${PV}"
