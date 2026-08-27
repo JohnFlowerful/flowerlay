@@ -65,7 +65,7 @@ DEPEND="
 		>=dev-python/channels-4.2[${PYTHON_USEDEP}]
 		>=dev-python/channels-redis-4.2[${PYTHON_USEDEP}]
 		>=dev-python/concurrent-log-handler-0.9.25[${PYTHON_USEDEP}]
-		>=dev-python/dateparser-1.2[${PYTHON_USEDEP}]
+		>=dev-python/dateparser-1.4[${PYTHON_USEDEP}]
 		>=dev-python/django-5.2.13[${PYTHON_USEDEP}]
 		<dev-python/django-6.0[${PYTHON_USEDEP}]
 		>=dev-python/django-allauth-65.16.0[${PYTHON_USEDEP}]
@@ -74,23 +74,22 @@ DEPEND="
 		>=dev-python/django-cors-headers-4.9.0[${PYTHON_USEDEP}]
 		>=dev-python/django-extensions-4.1[${PYTHON_USEDEP}]
 		>=dev-python/django-filter-25.1[${PYTHON_USEDEP}]
-		>=dev-python/django-guardian-3.3.0[${PYTHON_USEDEP}]
+		>=dev-python/django-guardian-3.3.3[${PYTHON_USEDEP}]
 		>=dev-python/django-multiselectfield-1.0.1[${PYTHON_USEDEP}]
 		dev-python/django-redis[${PYTHON_USEDEP}]
 		>=dev-python/django-rich-2.2.0[${PYTHON_USEDEP}]
 		>=dev-python/django-soft-delete-1.0.18[${PYTHON_USEDEP}]
 		>=dev-python/django-treenode-0.24[${PYTHON_USEDEP}]
 		>=dev-python/djangorestframework-3.16.0[${PYTHON_USEDEP}]
-		>=dev-python/djangorestframework-guardian-0.4.0[${PYTHON_USEDEP}]
-		>=dev-python/drf-spectacular-0.28[${PYTHON_USEDEP}]
-		>=dev-python/drf-spectacular-sidecar-2026.5.1[${PYTHON_USEDEP}]
+		>=dev-python/drf-spectacular-0.30[${PYTHON_USEDEP}]
+		>=dev-python/drf-spectacular-sidecar-2026.7.1[${PYTHON_USEDEP}]
 		>=dev-python/drf-writable-nested-0.7.1[${PYTHON_USEDEP}]
-		>=dev-python/filelock-3.29.0[${PYTHON_USEDEP}]
+		>=dev-python/filelock-3.32.0[${PYTHON_USEDEP}]
 		>=dev-python/gotenberg-client-0.14.0[${PYTHON_USEDEP}]
-		>=dev-python/httpx-oauth-0.16[${PYTHON_USEDEP}]
+		>=dev-python/httpx-oauth-0.17.0[${PYTHON_USEDEP}]
 		dev-python/humanize[${PYTHON_USEDEP}]
-		>=dev-python/ijson-3.2[${PYTHON_USEDEP}]
-		>=dev-python/imap-tools-1.13.0[${PYTHON_USEDEP}]
+		>=dev-python/ijson-3.5.1[${PYTHON_USEDEP}]
+		>=dev-python/imap-tools-1.14.0[${PYTHON_USEDEP}]
 		>=dev-python/jinja2-3.1.5[${PYTHON_USEDEP}]
 		>=dev-python/langdetect-1.0.9[${PYTHON_USEDEP}]
 		>=dev-python/nltk-3.10.0[${PYTHON_USEDEP}]
@@ -103,18 +102,18 @@ DEPEND="
 		>=dev-python/python-magic-0.4.27[${PYTHON_USEDEP}]
 		>=dev-python/rapidfuzz-3.14.5[${PYTHON_USEDEP}]
 		>=dev-python/redis-5.2.1[${PYTHON_USEDEP}]
-		>=dev-python/regex-2026.4.4[${PYTHON_USEDEP}]
+		>=dev-python/regex-2026.7.19[${PYTHON_USEDEP}]
 		>=dev-python/scikit-learn-1.8.0[${PYTHON_USEDEP}]
 		>=dev-python/setproctitle-1.3.4[${PYTHON_USEDEP}]
 		>=dev-python/tantivy-0.26.0[${PYTHON_USEDEP}]
 		>=dev-python/tika-client-0.11.0[${PYTHON_USEDEP}]
 		dev-python/uvloop[${PYTHON_USEDEP}]
-		>=dev-python/watchfiles-1.1.1[${PYTHON_USEDEP}]
+		>=dev-python/watchfiles-1.2.0[${PYTHON_USEDEP}]
 		>=dev-python/whitenoise-6.11[${PYTHON_USEDEP}]
-		>=media-libs/zxing-cpp-3.0.0[python,${PYTHON_USEDEP}]
+		>=media-libs/zxing-cpp-3.1.0[python,${PYTHON_USEDEP}]
 		>=www-servers/granian-2.7.0[${PYTHON_USEDEP}]
 	')
-	>=app-text/OCRmyPDF-17.4.2
+	>=app-text/OCRmyPDF-17.7.0
 	app-text/poppler[utils]
 	media-gfx/imagemagick[xml]
 	media-gfx/optipng
@@ -127,7 +126,7 @@ DEPEND="
 	mysql? ( >=dev-python/mysqlclient-2.2.7 )
 	postgres? (
 		$(python_gen_cond_dep '
-			>=dev-python/psycopg-3.3[native-extensions,${PYTHON_USEDEP}]
+			>=dev-python/psycopg-3.3.4[native-extensions,${PYTHON_USEDEP}]
 		')
 	)
 	!remote-redis? ( dev-db/redis )
