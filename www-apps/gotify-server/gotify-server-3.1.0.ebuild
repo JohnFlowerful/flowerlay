@@ -18,7 +18,7 @@ SRC_URI="
 
 S="${WORKDIR}/server-${PV}"
 
-LICENSE="Apache-2.0 BSD-2 BSD MIT"
+LICENSE="Apache-2.0 BSD BSD-2 MIT MPL-2.0 Unlicense"
 SLOT="0"
 KEYWORDS="amd64"
 IUSE="mysql postgres +sqlite"
@@ -26,7 +26,7 @@ REQUIRED_USE="|| ( mysql postgres sqlite )"
 RESTRICT="mirror"
 
 BDEPEND="
-	>=dev-lang/go-1.22.4
+	>=dev-lang/go-1.25.0
 	>=net-libs/nodejs-16
 	>=sys-apps/yarn-1.9
 "
@@ -75,7 +75,7 @@ src_test() {
 src_install() {
 	dobin "${PN}"
 	insinto "/etc/${MY_PN}"
-	newins "config.example.yml" "config.yml"
+	newins "${PN}.env.example" "${PN}.env"
 
 	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
@@ -86,4 +86,14 @@ src_install() {
 	fperms 700 "/var/lib/${MY_PN}/data"
 
 	einstalldocs
+}
+
+pkg_postinst() {
+	if [[ -n "${REPLACING_VERSIONS}" ]] && ver_test ${REPLACING_VERSIONS} -lt 3.0.0; then
+		echo
+		ewarn "The configuration file format has changed"
+		ewarn "You can convert your config.yml by issuing the following:"
+		ewarn "gotify-server migrate-config config.yml > gotify-server.env"
+		echo
+	fi
 }
