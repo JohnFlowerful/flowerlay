@@ -90,7 +90,7 @@ DEPEND="
 		dev-python/humanize[${PYTHON_USEDEP}]
 		>=dev-python/ijson-3.5.1[${PYTHON_USEDEP}]
 		>=dev-python/imap-tools-1.14.0[${PYTHON_USEDEP}]
-		>=dev-python/jinja2-3.1.5[${PYTHON_USEDEP}]
+		>=dev-python/jinja2-3.1.6[${PYTHON_USEDEP}]
 		>=dev-python/langdetect-1.0.9[${PYTHON_USEDEP}]
 		>=dev-python/nltk-3.10.0[${PYTHON_USEDEP}]
 		>=dev-python/pathvalidate-3.3.1[${PYTHON_USEDEP}]
