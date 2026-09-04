@@ -38,6 +38,14 @@ RDEPEND="
 	sqlite? ( dev-db/sqlite )
 "
 
+src_unpack() {
+	default
+
+	if [[ -d "${WORKDIR}"/vendor ]]; then
+		mv "${WORKDIR}"/vendor "${S}"/vendor || die
+	fi
+}
+
 src_configure() {
 	yarn config set disable-self-update-check true || die
 	yarn config set nodedir /usr/include/node || die
