@@ -75,9 +75,10 @@ src_prepare() {
 	fi
 
 	# use the public api
-	sed -i 's/^\(\s*AppName\s*=\s*\)"bridge"/\1"other"/' "${S}"/internal/constants/constants.go
+	sed -e 's/^\(\s*AppName\s*=\s*\)"bridge"/\1"other"/' \
+		-i "${S}"/internal/constants/constants.go || die
 	sed -e 's|^\(const APIHost = \)\"https://mail-api\.proton\.me\"|\1"https://mail.proton.me/api"|' \
-		-i "${S}"/internal/constants/host_default.go
+		-i "${S}"/internal/constants/host_default.go || die
 }
 
 src_configure() {
