@@ -1,0 +1,60 @@
+diff --git a/internal/constants/version_default.go b/internal/constants/version_default.go
+index d524ef46..dc94ebdf 100644
+--- a/internal/constants/version_default.go
++++ b/internal/constants/version_default.go
+@@ -19,9 +19,53 @@
+ 
+ package constants
+ 
+-import "fmt"
++import (
++	"errors"
++	"fmt"
++	"net/http"
++	"regexp"
++
++	"github.com/sirupsen/logrus"
++)
++
++var versionCache string
++
++// Get newest app version from proton web mail
++func getNewestAppVersion() (string, error) {
++	resp, err := http.Get("https://github.com/ProtonMail/android-mail/releases/latest")
++	if err != nil {
++		return "", err
++	}
++	defer resp.Body.Close()
++
++	if resp.StatusCode != http.StatusOK {
++		return "", fmt.Errorf("failed to get latest version: %s", resp.Status)
++	}
++
++	finalURL := resp.Request.URL.String()
++	re := regexp.MustCompile(`tag\/v?(\d+\.\d+\.\d+)`)
++	matches := re.FindStringSubmatch(finalURL)
++	if len(matches) < 2 {
++		return "", errors.New("no version found in redirect URL")
++	}
++	newestVersion := matches[1]
++	if newestVersion == "" {
++		return "", errors.New("no version found")
++	}
++	logrus.WithField("newestVersion", newestVersion).Debug("Newest app version")
++	return newestVersion, nil
++}
+ 
+ // AppVersion returns the full rendered version of the app (to be used in request headers).
+ func AppVersion(version string) string {
+-	return fmt.Sprintf("%v-%v@%v", getAPIOS(), AppName, version)
++	if versionCache == "" {
++		newestVersion, err := getNewestAppVersion()
++		if err != nil {
++			logrus.WithError(err).Warn("Failed to get newest app version")
++		} else {
++			versionCache = newestVersion
++		}
++	}
++	logrus.WithField("version", versionCache).Debug("App version")
++	return fmt.Sprintf("%v@%v", AppName, versionCache)
+ }
