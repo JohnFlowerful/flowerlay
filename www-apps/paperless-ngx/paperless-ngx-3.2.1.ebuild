@@ -193,8 +193,8 @@ src_compile() {
 		local -x PAPERLESS_CONFIGURATION_PATH="${S}/paperless.conf.example"
 
 		PAPERLESS_AUDIT_LOG_ENABLED=$(use audit && echo true || echo false)
-		local -x PAPERLESS_AUDIT_LOG_ENABLED
-		local -x PAPERLESS_SECRET_KEY="ci-release-not-a-real-secret"
+		export PAPERLESS_AUDIT_LOG_ENABLED
+		export PAPERLESS_SECRET_KEY="ci-release-not-a-real-secret"
 
 		edo "${EPYTHON}" manage.py compilemessages
 		edo "${EPYTHON}" manage.py collectstatic --no-input --clear
