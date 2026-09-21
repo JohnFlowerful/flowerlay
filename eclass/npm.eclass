@@ -12,6 +12,10 @@ case ${EAPI} in
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
+case ${EAPI} in
+	8) inherit edo ;;
+esac
+
 if [[ ! ${NODE_OPTIONAL} ]]; then
 	BDEPEND="
 		net-libs/nodejs[npm]
