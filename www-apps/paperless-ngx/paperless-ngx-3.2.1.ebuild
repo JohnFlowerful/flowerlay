@@ -11,7 +11,7 @@ DESCRIPTION="A community-supported supercharged document management system"
 HOMEPAGE="https://github.com/paperless-ngx/paperless-ngx"
 SRC_URI="
 	https://github.com/paperless-ngx/paperless-ngx/archive/refs/tags/v${PV}.tar.gz -> ${P}-gh.tar.gz
-	https://crunchday.io/dist/nodejs/${PN}-3.1.0-pnpm-deps.tar.gz
+	https://crunchday.io/dist/nodejs/${P}-pnpm-deps.tar.gz
 "
 
 LICENSE="GPL-3"
@@ -27,11 +27,22 @@ ACCT_DEPEND="
 	acct-group/paperless
 	acct-user/paperless
 "
+# unpaper (image cleaning) for OCRmyPDF/paperless-ngx
+# hiredis (python wrapper for redis)
+# h2 and httpx for gotenberg-client/tika-client
+# humanize (dep of flower; we don't need flower, but we do need this)
+# pillow-heif provides HEIF/HEIC for OCRmyPDF
+# uvloop for granian
 EXTRA_DEPEND="
 	app-text/unpaper
+
 	$(python_gen_cond_dep '
 		dev-python/hiredis[${PYTHON_USEDEP}]
-		dev-python/websockets[${PYTHON_USEDEP}]
+		dev-python/h2[${PYTHON_USEDEP}]
+		dev-python/httpx[${PYTHON_USEDEP}]
+		dev-python/humanize[${PYTHON_USEDEP}]
+		dev-python/pillow-heif[${PYTHON_USEDEP}]
+		dev-python/uvloop[${PYTHON_USEDEP}]
 	')
 "
 ALLAUTH_MFA_DEPEND="
@@ -53,7 +64,7 @@ ALLAUTH_MFA_DEPEND="
 # - sentence-transformers>=5.4.1
 # - sqlite-vec>=0.1.9
 # - torch>=2.13.0
-DEPEND="
+RDEPEND="
 	${ACCT_DEPEND}
 	${ALLAUTH_MFA_DEPEND}
 	${EXTRA_DEPEND}
@@ -75,24 +86,24 @@ DEPEND="
 		>=dev-python/django-extensions-4.1[${PYTHON_USEDEP}]
 		>=dev-python/django-filter-25.1[${PYTHON_USEDEP}]
 		>=dev-python/django-guardian-3.3.3[${PYTHON_USEDEP}]
+		<dev-python/django-guardian-3.5.0[${PYTHON_USEDEP}]
 		>=dev-python/django-multiselectfield-1.0.1[${PYTHON_USEDEP}]
-		dev-python/django-redis[${PYTHON_USEDEP}]
 		>=dev-python/django-rich-2.2.0[${PYTHON_USEDEP}]
 		>=dev-python/django-soft-delete-1.0.18[${PYTHON_USEDEP}]
 		>=dev-python/django-treenode-0.24[${PYTHON_USEDEP}]
 		>=dev-python/djangorestframework-3.16.0[${PYTHON_USEDEP}]
 		>=dev-python/drf-spectacular-0.30[${PYTHON_USEDEP}]
 		>=dev-python/drf-spectacular-sidecar-2026.7.1[${PYTHON_USEDEP}]
+		<dev-python/drf-spectacular-sidecar-2026.10.0[${PYTHON_USEDEP}]
 		>=dev-python/drf-writable-nested-0.7.1[${PYTHON_USEDEP}]
 		>=dev-python/filelock-3.32.0[${PYTHON_USEDEP}]
-		>=dev-python/gotenberg-client-0.14.0[${PYTHON_USEDEP}]
+		>=dev-python/gotenberg-client-1.0.0[${PYTHON_USEDEP}]
 		>=dev-python/httpx-oauth-0.17.0[${PYTHON_USEDEP}]
-		dev-python/humanize[${PYTHON_USEDEP}]
 		>=dev-python/ijson-3.5.1[${PYTHON_USEDEP}]
 		>=dev-python/imap-tools-1.14.0[${PYTHON_USEDEP}]
-		>=dev-python/jinja2-3.1.5[${PYTHON_USEDEP}]
+		<dev-python/imap-tools-1.16.0[${PYTHON_USEDEP}]
+		>=dev-python/jinja2-3.1.6[${PYTHON_USEDEP}]
 		>=dev-python/langdetect-1.0.9[${PYTHON_USEDEP}]
-		>=dev-python/nltk-3.10.0[${PYTHON_USEDEP}]
 		>=dev-python/pathvalidate-3.3.1[${PYTHON_USEDEP}]
 		>=dev-python/pdf2image-1.17.0[${PYTHON_USEDEP}]
 		>=dev-python/python-dateutil-2.9.0[${PYTHON_USEDEP}]
@@ -101,19 +112,21 @@ DEPEND="
 		>=dev-python/python-ipware-3.0.0[${PYTHON_USEDEP}]
 		>=dev-python/python-magic-0.4.27[${PYTHON_USEDEP}]
 		>=dev-python/rapidfuzz-3.14.5[${PYTHON_USEDEP}]
-		>=dev-python/redis-5.2.1[${PYTHON_USEDEP}]
+		>=dev-python/redis-6.4.0[${PYTHON_USEDEP}]
 		>=dev-python/regex-2026.7.19[${PYTHON_USEDEP}]
 		>=dev-python/scikit-learn-1.8.0[${PYTHON_USEDEP}]
 		>=dev-python/setproctitle-1.3.4[${PYTHON_USEDEP}]
 		>=dev-python/tantivy-0.26.0[${PYTHON_USEDEP}]
-		>=dev-python/tika-client-0.11.0[${PYTHON_USEDEP}]
-		dev-python/uvloop[${PYTHON_USEDEP}]
+		>=dev-python/tika-client-1.0.0[${PYTHON_USEDEP}]
 		>=dev-python/watchfiles-1.2.0[${PYTHON_USEDEP}]
 		>=dev-python/whitenoise-6.11[${PYTHON_USEDEP}]
+		>=dev-python/whoosh-compat-0.3.0[${PYTHON_USEDEP}]
 		>=media-libs/zxing-cpp-3.1.0[python,${PYTHON_USEDEP}]
 		>=www-servers/granian-2.7.0[${PYTHON_USEDEP}]
+		<www-servers/granian-2.9.0[${PYTHON_USEDEP}]
 	')
-	>=app-text/OCRmyPDF-17.7.0
+	>=app-text/OCRmyPDF-17.12.0
+	<app-text/OCRmyPDF-17.13.0
 	app-text/poppler[utils]
 	media-gfx/imagemagick[xml]
 	media-gfx/optipng
@@ -131,7 +144,6 @@ DEPEND="
 	)
 	!remote-redis? ( dev-db/redis )
 "
-RDEPEND="${DEPEND}"
 
 # note: this project checks locale of the browser and has no option to override.
 # this will cause a "Still here?!" message for installs where the languages
@@ -170,7 +182,7 @@ src_prepare() {
 
 src_compile() {
 	# use ci mode to fix output issue caused by build script
-	export CI=true
+	local -x CI=true
 	pnpm_src_compile
 
 	pushd src &>/dev/null || die
@@ -178,11 +190,11 @@ src_compile() {
 		# paperless.conf from various locations [1]. override it with this
 		# environment variable
 		# [1] https://github.com/paperless-ngx/paperless-ngx/blob/v3.0.5/src/paperless/settings/__init__.py#L34-L42
-		export PAPERLESS_CONFIGURATION_PATH="${S}/paperless.conf.example"
+		local -x PAPERLESS_CONFIGURATION_PATH="/spoof/path/to/paperless.conf"
 
 		PAPERLESS_AUDIT_LOG_ENABLED=$(use audit && echo true || echo false)
-		export PAPERLESS_AUDIT_LOG_ENABLED
-		export PAPERLESS_SECRET_KEY="ci-release-not-a-real-secret"
+		local -x PAPERLESS_AUDIT_LOG_ENABLED
+		local -x PAPERLESS_SECRET_KEY="ci-release-not-a-real-secret"
 
 		edo "${EPYTHON}" manage.py compilemessages
 		edo "${EPYTHON}" manage.py collectstatic --no-input --clear
