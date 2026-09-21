@@ -190,7 +190,7 @@ src_compile() {
 		# paperless.conf from various locations [1]. override it with this
 		# environment variable
 		# [1] https://github.com/paperless-ngx/paperless-ngx/blob/v3.0.5/src/paperless/settings/__init__.py#L34-L42
-		local -x PAPERLESS_CONFIGURATION_PATH="/spoof/path/to/paperless.conf"
+		local -x PAPERLESS_CONFIGURATION_PATH="${S}/paperless.conf.example"
 
 		PAPERLESS_AUDIT_LOG_ENABLED=$(use audit && echo true || echo false)
 		local -x PAPERLESS_AUDIT_LOG_ENABLED
