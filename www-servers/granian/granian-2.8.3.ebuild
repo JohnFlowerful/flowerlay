@@ -37,8 +37,6 @@ SLOT="0"
 KEYWORDS="~amd64"
 
 RDEPEND=">=dev-python/click-8.1.0[${PYTHON_USEDEP}]"
-DEPEND="${RDEPEND}"
-
 BDEPEND="
 	${RUST_DEPEND}
 	>=dev-util/maturin-1.14.0[${PYTHON_USEDEP}]
