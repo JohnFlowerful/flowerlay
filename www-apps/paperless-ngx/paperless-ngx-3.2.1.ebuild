@@ -33,6 +33,7 @@ ACCT_DEPEND="
 # humanize (dep of flower; we don't need flower, but we do need this)
 # pillow-heif provides HEIF/HEIC for OCRmyPDF
 # uvloop for granian
+# websockets for channels? TODO: find where this really comes from
 EXTRA_DEPEND="
 	app-text/unpaper
 
@@ -43,6 +44,7 @@ EXTRA_DEPEND="
 		dev-python/humanize[${PYTHON_USEDEP}]
 		dev-python/pillow-heif[${PYTHON_USEDEP}]
 		dev-python/uvloop[${PYTHON_USEDEP}]
+		dev-python/websockets[${PYTHON_USEDEP}]
 	')
 "
 ALLAUTH_MFA_DEPEND="
