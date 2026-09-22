@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-	<use>
-		<flag name='system-dotnet'>Remove the bundled dotnet core installation
-			and use a system defined one
-		</flag>
-	</use>
 	<longdescription lang="en">
 		Roon elevates your music experience in many dimensions, from rich 
 		metadata to integrated streaming services, and from inspired music 
