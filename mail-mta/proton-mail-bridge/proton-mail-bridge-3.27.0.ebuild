@@ -7,13 +7,12 @@ inherit cmake desktop go-env go-module systemd xdg-utils
 
 MY_PN="${PN/-mail/}"
 MY_P="${MY_PN}-${PV}"
-MY_COMMIT="9f9b1912ec32872bda543d7f698d1928f7d864fe"
 
 DESCRIPTION="Serves Proton Mail to IMAP/SMTP clients"
 HOMEPAGE="https://proton.me/mail/bridge https://github.com/mnixry/proton-bridge/"
-SRC_URI="https://github.com/mnixry/${MY_PN}/archive/${MY_COMMIT}.tar.gz -> ${P}-mnixry.tar.gz
-	https://crunchday.io/dist/go/${PN}-${MY_COMMIT}-vendor.tar.xz"
-S="${WORKDIR}"/${MY_PN}-${MY_COMMIT}
+SRC_URI="https://github.com/ProtonMail/${MY_PN}/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz
+	https://crunchday.io/dist/go/${P}-vendor.tar.xz"
+S="${WORKDIR}"/${MY_P}
 
 LICENSE="GPL-3+ Apache-2.0 BSD BSD-2 ISC LGPL-3+ MIT MPL-2.0 Unlicense"
 SLOT="0"
@@ -43,6 +42,7 @@ DEPEND="${RDEPEND}"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-3.15.1-gui_gentoo.patch
+	"${FILESDIR}"/${PN}-3.26.0-version-check.patch
 )
 
 # $S is there for bug 957684
@@ -50,10 +50,6 @@ DOCS=( "${S}"/{README,Changelog}.md )
 
 src_unpack() {
 	default
-
-	# move reused vendor files to the correct directory
-	# not needed while using my own vendor tarball
-	#mv "${WORKDIR}"/${MY_P}/vendor "${S}" || die
 
 	if [[ -d "${WORKDIR}"/vendor ]]; then # if we ship the dependencies
 		mv "${WORKDIR}"/vendor "${S}"/vendor || die # move them into the tree
@@ -77,6 +73,12 @@ src_prepare() {
 			CMAKE_USE_DIR="${S}"/internal/frontend/bridge-gui/bridge-gui \
 			cmake_src_prepare
 	fi
+
+	# use the public api
+	sed -e 's/^\(\s*AppName\s*=\s*\)"bridge"/\1"other"/' \
+		-i "${S}"/internal/constants/constants.go || die
+	sed -e 's|^\(const APIHost = \)\"https://mail-api\.proton\.me\"|\1"https://mail.proton.me/api"|' \
+		-i "${S}"/internal/constants/host_default.go || die
 }
 
 src_configure() {
