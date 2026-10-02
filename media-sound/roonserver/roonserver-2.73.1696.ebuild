@@ -25,6 +25,8 @@ RDEPEND="
 	dev-libs/icu
 	dev-util/lttng-ust
 	media-video/ffmpeg
+	>=dev-libs/openssl-1.1.1
+	>=sys-libs/glibc-2.27
 "
 
 src_install() {
@@ -41,7 +43,6 @@ src_install() {
 }
 
 pkg_postinst() {
-	optfeature_header
 	optfeature "native DSD playback" media-libs/alsa-lib
 	optfeature "mounting network locations" net-fs/cifs-utils
 
