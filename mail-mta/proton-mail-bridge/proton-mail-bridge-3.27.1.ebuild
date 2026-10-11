@@ -11,7 +11,7 @@ MY_P="${MY_PN}-${PV}"
 DESCRIPTION="Serves Proton Mail to IMAP/SMTP clients"
 HOMEPAGE="https://proton.me/mail/bridge https://github.com/mnixry/proton-bridge/"
 SRC_URI="https://github.com/ProtonMail/${MY_PN}/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz
-	https://crunchday.io/dist/go/${P}-vendor.tar.xz"
+	https://crunchday.io/dist/go/${PN}-3.27.0-vendor.tar.xz"
 S="${WORKDIR}"/${MY_P}
 
 LICENSE="GPL-3+ Apache-2.0 BSD BSD-2 ISC LGPL-3+ MIT MPL-2.0 Unlicense"
@@ -42,7 +42,7 @@ DEPEND="${RDEPEND}"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-3.15.1-gui_gentoo.patch
-	"${FILESDIR}"/${P}-version-check.patch
+	"${FILESDIR}"/${PN}-3.26.0-version-check.patch
 )
 
 # $S is there for bug 957684
