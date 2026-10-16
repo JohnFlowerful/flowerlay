@@ -20,7 +20,7 @@ RESTRICT="mirror"
 CONFIG_CHECK="I2C_MUX REGMAP_I2C I2C_ALGOBIT ~!DVB_CORE"
 
 PATCHES=(
-	"${FILESDIR}/tbsdvb_${PV}_restore_reachable.patch"
+	"${FILESDIR}/tbsdvb_1013_restore_reachable.patch"
 )
 
 pkg_setup() {
