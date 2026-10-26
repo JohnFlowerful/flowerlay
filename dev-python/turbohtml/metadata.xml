@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<bugs-to>https://github.com/tox-dev/turbohtml/issues</bugs-to>
+		<remote-id type="github">tox-dev/turbohtml</remote-id>
+		<remote-id type="pypi">turbohtml</remote-id>
+	</upstream>
+</pkgmetadata>
