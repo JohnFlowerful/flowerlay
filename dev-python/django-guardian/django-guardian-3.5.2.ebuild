@@ -18,9 +18,10 @@ KEYWORDS="~amd64"
 
 RDEPEND="
 	dev-python/django[${PYTHON_USEDEP}]
-	dev-python/typing-extensions[${PYTHON_USEDEP}]
+	$(python_gen_cond_dep '
+		dev-python/typing-extensions[${PYTHON_USEDEP}]
+	' python3_{12..13})
 "
-DEPEND="${RDEPEND}"
 BDEPEND="
 	test? (
 		dev-python/django-environ[${PYTHON_USEDEP}]
