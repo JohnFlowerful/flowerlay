@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 DISTUTILS_USE_PEP517=setuptools
 
 inherit distutils-r1
@@ -17,6 +17,6 @@ SRC_URI="https://github.com/un33k/python-ipware/archive/v${PV}.tar.gz -> ${P}.gh
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 distutils_enable_tests unittest
