@@ -4,16 +4,19 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=poetry
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 inherit distutils-r1 pypi
 
 DESCRIPTION="A generator library for concise, unambiguous and URL-safe UUIDs"
-HOMEPAGE="https://github.com/skorokithakis/shortuuid"
+HOMEPAGE="
+	https://github.com/skorokithakis/shortuuid
+	https://pypi.org/project/shortuuid/
+"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 DOCS=( README.md )
 
