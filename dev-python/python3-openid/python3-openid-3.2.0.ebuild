@@ -4,17 +4,20 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 PYPI_NO_NORMALIZE=1
 
 inherit distutils-r1 pypi
 
 DESCRIPTION="OpenID support for modern servers and consumers"
-HOMEPAGE="https://github.com/necaris/python3-openid"
+HOMEPAGE="
+	https://github.com/necaris/python3-openid
+	https://pypi.org/project/python3-openid/
+"
 
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 RDEPEND="
 	dev-python/defusedxml[${PYTHON_USEDEP}]

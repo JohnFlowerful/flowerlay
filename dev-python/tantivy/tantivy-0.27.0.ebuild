@@ -6,12 +6,11 @@ EAPI=8
 CARGO_OPTIONAL=yes
 DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=maturin
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 MY_PN="${PN}-py"
 
 CRATES=""
-RUST_MIN_VER="1.88.0"
 
 inherit cargo distutils-r1
 
@@ -31,7 +30,7 @@ S="${WORKDIR}/${MY_PN}-${PV}"
 LICENSE="MIT"
 # Dependent crate licenses
 LICENSE+="
-	Apache-2.0 Apache-2.0-with-LLVM-exceptions MIT Unicode-3.0 ZLIB
+	Apache-2.0 Apache-2.0-with-LLVM-exceptions BSD MIT Unicode-3.0 ZLIB
 "
 SLOT="0"
 KEYWORDS="~amd64"
