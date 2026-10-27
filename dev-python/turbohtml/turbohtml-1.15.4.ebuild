@@ -76,7 +76,7 @@ EPYTEST_DESELECT=(
 distutils_enable_tests pytest
 
 src_prepare() {
-	default
+	distutils-r1_src_prepare
 
 	if use test; then
 		# bug 971501
