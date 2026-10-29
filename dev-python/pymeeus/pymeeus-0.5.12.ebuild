@@ -12,13 +12,13 @@ inherit distutils-r1 pypi
 
 DESCRIPTION="Python implementation of Jean Meeus astronomical routines"
 HOMEPAGE="
-	https://pypi.org/project/PyMeeus/
 	https://github.com/architest/pymeeus
+	https://pypi.org/project/PyMeeus/
 "
 
 LICENSE="LGPL-3"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 PATCHES=(
 	"${FILESDIR}/pytest-7.2.patch"
