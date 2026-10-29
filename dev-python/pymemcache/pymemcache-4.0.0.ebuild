@@ -9,12 +9,15 @@ PYTHON_COMPAT=( python3_{12..14} )
 inherit distutils-r1
 
 DESCRIPTION="A comprehensive, fast, pure-Python memcached client"
-HOMEPAGE="https://github.com/pinterest/pymemcache"
+HOMEPAGE="
+	https://github.com/pinterest/pymemcache
+	https://pypi.org/project/pymemcache/
+"
 SRC_URI="https://github.com/pinterest/${PN}/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 IUSE="test"
 RESTRICT="!test? ( test )"
 

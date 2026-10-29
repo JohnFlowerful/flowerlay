@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 DISTUTILS_USE_PEP517=setuptools
 PYPI_PN="PyMeeus"
 PYPI_NO_NORMALIZE=1
@@ -12,13 +12,13 @@ inherit distutils-r1 pypi
 
 DESCRIPTION="Python implementation of Jean Meeus astronomical routines"
 HOMEPAGE="
-	https://pypi.org/project/PyMeeus/
 	https://github.com/architest/pymeeus
+	https://pypi.org/project/PyMeeus/
 "
 
 LICENSE="LGPL-3"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 PATCHES=(
 	"${FILESDIR}/pytest-7.2.patch"
