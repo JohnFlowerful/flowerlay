@@ -1,0 +1,16 @@
+diff --git a/tests/conftest.py b/tests/conftest.py
+index a13df45..b033c8d 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -3,6 +3,11 @@ import os
+ import pytest
+ from django.conf import settings
+ 
++import sys
++from unittest.mock import MagicMock
++
++sys.modules["channels.testing.live"] = MagicMock()
++
+ 
+ def pytest_configure():
+     os.environ["DJANGO_SETTINGS_MODULE"] = "tests.sample_project.config.settings"

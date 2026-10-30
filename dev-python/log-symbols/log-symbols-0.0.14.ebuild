@@ -4,9 +4,11 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 MY_PN="py-${PN//_/-}"
+
+LOG_SYMBOLS_COMMIT="eb527ec951e3d02c828efdb56e9f78e364c109b2"
 
 inherit distutils-r1
 
@@ -15,8 +17,6 @@ HOMEPAGE="
 	https://github.com/manrajgrover/py-log-symbols
 	https://pypi.org/project/log-symbols/
 "
-# the pypi archive is missing test files and upstream doesn't tag releases on github...
-LOG_SYMBOLS_COMMIT="eb527ec951e3d02c828efdb56e9f78e364c109b2"
 SRC_URI="
 	https://github.com/manrajgrover/${MY_PN}/archive/${LOG_SYMBOLS_COMMIT}.tar.gz
 		-> ${P}.gh.tar.gz

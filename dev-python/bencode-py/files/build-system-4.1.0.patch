@@ -1,0 +1,15 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 456bbd5..3dcf4ea 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -28,4 +28,8 @@ classifiers = [
+ repository = "https://github.com/fuzeman/bencode.py"
+ 
+ [tool.setuptools]
+-packages = ["bencode", "bencodepy"]
+\ No newline at end of file
++packages = ["bencode", "bencodepy"]
++
++[build-system]
++requires = ["setuptools>=61.0"]
++build-backend = "setuptools.build_meta"

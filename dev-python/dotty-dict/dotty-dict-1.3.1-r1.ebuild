@@ -4,13 +4,13 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=poetry
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 MY_PN=${PN//-/_}
 
 inherit distutils-r1
 
-DESCRIPTION="Dictionary wrapper for quick access to deeply nested keys."
+DESCRIPTION="Dictionary wrapper for quick access to deeply nested keys"
 HOMEPAGE="
 	https://github.com/pawelzny/dotty_dict
 	https://pypi.org/project/dotty-dict/

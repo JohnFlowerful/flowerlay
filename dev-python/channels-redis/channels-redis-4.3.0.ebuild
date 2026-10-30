@@ -4,15 +4,15 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
-inherit distutils-r1 optfeature
+inherit distutils-r1 optfeature pypi
 
-MY_P=${P/-/_}
 DESCRIPTION="Provides Django Channels channel layers that use Redis as a backing store"
-HOMEPAGE="https://github.com/django/channels_redis"
-SRC_URI="https://github.com/django/${PN/-/_}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
-S="${WORKDIR}/${MY_P}"
+HOMEPAGE="
+	https://github.com/django/channels_redis
+	https://pypi.org/project/channels-redis/
+"
 
 LICENSE="BSD"
 SLOT="0"
@@ -42,33 +42,27 @@ EPYTEST_IGNORE=(
 )
 distutils_enable_tests pytest
 
-#python_prepare_all() {
-#	# Remove sentinel tests
-#	#rm tests/test{_pubsub,}_sentinel.py
-#
-#	distutils-r1_python_prepare_all
-#}
-
-src_test() {
-	local redis_pid="${T}"/redis.pid
+python_test() {
+	local redis_log="${T}/redis.log"
+	local redis_pidfile="${T}/redis.pid"
 	local redis_port=6379
 
-	einfo "Spawning Redis"
-	einfo "NOTE: Port ${redis_port} must be free"
-	"${EPREFIX}"/usr/sbin/redis-server - <<-EOF || die
-		daemonize yes
-		pidfile ${redis_pid}
-		port ${redis_port}
-		bind 127.0.0.1
-	EOF
+	einfo "Starting redis test instance ..."
+	"${EPREFIX}/usr/sbin/redis-server" \
+		--daemonize yes \
+		--logfile "${redis_log}" \
+		--pidfile "${redis_pidfile}" \
+		--port "${redis_port}" \
+		--bind 127.0.0.1 || die
 
-	# Run the tests
-	distutils-r1_src_test
+	cleanup() {
+		pkill -F "${redis_pidfile}"
+	}
+	trap cleanup EXIT
 
-	# Clean up afterwards
-	kill "$(<"${redis_pid}")" || die
+	epytest
 }
 
 pkg_postinst() {
-	optfeature "Backend encrytion support" dev-python/cryptography
+	optfeature "Backend encryption support" dev-python/cryptography
 }

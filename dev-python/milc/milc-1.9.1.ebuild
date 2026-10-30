@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python3_{12..14} )
 
 inherit distutils-r1
 
-DESCRIPTION="Opinionated Batteries-Included Python 3 CLI Framework."
+DESCRIPTION="Opinionated Batteries-Included Python 3 CLI Framework"
 HOMEPAGE="
 	https://github.com/clueboard/milc
 	https://pypi.org/project/milc/

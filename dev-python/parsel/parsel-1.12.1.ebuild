@@ -3,6 +3,7 @@
 
 EAPI=8
 
+PYPI_VERIFY_REPO="https://github.com/scrapy/parsel"
 PYTHON_COMPAT=( python3_{13..15} )
 DISTUTILS_USE_PEP517=hatchling
 
@@ -12,7 +13,7 @@ DESCRIPTION="Utility to extract data from XML/HTML documents using XPath or CSS 
 HOMEPAGE="
 	https://github.com/scrapy/parsel
 	https://pypi.org/project/parsel/
-	https://scrapy.org/
+	https://www.scrapy.org/
 "
 
 LICENSE="BSD"

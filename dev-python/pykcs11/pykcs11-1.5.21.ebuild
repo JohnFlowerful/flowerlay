@@ -5,25 +5,20 @@ EAPI=8
 
 DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYPI_VERIFY_REPO="https://github.com/LudovicRousseau/PyKCS11"
+PYTHON_COMPAT=( python3_{12..15} )
 
-inherit distutils-r1 edo
-
-MY_PN=PyKCS11
-MY_P=${MY_PN}-${PV}
+inherit distutils-r1 edo pypi
 
 DESCRIPTION="PKCS#11 Wrapper for Python"
 HOMEPAGE="
-	https://pypi.org/project/pykcs11/
 	https://github.com/LudovicRousseau/PyKCS11
+	https://pypi.org/project/pykcs11/
 "
-SRC_URI="https://github.com/LudovicRousseau/PyKCS11/archive/refs/tags/${PV}.tar.gz -> ${P}.gh.tar.gz"
-
-S="${WORKDIR}/${MY_P}"
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="amd64"
+KEYWORDS="~amd64"
 IUSE="examples"
 
 RDEPEND="
@@ -38,7 +33,7 @@ BDEPEND="
 
 DOCS=( README.md )
 
-EPYTEST_PLUGINS=( )
+EPYTEST_PLUGINS=()
 distutils_enable_tests pytest
 
 distutils_enable_sphinx docs
@@ -52,7 +47,8 @@ python_install_all() {
 }
 
 src_test() {
-	local -x PYKCS11LIB="${BROOT}/usr/$(get_libdir)/softhsm/libsofthsm2.so"
+	local -x PYKCS11LIB
+	PYKCS11LIB="${BROOT}/usr/$(get_libdir)/softhsm/libsofthsm2.so"
 	local -x PKCS11_TOKEN_LABEL="A token"
 	local -x PKCS11_TOKEN_PIN="1234"
 	local -x PKCS11_TOKEN_SO_PIN="123456"

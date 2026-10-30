@@ -4,12 +4,15 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 inherit distutils-r1
 
 DESCRIPTION="Extends Django abilities beyond HTTP protocol"
-HOMEPAGE="https://github.com/django/channels"
+HOMEPAGE="
+	https://github.com/django/channels
+	https://pypi.org/project/channels/
+"
 SRC_URI="https://github.com/django/${PN}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="BSD"
@@ -23,7 +26,6 @@ RDEPEND="
 BDEPEND="
 	test? (
 		dev-python/async-timeout[${PYTHON_USEDEP}]
-		>=dev-python/daphne-4.0.0[${PYTHON_USEDEP}]
 	)
 "
 
@@ -35,6 +37,15 @@ distutils_enable_tests pytest
 
 distutils_enable_sphinx docs \
 	dev-python/sphinx-rtd-theme
+
+src_prepare() {
+	if use test; then
+		PATCHES+=( "${FILESDIR}/mock_live-${PV}.patch" )
+		sed -i '/\s*"daphne",\s*$/d' tests/sample_project/config/settings.py
+	fi
+
+	default
+}
 
 python_install() {
 	distutils-r1_python_install

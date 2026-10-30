@@ -4,25 +4,25 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 inherit distutils-r1
 
 DESCRIPTION="Writable nested helpers for django-rest-framework's serializers"
-HOMEPAGE="https://github.com/beda-software/drf-writable-nested"
+HOMEPAGE="
+	https://github.com/beda-software/drf-writable-nested
+	https://pypi.org/project/drf-writable-nested/
+"
 SRC_URI="https://github.com/beda-software/${PN}/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="BSD-2"
 SLOT="0"
-KEYWORDS="~amd64"
-IUSE="test"
-RESTRICT="!test? ( test )"
+KEYWORDS="amd64"
 
 RDEPEND="
 	dev-python/django[${PYTHON_USEDEP}]
 	dev-python/djangorestframework[${PYTHON_USEDEP}]
 "
-DEPEND="${RDEPEND}"
 
 EPYTEST_PLUGINS=( pytest-django )
 distutils_enable_tests pytest

@@ -4,9 +4,9 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{13..14} )
 
-inherit bash-completion-r1 distutils-r1 optfeature
+inherit bash-completion-r1 distutils-r1 optfeature pypi
 
 MY_PV="${PV/_/}"
 DESCRIPTION="Asynchronous task queue/job queue based on distributed message passing"
@@ -15,8 +15,6 @@ HOMEPAGE="
 	https://pypi.org/project/celery/
 	https://github.com/celery/celery
 "
-SRC_URI="https://github.com/celery/celery/archive/v${MY_PV}.tar.gz -> ${P}.gh.tar.gz"
-S="${WORKDIR}/${PN}-${MY_PV}"
 
 LICENSE="BSD"
 SLOT="0"
@@ -74,6 +72,10 @@ EPYTEST_IGNORE=(
 EPYTEST_DESELECT=(
 	# Requires dev-python/pyramid-celery
 	t/unit/app/test_preload_cli.py::test_preload_options
+	# potential fix in https://github.com/celery/celery/commit/b171416e02e721ed83c8a6701fe81422f814f0fb
+	t/unit/utils/test_platforms.py::test_close_open_fds
+	# dst fix in https://github.com/celery/celery/commit/c523c009bcd5057ae64d9a51370dd9ffa62bc6d4
+	t/unit/utils/test_time.py::test_localize::test_localize_changes_utc_dt
 )
 distutils_enable_tests pytest
 
@@ -98,11 +100,20 @@ python_install_all() {
 }
 
 pkg_postinst() {
-	optfeature "msgpack support" dev-python/msgpack
-	optfeature "redis support" dev-python/redis
-	optfeature "yaml support" dev-python/pyyaml
+	# only these are packaged. for a complete list see [1]
+	# [1]: https://github.com/celery/celery/blob/main/setup.py#L12
+	optfeature "auth support" dev-python/pyopenssl
+	optfeature "aws support" dev-python/boto3
+	optfeature "brotli support" dev-python/brotlicffi
+	optfeature "cryptography support" dev-python/cryptography
+	optfeature "django support" dev-python/django
 	optfeature "memcache support" dev-python/python-memcached
 	optfeature "mongodb support" dev-python/pymongo
+	optfeature "msgpack support" dev-python/msgpack
+	optfeature "pydantic support" dev-python/pydantic
+	optfeature "redis support" dev-db/redis dev-python/redis-py
 	optfeature "sqlalchemy support" dev-python/sqlalchemy
-	optfeature "sqs support" dev-python/boto3
+	optfeature "tblib support" dev-python/tblib
+	optfeature "yaml support" dev-python/pyyaml
+	optfeature "zstd support" dev-python/zstd
 }

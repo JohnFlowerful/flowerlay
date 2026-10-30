@@ -3,21 +3,22 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{12..14} )
+PYPI_VERIFY_REPO="https://github.com/scrapy/w3lib"
+PYTHON_COMPAT=( python3_{13..15} )
 DISTUTILS_USE_PEP517=hatchling
 
 inherit distutils-r1 pypi
 
 DESCRIPTION="Library of web-related functions"
 HOMEPAGE="
-	https://scrapy.org/
+	https://www.scrapy.org/
 	https://pypi.org/project/w3lib/
 	https://github.com/scrapy/w3lib
 "
 
 LICENSE="BSD"
 SLOT=0
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 EPYTEST_PLUGINS=()
 distutils_enable_tests pytest

@@ -3,7 +3,8 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{12..15} )
+PYPI_VERIFY_REPO="https://github.com/scrapy/w3lib"
+PYTHON_COMPAT=( python3_{13..15} )
 DISTUTILS_USE_PEP517=hatchling
 
 inherit distutils-r1 pypi
@@ -12,7 +13,7 @@ DESCRIPTION="Library of web-related functions"
 HOMEPAGE="
 	https://github.com/scrapy/w3lib
 	https://pypi.org/project/w3lib/
-	https://scrapy.org/
+	https://www.scrapy.org/
 "
 
 LICENSE="BSD"

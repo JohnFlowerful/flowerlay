@@ -4,9 +4,11 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 MY_PN="${PN}-py"
+
+HJSON_PY_COMMIT="1687b811fcbbc54b5ac71cfbaa99f805e406fbcb"
 
 inherit distutils-r1
 
@@ -15,13 +17,10 @@ HOMEPAGE="
 	https://github.com/hjson/hjson-py
 	https://pypi.org/project/hjson/
 "
-# the pypi archive is missing test asset files and upstream tags releases inconsistently...
-HJSON_PY_COMMIT="1687b811fcbbc54b5ac71cfbaa99f805e406fbcb"
 SRC_URI="
 	https://github.com/${PN}/${MY_PN}/archive/${HJSON_PY_COMMIT}.tar.gz
 		-> ${P}.gh.tar.gz
 "
-
 S="${WORKDIR}/${MY_PN}-${HJSON_PY_COMMIT}"
 
 LICENSE="AFL-2.1 MIT"
