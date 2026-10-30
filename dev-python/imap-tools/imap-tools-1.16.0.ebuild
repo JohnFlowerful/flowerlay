@@ -4,14 +4,17 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 MY_PN="${PN/-/_}"
 
 inherit distutils-r1
 
 DESCRIPTION="High level lib for work with email by IMAP"
-HOMEPAGE="https://github.com/ikvk/imap_tools"
+HOMEPAGE="
+	https://github.com/ikvk/imap_tools
+	https://pypi.org/project/imap-tools/
+"
 SRC_URI="https://github.com/ikvk/imap_tools/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 S="${WORKDIR}/${MY_PN}-${PV}"
