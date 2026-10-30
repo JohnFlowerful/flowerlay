@@ -3,20 +3,21 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{12..14} pypy3 )
+PYTHON_COMPAT=( python3_{12..15} )
 DISTUTILS_USE_PEP517=setuptools
 
 inherit distutils-r1 pypi
 
 DESCRIPTION="Port of Google's language-detection library to Python"
 HOMEPAGE="
-	https://pypi.org/project/langdetect/
 	https://github.com/Mimino666/langdetect
+	https://pypi.org/project/langdetect/
 "
 
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64"
+RESTRICT="test"
 
 RDEPEND="dev-python/six[${PYTHON_USEDEP}]"
 
