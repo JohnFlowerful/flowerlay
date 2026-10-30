@@ -5,7 +5,7 @@ EAPI=8
 
 DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..15} )
+PYTHON_COMPAT=( python3_{12..14} )
 
 inherit distutils-r1
 
@@ -23,14 +23,14 @@ KEYWORDS="~amd64"
 
 RDEPEND="
 	>=dev-python/pillow-11.1.0[${PYTHON_USEDEP}]
-	>=media-libs/libheif-1.23.1:=
+	>=media-libs/libheif-1.23.6:=
 "
 BDEPEND="
 	test? (
 		dev-python/defusedxml[${PYTHON_USEDEP}]
 		dev-python/numpy[${PYTHON_USEDEP}]
 		dev-python/pillow[jpeg,lcms,webp,zlib,${PYTHON_USEDEP}]
-		>=media-libs/libheif-1.23.1:=[x265]
+		>=media-libs/libheif-1.23.6:=[x265]
 		media-libs/opencv[png,python,${PYTHON_USEDEP}]
 	)
 "
