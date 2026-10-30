@@ -4,18 +4,21 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=hatchling
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
-inherit distutils-r1
+inherit distutils-r1 pypi
 
 DESCRIPTION="Async OAuth client using HTTPX"
-HOMEPAGE="https://github.com/frankie567/httpx-oauth"
-SRC_URI="https://github.com/frankie567/httpx-oauth/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
+HOMEPAGE="
+	https://github.com/frankie567/httpx-oauth
+	https://pypi.org/project/httpx-oauth/
+"
 
 LICENSE="MIT-0"
 SLOT="0"
 KEYWORDS="~amd64"
 
+# httpx is deprecated in gentoo, citing https://github.com/encode/httpx/discussions/3784
 RDEPEND="
 	>=dev-python/httpx-0.18[${PYTHON_USEDEP}]
 "
@@ -32,10 +35,6 @@ EPYTEST_PLUGINS=( pytest-{asyncio,mock} )
 distutils_enable_tests pytest
 
 python_prepare_all() {
-	# No need for regex-commit plugin
-	sed -e '/^source.*regex_commit/d' -i pyproject.toml || die
-	sed -e '/^commit_extra_args/d' -i pyproject.toml || die
-	sed -e 's/,\s*"hatch-regex-commit"//g' || pyproject.toml || die
 	# Disable coverage
 	sed -e '/^addopts/d' -i pyproject.toml || die
 
