@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{13..15} )
 DISTUTILS_USE_PEP517=hatchling
 
 inherit distutils-r1
@@ -18,7 +18,7 @@ SRC_URI="https://github.com/scrapy/${PN}/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz
 
 LICENSE="BSD"
 SLOT=0
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 RDEPEND="
 	>=dev-python/cssselect-1.2.0[${PYTHON_USEDEP}]
