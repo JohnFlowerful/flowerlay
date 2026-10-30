@@ -4,7 +4,9 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
+
+PARSIMONIOUS_COMMIT="eb79639859a9697a86c0992a045174a8856b5fb0"
 
 inherit distutils-r1
 
@@ -13,8 +15,6 @@ HOMEPAGE="
 	https://github.com/erikrose/parsimonious
 	https://pypi.org/project/parsimonious/
 "
-# the pypi archive is missing test asset files and upstream tags releases inconsistently...
-PARSIMONIOUS_COMMIT="eb79639859a9697a86c0992a045174a8856b5fb0"
 SRC_URI="
 	https://github.com/erikrose/${PN}/archive/${PARSIMONIOUS_COMMIT}.tar.gz
 		-> ${P}.gh.tar.gz
