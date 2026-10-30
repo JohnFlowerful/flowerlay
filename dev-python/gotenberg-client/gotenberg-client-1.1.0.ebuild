@@ -43,7 +43,7 @@ EPYTEST_DESELECT=(
 distutils_enable_tests pytest
 
 python_test() {
-	epytest -m 'not live' tests
+	epytest -m 'not live and not niquests' tests
 }
 
 pkg_postinst() {
