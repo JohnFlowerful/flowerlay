@@ -9,7 +9,10 @@ PYTHON_COMPAT=( python3_{12..14} )
 inherit distutils-r1 pypi
 
 DESCRIPTION="An environment variables to configure Django"
-HOMEPAGE="https://github.com/joke2k/django-environ"
+HOMEPAGE="
+	https://github.com/joke2k/django-environ
+	https://pypi.org/project/django-environ/
+"
 
 LICENSE="MIT"
 SLOT="0"
