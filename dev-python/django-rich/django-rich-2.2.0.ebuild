@@ -4,17 +4,20 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 inherit distutils-r1
 
 DESCRIPTION="Extensions for using Rich with Django"
-HOMEPAGE="https://github.com/adamchainz/django-rich"
+HOMEPAGE="
+	https://github.com/adamchainz/django-rich
+	https://pypi.org/project/django-rich/
+"
 SRC_URI="https://github.com/adamchainz/${PN}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 RDEPEND="
 	dev-python/django[${PYTHON_USEDEP}]
@@ -28,5 +31,5 @@ src_prepare() {
 	default
 
 	# remove coverage call
-	echo > tests/testapp/__init__.py || die "echo failed"
+	echo > tests/testapp/__init__.py || die
 }
