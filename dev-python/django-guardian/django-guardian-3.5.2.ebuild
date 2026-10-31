@@ -9,7 +9,10 @@ PYTHON_COMPAT=( python3_{12..14} )
 inherit distutils-r1
 
 DESCRIPTION="Implementation of per object permissions for Django"
-HOMEPAGE="https://github.com/django-guardian/django-guardian"
+HOMEPAGE="
+	https://github.com/django-guardian/django-guardian
+	https://pypi.org/project/django-guardian/
+"
 SRC_URI="https://github.com/django-guardian/${PN}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="BSD"
