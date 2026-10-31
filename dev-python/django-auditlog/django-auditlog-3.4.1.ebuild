@@ -4,13 +4,15 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
-inherit distutils-r1
+inherit distutils-r1 pypi
 
 DESCRIPTION="Audit log app for Django"
-HOMEPAGE="https://github.com/jazzband/django-auditlog"
-SRC_URI="https://github.com/jazzband/${PN}/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
+HOMEPAGE="
+	https://github.com/jazzband/django-auditlog
+	https://pypi.org/project/django-auditlog/
+"
 
 LICENSE="MIT"
 SLOT="0"
@@ -19,7 +21,6 @@ IUSE="test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="dev-python/django[${PYTHON_USEDEP}]"
-DEPEND="${RDEPEND}"
 BDEPEND="
 	dev-python/python-dateutil[${PYTHON_USEDEP}]
 	dev-python/setuptools-scm[${PYTHON_USEDEP}]
@@ -38,17 +39,46 @@ distutils_enable_sphinx docs/source \
 	dev-python/sphinx-rtd-theme
 
 python_test() {
-	local db="${T}/pgsql"
+	local pgsql_datadir="${T}/pgsql"
+	local pgsql_port=5432
+	local pgsql_install_log="${T}/pgsql_install.log"
+	local pgsql_log="${T}/pgsql.log"
 
-	initdb --username=postgres -D "${db}" || die
-	pg_ctl -w -D "${db}" start \
-		-o "-h '127.0.0.1' -p 5432 -k '${T}'" || die
-	psql -h "${T}" -U postgres -d postgres \
-		-c "ALTER ROLE postgres WITH PASSWORD '';" || die
-	createdb -h "${T}" -U postgres auditlog || die
+	einfo "Creating postgresql test instance ..."
+	if ! initdb \
+		--username=postgres \
+		--pgdata="${pgsql_datadir}" >& "${pgsql_install_log}"
+	then
+		cat "${pgsql_install_log}"
+		die "Failed to create database"
+	fi
+
+	einfo "Starting postgresql test instance ..."
+	pg_ctl start \
+		--options="-h '127.0.0.1' -p ${pgsql_port} -k '${T}'" \
+		--wait \
+		--log="${pgsql_log}" \
+		--pgdata="${pgsql_datadir}" || die
+
+	psql \
+		--host="${T}" \
+		--username=postgres \
+		--dbname=postgres \
+		--command="ALTER ROLE postgres WITH PASSWORD '';" || die
+
+	createdb --host="${T}" --username=postgres auditlog || die
+
+	cleanup_pgsql() {
+		einfo "Cleaning up test pgsql instance ..."
+		if [[ -n "${pgsql_datadir}" ]]; then
+			pg_ctl -w -D "${pgsql_datadir}" stop
+		fi
+	}
 
 	cd "${S}/auditlog_tests"
-	"${EPYTHON}" -m django test -v2 --settings=test_settings || die "Tests fail with ${EPYTHON}"
-
-	pg_ctl -w -D "${db}" stop || die
+	if ! "${EPYTHON}" -m django test -v2 --settings=test_settings; then
+		cleanup_pgsql
+		die "Tests fail with ${EPYTHON}"
+	fi
+	cleanup_pgsql
 }
