@@ -9,7 +9,10 @@ PYTHON_COMPAT=( python3_{12..15} )
 inherit distutils-r1
 
 DESCRIPTION="Django multiple select field"
-HOMEPAGE="https://github.com/goinnn/django-multiselectfield"
+HOMEPAGE="
+	https://github.com/goinnn/django-multiselectfield
+	https://pypi.org/project/django-multiselectfield/
+"
 SRC_URI="https://github.com/goinnn/${PN}/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="LGPL-3"
