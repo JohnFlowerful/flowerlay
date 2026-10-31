@@ -4,19 +4,16 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
-inherit distutils-r1
+inherit distutils-r1 pypi
 
-DESCRIPTION="Sane and flexible OpenAPI schema generation for Django REST framework"
+DESCRIPTION="Sane and flexible OpenAPI 3 schema generation for Django REST framework"
 HOMEPAGE="https://github.com/tfranzel/drf-spectacular"
-SRC_URI="https://github.com/tfranzel/${PN}/archive/${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="test"
-RESTRICT="!test? ( test )"
 
 RDEPEND="
 	>=dev-python/django-2.2[${PYTHON_USEDEP}]
@@ -27,7 +24,6 @@ RDEPEND="
 	>=dev-python/pyyaml-5.1[${PYTHON_USEDEP}]
 	>=dev-python/uritemplate-2.0.0[${PYTHON_USEDEP}]
 "
-DEPEND="${RDEPEND}"
 BDEPEND="
 	test? (
 		dev-python/django-filter[${PYTHON_USEDEP}]
