@@ -4,16 +4,19 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{13..15} )
 
 inherit distutils-r1 pypi
 
 DESCRIPTION="A collection of custom extensions for the Django Framework"
-HOMEPAGE="https://github.com/django-extensions/django-extensions"
+HOMEPAGE="
+	https://github.com/django-extensions/django-extensions
+	https://pypi.org/project/django-extensions/
+"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 
 RDEPEND="
 	>=dev-python/django-4.2[${PYTHON_USEDEP}]
