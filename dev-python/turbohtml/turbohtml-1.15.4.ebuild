@@ -5,6 +5,7 @@ EAPI=8
 
 DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=meson-python
+PYPI_VERIFY_REPO="https://github.com/tox-dev/turbohtml"
 PYTHON_COMPAT=( python3_{12..15} )
 
 inherit distutils-r1 pypi
@@ -16,8 +17,7 @@ HOMEPAGE="
 	https://github.com/tox-dev/turbohtml
 	https://pypi.org/project/turbohtml/
 "
-SRC_URI="
-	$(pypi_sdist_url turbohtml)
+SRC_URI+="
 	test? (
 		https://github.com/html5lib/html5lib-tests/archive/${HTML5LIB_TESTS_COMMIT}.tar.gz
 			-> html5lib-tests-${HTML5LIB_TESTS_COMMIT}.tar.gz

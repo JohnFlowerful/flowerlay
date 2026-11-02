@@ -4,13 +4,14 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=setuptools
+PYPI_VERIFY_REPO="https://github.com/click-contrib/sphinx-click"
 PYTHON_COMPAT=( python3_{13..15} )
 
 inherit distutils-r1 pypi
 
 DESCRIPTION="Sphinx plugin to automatically document click-based applications"
 HOMEPAGE="
-	https://github.com/click-contrib/sphinx-click/
+	https://github.com/click-contrib/sphinx-click
 	https://pypi.org/project/sphinx-click/
 "
 
