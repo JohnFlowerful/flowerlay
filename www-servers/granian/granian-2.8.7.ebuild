@@ -6,11 +6,12 @@ EAPI=8
 CARGO_OPTIONAL=yes
 DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=maturin
-PYTHON_COMPAT=( python3_{12..14} )
+PYTHON_COMPAT=( python3_{12..15} )
 
 CRATES=""
 declare -A GIT_CRATES=(
 	[interprocess]='https://github.com/kotauskas/interprocess;44351c4fe88c72ead4f3b0b762c4cf45beb90841;interprocess-%commit%'
+	[pyo3-log]='https://github.com/gi0baro/pyo3-log;398e91fde35980054b420d405c865e7defe39a63;pyo3-log-%commit%'
 	[tls-listener]='https://github.com/gi0baro/tls-listener;28d8a48209466324343d133414ea9af218faebb3;tls-listener-%commit%'
 )
 RUST_MIN_VER="1.95"
