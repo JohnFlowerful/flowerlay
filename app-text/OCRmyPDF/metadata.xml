@@ -4,6 +4,7 @@
 	<upstream>
 		<bugs-to>https://github.com/ocrmypdf/OCRmyPDF/issues</bugs-to>
 		<remote-id type="github">ocrmypdf/OCRmyPDF</remote-id>
+		<remote-id type="pypi">ocrmypdf</remote-id>
 	</upstream>
 	<use>
 		<flag name="fish-completion">Enable fish completion support</flag>

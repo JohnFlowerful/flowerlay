@@ -4,28 +4,37 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=hatchling
+PYPI_VERIFY_REPO="https://github.com/ocrmypdf/OCRmyPDF"
 PYTHON_COMPAT=( python3_{12..14} )
 
-inherit distutils-r1 optfeature shell-completion
+inherit distutils-r1 optfeature pypi shell-completion
 
 DESCRIPTION="OCRmyPDF adds an OCR text layer to scanned PDF files"
-HOMEPAGE="https://github.com/ocrmypdf/OCRmyPDF"
-
-SRC_URI="https://github.com/ocrmypdf/OCRmyPDF/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+HOMEPAGE="
+	https://github.com/ocrmypdf/OCRmyPDF
+	https://pypi.org/project/ocrmypdf/
+"
 
 LICENSE="MPL-2.0"
 SLOT="0"
 KEYWORDS="~amd64"
 IUSE="bash-completion fish-completion"
 
+# pikepdf.pdfa: PDF/A repair
+PIKEPDF_PDFA="
+	>=dev-python/jsonschema-4.18[${PYTHON_USEDEP}]
+	dev-python/referencing[${PYTHON_USEDEP}]
+	>=dev-python/fonttools-4.4.0[${PYTHON_USEDEP}]
+"
 RDEPEND="
+	${PIKEPDF_PDFA}
 	>=app-text/ghostscript-gpl-9.54
 	>=app-text/pdfminer-20260107[${PYTHON_USEDEP}]
 	>=app-text/tesseract-4.1.1[jpeg,tiff,png,webp]
 	>=dev-python/fpdf2-2.8.0[${PYTHON_USEDEP}]
 	>=dev-python/packaging-20[${PYTHON_USEDEP}]
-	>=dev-python/pikepdf-10[${PYTHON_USEDEP}]
-	>=dev-python/pillow-10.0.1[jpeg,jpeg2k,lcms,tiff,webp,zlib,${PYTHON_USEDEP}]
+	>=dev-python/pikepdf-10.15[${PYTHON_USEDEP}]
+	>=dev-python/pillow-12.0.0[jpeg,jpeg2k,lcms,tiff,webp,zlib,${PYTHON_USEDEP}]
 	>=dev-python/pluggy-1[${PYTHON_USEDEP}]
 	>=dev-python/pypdfium2-5.0.0[${PYTHON_USEDEP}]
 	>=dev-python/pydantic-2.12.5[${PYTHON_USEDEP}]
@@ -53,30 +62,27 @@ BDEPEND="
 
 EPYTEST_PLUGINS=()
 EPYTEST_XDIST=1
+EPYTEST_IGNORE=(
+	# requires cyclopts
+	tests/test_watcher.py
+)
 EPYTEST_DESELECT=(
-	# Recompressing/Deflating JPEGs
-	tests/test_hocrtransform.py::test_fpdf2_matches_sandwich
 	# Known language issues
 	tests/test_multilingual_direct.py::TestMultilingual::test_render_multilingual_hocr_basic
 )
 distutils_enable_tests pytest
+
 distutils_enable_sphinx docs \
 	dev-python/myst-parser \
 	dev-python/sphinx-issues \
 	dev-python/sphinx-rtd-theme \
 	dev-python/sphinxcontrib-mermaid
 
-python_test() {
-	epytest --runslow
-}
-
 src_prepare() {
 	distutils-r1_src_prepare
 
 	# Remove non-existing modules for doc generation
-	sed \
-	-e '/sphinx_reredirects/d' \
-		-i docs/conf.py || die
+	sed -i '/sphinx_reredirects/d' docs/conf.py || die
 }
 
 src_install() {
@@ -90,6 +96,7 @@ src_install() {
 
 pkg_postinst() {
 	optfeature "JBIG2 optimization support" media-libs/jbig2enc
+	optfeature "HEIF/HEIC image support" dev-python/pillow-heif
 	optfeature "image cleaning support" app-text/unpaper
 	optfeature "PNG optimization support" media-gfx/pngquant
 }

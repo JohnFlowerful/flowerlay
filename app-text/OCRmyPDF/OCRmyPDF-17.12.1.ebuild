@@ -4,14 +4,16 @@
 EAPI=8
 
 DISTUTILS_USE_PEP517=hatchling
+PYPI_VERIFY_REPO="https://github.com/ocrmypdf/OCRmyPDF"
 PYTHON_COMPAT=( python3_{12..14} )
 
-inherit distutils-r1 optfeature shell-completion
+inherit distutils-r1 optfeature pypi shell-completion
 
 DESCRIPTION="OCRmyPDF adds an OCR text layer to scanned PDF files"
-HOMEPAGE="https://github.com/ocrmypdf/OCRmyPDF"
-
-SRC_URI="https://github.com/ocrmypdf/OCRmyPDF/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+HOMEPAGE="
+	https://github.com/ocrmypdf/OCRmyPDF
+	https://pypi.org/project/ocrmypdf/
+"
 
 LICENSE="MPL-2.0"
 SLOT="0"
