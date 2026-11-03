@@ -1,1 +1,2 @@
 move net-p2p/flood www-apps/flood
+move dev-util/pnpm-bin sys-apps/pnpm

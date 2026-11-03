@@ -2,10 +2,7 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<upstream>
+		<bugs-to>https://github.com/pnpm/pnpm/issues</bugs-to>
 		<remote-id type="github">pnpm/pnpm</remote-id>
 	</upstream>
-	<longdescription lang="en">
-		Fast, disk space efficient package manager. pnpm uses a content-addressable
-		filesystem to store all files from all module directories on a disk.
-	</longdescription>
 </pkgmetadata>
