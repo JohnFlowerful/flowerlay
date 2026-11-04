@@ -9,7 +9,10 @@ DISTUTILS_USE_PEP517=setuptools
 inherit distutils-r1 optfeature
 
 DESCRIPTION="Date parsing library designed to parse dates from HTML pages"
-HOMEPAGE="https://github.com/scrapinghub/dateparser"
+HOMEPAGE="
+	https://github.com/scrapinghub/dateparser
+	https://pypi.org/project/dateparser/
+"
 SRC_URI="https://github.com/scrapinghub/${PN}/archive/v${PV}.tar.gz -> ${P}.gh.tar.gz"
 
 LICENSE="BSD-4"
@@ -35,10 +38,6 @@ BDEPEND="
 "
 
 EPYTEST_PLUGINS=()
-EPYTEST_DESELECT=(
-	dateparser/date.py::dateparser.date.DateDataParser.get_date_data
-	dateparser/search/__init__.py::dateparser.search.search_dates
-)
 distutils_enable_tests pytest
 
 distutils_enable_sphinx docs \
