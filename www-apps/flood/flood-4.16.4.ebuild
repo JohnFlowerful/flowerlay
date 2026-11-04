@@ -79,6 +79,7 @@ src_prepare() {
 
 src_install() {
 	pnpm_src_install
+	pnpm_install_bin_wrappers
 
 	newinitd "${FILESDIR}/${PN}-r2.initd" "${PN}"
 	newconfd "${FILESDIR}/${PN}.confd" "${PN}"
