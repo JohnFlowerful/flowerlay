@@ -266,7 +266,7 @@ npm_get_destdir() {
 npm_src_install() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	local dest_dir="$(_npm_get_destdir)"
+	local dest_dir="$(npm_get_destdir)"
 
 	# `npm pack` writes to cache so temporarily override it
 	local npm_json
