@@ -7,8 +7,12 @@
 # @DESCRIPTION:
 # An eclass to help maintain pnpm based packages.
 
+if [[ ! ${_PNPM_ECLASS} ]]; then
+_PNPM_ECLASS=1
+fi
+
 case ${EAPI} in
-	8|9) ;;
+	8|9) inherit nodejs-utils ;;
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
@@ -18,7 +22,7 @@ esac
 
 if [[ ! ${NODE_OPTIONAL} ]]; then
 	BDEPEND="
-		>=dev-util/pnpm-bin-11
+		>=sys-apps/pnpm-11
 		app-misc/jq
 		>=app-portage/node-deps-2.12
 	"
@@ -85,7 +89,6 @@ fi
 # See https://gitweb.gentoo.org/repo/gentoo.git/commit/eclass/go-module.eclass?id=62fb29
 #
 # The default value is ${WORKDIR}/pnpm-deps
-: "${PNPM_DEPS_DIR:="${WORKDIR}/pnpm-deps"}"
 
 # @ECLASS_VARIABLE: PNPM_PROJECT_DIR
 # @DESCRIPTION:
@@ -108,6 +111,12 @@ fi
 # @DEFAULT_UNSET
 # @DESCRIPTION:
 # An array variable containing flags to use during all `pnpm` operations
+
+# @ECLASS_VARIABLE: PNPM_PN
+# @DESCRIPTION:
+# The package name to use when installing into
+# /usr/$(get_libdir)/node_modules/. If unset (the default), the name is read
+# from the "name" field in package.json
 
 # @ECLASS_VARIABLE: PNPM_INSTALL_FLAGS
 # @DEFAULT_UNSET
@@ -151,7 +160,12 @@ fi
 # @INTERNAL
 # @DESCRIPTION:
 # Set the default pnpm-cache directory for this script and `node-deps`
-PNPM_CACHE_DIR="${WORKDIR}/pnpm-cache"
+
+# @ECLASS_VARIABLE: PNPM_HTTP_PORT
+# @USER_VARIABLE
+# @DESCRIPTION:
+# Port for the temporary dependency http server. Defaults to 56743
+: "${PNPM_HTTP_PORT:=56743}"
 
 # @FUNCTION: pnpm_src_unpack
 # @DESCRIPTION:
@@ -167,105 +181,6 @@ pnpm_src_unpack() {
 	default
 }
 
-# @FUNCTION: _check_port
-# @INTERNAL
-# @DESCRIPTION:
-# Find and use the appropriate command on the system to check a port availability
-_check_port() {
-	# `ss` is provided by the sys-apps/iproute2 package which is pulled in by
-	# net-misc/iputils, a default Gentoo package. it should be available on
-	# all systems so we don't need an extra dependency
-	local port=$1
-	if command -v ss &>/dev/null; then
-		ss -tuln | grep -q ":${port} "
-	elif command -v netstat &>/dev/null; then
-		netstat -tuln | grep -q ":${port} "
-	elif command -v lsof &>/dev/null; then
-		lsof -i :"${port}" &>/dev/null
-	else
-		die "Can't find suitable network diagnosis tool"
-	fi
-}
-
-# @FUNCTION: _find_free_port
-# @INTERNAL
-# @DESCRIPTION:
-# Find a free port for the temporary dependency http server
-_find_free_port() {
-	local start_port=$1
-	local max_attempts=25
-	for ((i = 0; i < max_attempts; i++)); do
-		local port=$((start_port + i))
-		if ! _check_port "${port}"; then
-			echo "${port}"
-			return 0
-		fi
-	done
-
-	die "No free port available in range"
-}
-
-# @FUNCTION: _start_http_server
-# @INTERNAL
-# @DESCRIPTION:
-# Spins up a temporary http server to serve node dependencies to pnpm
-_start_http_server() {
-	local port="${1}"
-	local dir="${2}"
-	local server_pid=""
-
-	python3 -m http.server "${port}" --directory "${dir}" > /dev/null 2>&1 &
-	server_pid=$!
-	sleep 1
-
-	for i in {1..10}; do
-		if curl -sf "http://127.0.0.1:${port}" > /dev/null; then
-			echo "${server_pid}"
-			return 0
-		fi
-		sleep 0.5
-	done
-
-	die "Failed to start http server"
-}
-
-# @FUNCTION: _kill_http_server
-# @INTERNAL
-# @DESCRIPTION:
-# Kill the temporary python http server
-_kill_http_server() {
-	local pid="${1}"
-	local ret=0
-
-	wait_for_termination() {
-		local pid="${1}"
-		local timeout=5
-		while kill -0 "${pid}" 2>/dev/null && [[ ${timeout} -gt 0 ]]; do
-			sleep 1
-			((timeout--))
-		done
-
-		! kill -0 "${pid}" 2>/dev/null
-	}
-
-	kill "${pid}" 2>/dev/null || true
-
-	if ! wait_for_termination "${pid}"; then
-		ewarn "Force killing http server"
-		kill -9 "${pid}" 2>/dev/null || true
-		wait_for_termination "${pid}"
-	fi
-
-	wait "${pid}" 2>/dev/null || true
-
-	if kill -0 "${pid}" 2>/dev/null; then
-		eerror "Failed to kill http server (PID: ${pid})"
-		ret=1
-	fi
-
-	return ${ret}
-}
-
 # @FUNCTION: pnpm_src_configure
 # @DESCRIPTION:
 # Configures pnpm to build with the distributed tarball. This relies `node-deps`
@@ -274,27 +189,45 @@ _kill_http_server() {
 pnpm_src_configure() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
+	export PNPM_PROJECT_DIR="${PNPM_PROJECT_DIR:-"${S}"}"
+	local PNPM_DEPS_DIR="${PNPM_DEPS_DIR:-"${WORKDIR}/pnpm-deps"}"
+	local PNPM_CACHE_DIR="${WORKDIR}/pnpm-cache"
 
 	ebegin "Generating temporary http server directory"
-	local -r port=$(_find_free_port 8000)
 	edo node-deps cache \
 		--pm pnpm \
-		--project-dir "${project_dir}" \
+		--project-dir "${PNPM_PROJECT_DIR}" \
 		--deps-dir "${PNPM_DEPS_DIR}" \
 		--cache-dir "${PNPM_CACHE_DIR}" \
-		--cache-port "${port}"
+		--cache-port "${PNPM_HTTP_PORT}"
 	eend $?
 
 	ebegin "Starting temporary http server"
-	local -r server_pid=$(_start_http_server "${port}" "${PNPM_CACHE_DIR}")
-	trap "_kill_http_server ${server_pid}" INT TERM
-	eend $?
+	local http_pid errfile
+	errfile=$(mktemp)
+	python3 -m http.server \
+		"${PNPM_HTTP_PORT}" \
+		--bind 127.0.0.1 \
+		--directory "${PNPM_CACHE_DIR}" \
+		>/dev/null 2>"${errfile}" &
+	http_pid=$!
+
+	sleep 1
+
+	if ! kill -0 "${http_pid}" 2>/dev/null; then
+		# he's dead, jim
+		cat "${errfile}"
+		rm -f "${errfile}"
+		die "http.server failed to start on port ${PNPM_HTTP_PORT}"
+	fi
+
+	rm -f "${errfile}"
+	trap "kill ${http_pid} 2>/dev/null" EXIT INT TERM
+	eend 0
 
 	export pnpm_config_progress="false"
-	export pnpm_config_registry="http://127.0.0.1:${port}"
+	export pnpm_config_registry="http://127.0.0.1:${PNPM_HTTP_PORT}"
 	export pnpm_config_pm_on_fail="ignore"
-	# the following should be off for our usecase. the short of it:
 	# `pnpm install` now hits the internet for security (supply chain, verity
 	# etc.) reasons. this means a fully offline build is impossible except by 
 	# doing one of the following:
@@ -314,21 +247,17 @@ pnpm_src_configure() {
 	pnpm config set store-dir "${HOME}/pnpm" || die
 	pnpm config set package-import-method clone-or-copy || die
 	edo pnpm install \
-		--dir "${project_dir}" \
+		--dir "${PNPM_PROJECT_DIR}" \
 		--ignore-scripts \
 		--frozen-lockfile \
 		--network-concurrency 8 \
 		"${PNPM_INSTALL_FLAGS[@]}" \
 		"${PNPM_FLAGS[@]}"
 
-	ebegin "Killing temporary http server"
-	_kill_http_server "${server_pid}"
-	eend $?
-
 	# ensure lifecycle scripts are run
 	# don't die here. wait for packages to transition away from postinstall
 	# scripts, which are no longer allowed by (p)npm
-	nonfatal edo pnpm rebuild --dir "${project_dir}" "${PNPM_REBUILD_FLAGS[@]}" "${PNPM_FLAGS[@]}"
+	nonfatal edo pnpm rebuild --dir "${PNPM_PROJECT_DIR}" "${PNPM_REBUILD_FLAGS[@]}" "${PNPM_FLAGS[@]}"
 }
 
 # @FUNCTION: pnpm_src_compile
@@ -337,24 +266,30 @@ pnpm_src_configure() {
 pnpm_src_compile() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
-
 	if [[ -z "${PNPM_BUILD_SCRIPT-}" ]]; then
-		die "PNPM_BUILD_SCRIPT is not set when it should be"
+		die "PNPM_BUILD_SCRIPT is not set"
 	fi
 
 	edo pnpm run \
-		--dir "${project_dir}" \
+		--dir "${PNPM_PROJECT_DIR}" \
 		${PNPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
 		"${PNPM_BUILD_SCRIPT}" \
 		"${PNPM_BUILD_FLAGS[@]}" \
 		"${PNPM_FLAGS[@]}"
 }
 
+# @FUNCTION: pnpm_get_destdir
+# @DESCRIPTION:
+# See nodejs_get_destdir in nodejs-utils.eclass
+pnpm_get_destdir() {
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	nodejs_get_destdir "${PNPM_PN-}" "${PNPM_PROJECT_DIR}"
+}
+
 # @FUNCTION: pnpm_src_install
 # @DESCRIPTION:
-# This src_install function is used to install standalone nodejs applications
-# along with a basic wrapper script to launch them.
+# This src_install function is used to install standalone nodejs applications.
 # If you're not building a standalone nodejs application (e.g. web assets), you
 # will need to define your own src_install function that installs the completed
 # build directory as desired.
@@ -363,62 +298,13 @@ pnpm_src_compile() {
 pnpm_src_install() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	local -r project_dir="${PNPM_PROJECT_DIR:-"${S}"}"
-
-	local -r dest_dir="/usr/$(get_libdir)/node_modules/$(jq --raw-output '.name' package.json)"
-
-	# support both the case when NODE_WRAPPER_OPT is an array and an 
-	# IFS-separated string
-	if [[ "${NODE_WRAPPER_OPT+defined}" == "defined" && "$(declare -p NODE_WRAPPER_OPT)" =~ ^'declare -a NODE_WRAPPER_OPT=' ]]; then
-		local -a user_args=("${NODE_WRAPPER_OPT[@]}")
-	else
-		local -a user_args
-		read -ra user_args <<< "${NODE_WRAPPER_OPT:-}"
-	fi
-	while IFS=" " read -ra bin; do
-		local my_node
-		my_node=$(command -v node)
-		newbin - "${PN}" <<-EOF
-			#!/usr/bin/env sh
-
-			${my_node} "${dest_dir}/${bin[1]}" "${user_args[@]}" "\$@"
-		EOF
-	done < <(jq --raw-output '
-		(.bin | type) as $typ |
-		if $typ == "string" then
-			.name + " " + .bin
-		elif $typ == "object" then
-			.bin | to_entries |
-			map(.key + " " + .value) |
-			join("\n")
-		elif $typ == "null" then
-			empty
-		else
-			"invalid type " + $typ |
-			halt_error
-		end
-	' "${PNPM_WORKSPACE-.}/package.json")
-
-	while IFS= read -r man; do
-		doman "${dest_dir}/${man}"
-	done < <(jq --raw-output '
-		(.man | type) as $typ |
-		if $typ == "string" then
-			.man
-		elif $typ == "list" then
-			.man | join("\n")
-		elif $typ == "null" then
-			empty
-		else
-			"invalid type " + $typ |
-			halt_error
-		end
-	' "${PNPM_WORKSPACE-.}/package.json")
+	local dest_dir
+	dest_dir=$(pnpm_get_destdir) || die
 
 	# `pnpm pack` writes to cache so temporarily override it
 	local pnpm_json
 	pnpm_json=$(pnpm pack \
-		--dir "${project_dir}" \
+		--dir "${PNPM_PROJECT_DIR}" \
 		--json \
 		--dry-run \
 		--loglevel warn \
@@ -436,7 +322,7 @@ pnpm_src_install() {
 
 	while IFS= read -r file; do
 		local dest
-		dest="${dest_dir}/$(dirname "${file}")"
+		dest=${dest_dir}/$(dirname "${file}")
 		insinto "${dest}"
 		doins "${PNPM_WORKSPACE-.}/${file}"
 	done <<< "${file_list}"
@@ -447,7 +333,7 @@ pnpm_src_install() {
 		if [[ ! -d "${dest_dir}/node_modules" ]]; then
 			if [[ -z "${PNPM_NO_PRUNE-}" ]]; then
 				edo pnpm prune \
-					--dir "${project_dir}" \
+					--dir "${PNPM_PROJECT_DIR}" \
 					--prod \
 					${NPM_WORKSPACE+--filter "{$PNPM_WORKSPACE}"} \
 					"${PNPM_PRUNE_FLAGS[@]}" \
@@ -460,6 +346,28 @@ pnpm_src_install() {
 			doins -r node_modules
 		fi
 	fi
+}
+
+# @FUNCTION: pnpm_install_bin_wrappers
+# @DESCRIPTION:
+# See nodejs_install_bin_wrappers in nodejs-utils.eclass
+pnpm_install_bin_wrappers() {
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	local dest_dir
+	dest_dir=$(pnpm_get_destdir) || die
+	nodejs_install_bin_wrappers "${dest_dir}" "${PNPM_WORKSPACE-.}/package.json"
+}
+
+# @FUNCTION: pnpm_install_man
+# @DESCRIPTION:
+# See nodejs_install_man in nodejs-utils.eclass
+pnpm_install_man() {
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	local dest_dir
+	dest_dir=$(pnpm_get_destdir) || die
+	nodejs_install_man "${dest_dir}" "${PNPM_WORKSPACE-.}/package.json"
 }
 
 if [[ ! ${NODE_OPTIONAL} ]]; then
