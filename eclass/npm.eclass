@@ -7,8 +7,12 @@
 # @DESCRIPTION:
 # An eclass to help maintain npm based packages.
 
+if [[ ! ${_NPM_ECLASS} ]]; then
+_NPM_ECLASS=1
+fi
+
 case ${EAPI} in
-	8|9) ;;
+	8|9) inherit nodejs-utils ;;
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
@@ -85,7 +89,6 @@ fi
 # See https://gitweb.gentoo.org/repo/gentoo.git/commit/eclass/go-module.eclass?id=62fb29
 #
 # The default value is ${WORKDIR}/npm-deps
-: "${NPM_DEPS_DIR:="${WORKDIR}/npm-deps"}"
 
 # @ECLASS_VARIABLE: NPM_PROJECT_DIR
 # @DESCRIPTION:
@@ -114,6 +117,12 @@ fi
 # @DEFAULT_UNSET
 # @DESCRIPTION:
 # An array variable containing flags to use during all `npm` operations
+
+# @ECLASS_VARIABLE: NPM_PN
+# @DESCRIPTION:
+# The package name to use when installing into
+# /usr/$(get_libdir)/node_modules/. If unset (the default), the name is read
+# from the "name" field in package.json
 
 # @ECLASS_VARIABLE: NPM_INSTALL_FLAGS
 # @DEFAULT_UNSET
@@ -157,7 +166,6 @@ fi
 # @INTERNAL
 # @DESCRIPTION:
 # Set the default npm-cache directory for this script and `node-deps`
-NPM_CACHE_DIR="${WORKDIR}/npm-cache"
 
 # @FUNCTION: npm_src_unpack
 # @DESCRIPTION:
@@ -181,17 +189,21 @@ npm_src_unpack() {
 npm_src_configure() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
+	export NPM_PROJECT_DIR="${NPM_PROJECT_DIR:-"${S}"}"
+	local NPM_DEPS_DIR="${NPM_DEPS_DIR:-"${WORKDIR}/npm-deps"}"
+	local NPM_CACHE_DIR="${WORKDIR}/npm-cache"
+
 	ebegin "Generating cacache structure"
-	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
+
 	edo node-deps cache \
 		--pm npm \
-		--project-dir "${project_dir}" \
+		--project-dir "${NPM_PROJECT_DIR}" \
 		--deps-dir "${NPM_DEPS_DIR}" \
 		--cache-dir "${NPM_CACHE_DIR}"
 	eend $?
 
 	if [[ -n ${NODE_DEPS_FIXUP_LOCKFILE} ]]; then
-		edo node-deps fixup-lockfile --pm npm --project-dir "${project_dir}" || die
+		edo node-deps fixup-lockfile --pm npm --project-dir "${NPM_PROJECT_DIR}" || die
 	fi
 
 	export npm_config_nodedir="/usr/include/node"
@@ -205,7 +217,7 @@ npm_src_configure() {
 
 	einfo "Installing dependencies"
 	edo npm ci \
-		--prefix "${project_dir}" \
+		--prefix "${NPM_PROJECT_DIR}" \
 		--ignore-scripts \
 		"${NPM_INSTALL_FLAGS[@]}" \
 		"${NPM_FLAGS[@]}"
@@ -213,7 +225,7 @@ npm_src_configure() {
 	# ensure lifecycle scripts are run
 	# don't die here. wait for packages to transition away from postinstall
 	# scripts, which are no longer allowed by (p)npm
-	nonfatal edo npm rebuild --prefix "${project_dir}" "${NPM_REBUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"
+	nonfatal edo npm rebuild --prefix "${NPM_PROJECT_DIR}" "${NPM_REBUILD_FLAGS[@]}" "${NPM_FLAGS[@]}"
 }
 
 # @FUNCTION: npm_src_compile
@@ -222,24 +234,30 @@ npm_src_configure() {
 npm_src_compile() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
-
 	if [[ -z "${NPM_BUILD_SCRIPT-}" ]]; then
 		die "NPM_BUILD_SCRIPT is not set when it should be"
 	fi
 
 	edo npm run \
-		--prefix "${project_dir}" \
+		--prefix "${NPM_PROJECT_DIR}" \
 		${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
 		"${NPM_BUILD_SCRIPT}" \
 		"${NPM_BUILD_FLAGS[@]}" \
 		"${NPM_FLAGS[@]}"
 }
 
+# @FUNCTION: npm_get_destdir
+# @DESCRIPTION:
+# See nodejs_get_destdir in nodejs-utils.eclass
+npm_get_destdir() {
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	nodejs_get_destdir "${NPM_PN-}" "${NPM_PROJECT_DIR}"
+}
+
 # @FUNCTION: npm_src_install
 # @DESCRIPTION:
-# This src_install function is used to install standalone nodejs applications
-# along with a basic wrapper script to launch them.
+# This src_install function is used to install standalone nodejs applications.
 # If you're not building a standalone nodejs application (e.g. web assets), you
 # will need to define your own src_install function that installs the completed
 # build directory as desired.
@@ -248,62 +266,12 @@ npm_src_compile() {
 npm_src_install() {
 	debug-print-function "${FUNCNAME[0]}" "$@"
 
-	local -r project_dir="${NPM_PROJECT_DIR:-"${S}"}"
-
-	local -r dest_dir="/usr/$(get_libdir)/node_modules/$(jq --raw-output '.name' package.json)"
-
-	# support both the case when NODE_WRAPPER_OPT is an array and an 
-	# IFS-separated string
-	if [[ "${NODE_WRAPPER_OPT+defined}" == "defined" && "$(declare -p NODE_WRAPPER_OPT)" =~ ^'declare -a NODE_WRAPPER_OPT=' ]]; then
-		local -a user_args=("${NODE_WRAPPER_OPT[@]}")
-	else
-		local -a user_args
-		read -ra user_args <<< "${NODE_WRAPPER_OPT:-}"
-	fi
-	while IFS=" " read -ra bin; do
-		local my_node
-		my_node=$(command -v node)
-		newbin - "${PN}" <<-EOF
-			#!/usr/bin/env sh
-
-			${my_node} "${dest_dir}/${bin[1]}" "${user_args[@]}" "\$@"
-		EOF
-	done < <(jq --raw-output '
-		(.bin | type) as $typ |
-		if $typ == "string" then
-			.name + " " + .bin
-		elif $typ == "object" then
-			.bin | to_entries |
-			map(.key + " " + .value) |
-			join("\n")
-		elif $typ == "null" then
-			empty
-		else
-			"invalid type " + $typ |
-			halt_error
-		end
-	' "${NPM_WORKSPACE-.}/package.json")
-
-	while IFS= read -r man; do
-		doman "${dest_dir}/$man"
-	done < <(jq --raw-output '
-		(.man | type) as $typ |
-		if $typ == "string" then
-			.man
-		elif $typ == "list" then
-			.man | join("\n")
-		elif $typ == "null" then
-			empty
-		else
-			"invalid type " + $typ |
-			halt_error
-		end
-	' "${NPM_WORKSPACE-.}/package.json")
+	local dest_dir="$(_npm_get_destdir)"
 
 	# `npm pack` writes to cache so temporarily override it
 	local npm_json
 	npm_json=$(npm_config_cache="${HOME}/.npm" npm pack \
-		--prefix "${project_dir}" \
+		--prefix "${NPM_PROJECT_DIR}" \
 		--json \
 		--dry-run \
 		--loglevel=warn \
@@ -321,7 +289,7 @@ npm_src_install() {
 	' <<< "${npm_json}")
 
 	while IFS= read -r file; do
-		local dest=
+		local dest
 		dest="${dest_dir}/$(dirname "${file}")"
 		insinto "${dest}"
 		doins "${NPM_WORKSPACE-.}/${file}"
@@ -329,11 +297,11 @@ npm_src_install() {
 
 	# if node_modules wasn't generated with `npm pack`, prune and copy them
 	# from ${S}
-	if [ -z "${NO_NODE_MODULES-}" ]; then
-		if [ ! -d "${dest_dir}/node_modules" ]; then
-			if [ -z "${NPM_NO_PRUNE-}" ]; then
+	if [[ -z "${NO_NODE_MODULES-}" ]]; then
+		if [[ ! -d "${dest_dir}/node_modules" ]]; then
+			if [[ -z "${NPM_NO_PRUNE-}" ]]; then
 				edo npm prune \
-					--prefix "${project_dir}" \
+					--prefix "${NPM_PROJECT_DIR}" \
 					--omit=dev \
 					--no-save \
 					${NPM_WORKSPACE+--workspace=$NPM_WORKSPACE} \
@@ -347,6 +315,29 @@ npm_src_install() {
 			doins -r node_modules
 		fi
 	fi
+}
+
+
+# @FUNCTION: npm_install_bin_wrappers
+# @DESCRIPTION:
+# See nodejs_install_bin_wrappers in nodejs-utils.eclass
+npm_install_bin_wrappers() {
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	local dest_dir
+	dest_dir=$(npm_get_destdir) || die
+	nodejs_install_bin_wrappers "${dest_dir}" "${NPM_WORKSPACE-.}/package.json"
+}
+
+# @FUNCTION: npm_install_man
+# @DESCRIPTION:
+# See nodejs_install_man in nodejs-utils.eclass
+npm_install_man() {
+	debug-print-function "${FUNCNAME[0]}" "$@"
+
+	local dest_dir
+	dest_dir=$(npm_get_destdir) || die
+	nodejs_install_man "${dest_dir}" "${NPM_WORKSPACE-.}/package.json"
 }
 
 if [[ ! ${NODE_OPTIONAL} ]]; then
