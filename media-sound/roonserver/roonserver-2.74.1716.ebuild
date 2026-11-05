@@ -23,7 +23,7 @@ RDEPEND="
 	acct-group/roon
 	acct-user/roon
 	dev-libs/icu
-	dev-util/lttng-ust
+	dev-util/lttng-ust:0/2.12
 	media-video/ffmpeg
 	>=dev-libs/openssl-1.1.1
 	>=sys-libs/glibc-2.27
